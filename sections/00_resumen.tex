@@ -4,11 +4,13 @@
 
 \begin{spacing}{1.5}
 
-Las Autoridades de Certificación reguladas bajo el marco legal ecuatoriano operan sobre infraestructuras PKI con limitaciones de rigidez, acoplamiento fuerte y baja escalabilidad, incompatibles con los requisitos de continuidad y trazabilidad auditada que impone la Resolución ARCOTEL-2024-0176. El presente trabajo propone una arquitectura de referencia diseñada en cuatro fases: análisis de requisitos normativos, diseño con el modelo C4 bajo TOGAF ADM, implementación del módulo de auditoría Immutable Log Service con Hyperledger Fabric, y evaluación mediante PoC y ATAM. El análisis de los estándares PKI y del marco regulatorio derivó ocho conductores de negocio descompuestos en veinticuatro requisitos no funcionales y veintiséis escenarios de atributo de calidad; las restricciones determinantes (respuesta OCSP inmediata y claves exclusivamente en HSM certificado) descartaron estilos con consistencia eventual. La arquitectura adopta el estilo Service-Based con asincronía selectiva y extensibilidad Microkernel, materializada en diez contenedores de grano grueso respaldados por treinta y nueve decisiones arquitectónicas. El experimento PoC confirmó que el patrón \textit{fire-and-forget} no degrada la ruta de escritura principal, que el \texttt{HashChainEngine} garantiza la integridad local del log independientemente de la red, y que el módulo protege los datos sin exponer información personal, cumpliendo la LOPDP por construcción. El análisis ATAM complementa estos resultados con la evaluación de compromisos entre atributos de calidad y la identificación de riesgos residuales.
+Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo. Aquí puede usar cursivas \textit{lorem ipsum} y también código en línea \texttt{lorem\_ipsum} cuando lo necesite.
+
+Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt. Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit, sed quia non numquam eius modi tempora incidunt ut labore et dolore magnam aliquam quaerat voluptatem.
 
 \end{spacing}
 
-\hspace{1.27cm}\textit{Palabras clave del autor:} arquitectura de referencia, infraestructura de clave pública, autoridad de certificación, registro inmutable, marco regulatorio ecuatoriano
+\hspace{1.27cm}\textit{Palabras clave del autor:} lorem ipsum, dolor sit amet, consectetur adipiscing elit, sed do eiusmod
 
 \vfill % empuja el bloque CC hacia el pie de página
 

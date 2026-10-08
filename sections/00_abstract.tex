@@ -3,11 +3,13 @@
 
 \begin{spacing}{1.5}
 
-Certificate Authorities regulated under Ecuadorian law operate on PKI infrastructures with structural limitations in rigidity, tight coupling, and low scalability, incompatible with the operational continuity and audited traceability requirements mandated by Resolution ARCOTEL-\allowbreak 2024-\allowbreak 0176. This work proposes a reference architecture designed across four phases: normative requirements analysis, architectural design using the C4 model under TOGAF ADM, implementation of an Immutable Log Service module with Hyperledger Fabric, and evaluation using PoC and ATAM. Analysis of PKI standards and the Ecuadorian regulatory framework yielded eight business drivers decomposed into twenty-four non-functional requirements and twenty-six quality attribute scenarios; the binding constraints (immediate OCSP response and exclusive private key storage in certified HSM hardware) eliminated styles relying on eventual consistency. The resulting architecture adopts a Service-Based style with selective asynchrony and Microkernel extensibility, realized as ten coarse-grained containers backed by thirty-nine architectural decision records. The PoC experiment confirmed that the fire-and-forget pattern does not degrade the main write path, that the \texttt{HashChainEngine} guarantees local log integrity independently of network availability, and that the module enforces data protection without exposing personal information in plaintext, satisfying the data protection law by construction. The ATAM analysis complements these results with quality attribute trade-off evaluation and residual risk identification.
+Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam eaque ipsa quae ab illo inventore veritatis. Here you can use italics \textit{lorem ipsum} and inline code \texttt{lorem\_ipsum} whenever needed.
+
+Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt. Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit, sed quia non numquam eius modi tempora incidunt ut labore et dolore magnam aliquam quaerat voluptatem.
 
 \end{spacing}
 
-\hspace{1.27cm}\textit{Author Keywords:} reference architecture, public key infrastructure, certificate authority, immutable log, Ecuadorian regulatory framework
+\hspace{1.27cm}\textit{Author Keywords:} lorem ipsum, dolor sit amet, consectetur adipiscing elit, sed do eiusmod
 
 \vfill % empuja el bloque CC hacia el pie de página
 

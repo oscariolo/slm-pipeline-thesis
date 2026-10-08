@@ -1,12 +1,6 @@
 \chapter{Resultados}\label{cap:resultados}
 
-En este capítulo se presentan los resultados obtenidos a lo largo del proceso de
-investigación. Empezando con el catálogo funcional de EPICs y los Requisitos No Funcionales; 
-la arquitectura de referencia propuesta para Autoridades de
-Certificación bajo el marco legal ecuatoriano, con sus diagramas C4 y el análisis de estilos
-arquitectónicos; el prototipo del módulo de auditoría ILS, cuyo propósito es validar
-experimentalmente el patrón de registro inmutable mediante métricas específicas; y la evaluación
-del prototipo mediante el experimento GQM y el análisis estructural ATAM.
+Et harum quidem rerum facilis est et expedita distinctio, nam libero tempore, cum soluta nobis est eligendi optio cumque nihil impedit quo minus id quod maxime placeat facere possimus. Temporibus autem quibusdam et aut officiis debitis aut rerum necessitatibus saepe eveniet ut et voluptates repudiandae sint et molestiae non recusandae. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.
 
 % ======================================================================
 % 6.1 — CATÁLOGO DE REQUISITOS
@@ -14,373 +8,201 @@ del prototipo mediante el experimento GQM y el análisis estructural ATAM.
 
 \section{Catálogo de Requisitos}\label{sec:requisitos}
 
-Esta sección presenta el catálogo funcional organizado en EPICs y los Requisitos No Funcionales
-(NFRs). Primero se expone el ciclo de identificación del módulo de auditoría
-(BD$\rightarrow$NFR $\rightarrow$QAS), con el EPIC-08 como resultado funcional asociado; luego se
-presentan los EPICs y NFRs priorizados. El proceso completo y el catálogo completo se documentan en los anexos: EPICs en el
-\hyperref[anx:backlog_completo]{Anexo~A}, Business Drivers en el
-\hyperref[anx:business_drivers]{Anexo~B}, NFRs en el \hyperref[anx:nfr_completo]{Anexo~C},
-QAS completos en el \hyperref[anx:qas_completo]{Anexo~D} y la matriz de trazabilidad
-BD$\rightarrow$NFR $\rightarrow$QAS en el \hyperref[anx:trazabilidad]{Anexo~E}.
+Ut enim ad minima veniam, quis nostrum exercitationem ullam corporis suscipit laboriosam, nisi ut aliquid ex ea commodi consequatur. Quis autem vel eum iure reprehenderit qui in ea voluptate velit esse quam nihil molestiae consequatur, vel illum qui dolorem eum fugiat quo voluptas nulla pariatur. At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis praesentium voluptatum deleniti atque corrupti quos dolores et quas molestias excepturi sint occaecati cupiditate non provident. Et harum quidem rerum facilis est et expedita distinctio, nam libero tempore, cum soluta nobis est eligendi optio cumque nihil impedit quo minus id quod maxime placeat facere possimus.
 
 % ----------------------------------------------------------------------
 \subsection{Identificación de requisitos del módulo de auditoría}\label{subsec:cadena_poc}
 
-Esta subsección expone los resultados del ciclo de elicitación que conectan el driver con los artefactos de
-calidad y su materialización funcional en el módulo de auditoría; se inicia con el requisito funcional
-expresado en el EPIC-08, luego se presenta el Business Driver y, a continuación, los NFRs
-operacionalizados y los QAS derivados. La Tabla~\ref{tab:epic_poc} presenta el EPIC asociado al
-módulo de auditoría con la referencia normativa que lo origina y su prioridad MoSCoW.
+Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam eaque ipsa quae ab illo inventore veritatis. Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt. Ut enim ad minima veniam, quis nostrum exercitationem ullam corporis suscipit laboriosam, nisi ut aliquid ex ea commodi consequatur.
 
 \small
 \begin{table}[H]
 \centering
-\caption{EPIC funcional del módulo de auditoría}
+\caption{Neque porro quisquam est, qui dolorem ipsum quia.}
 \label{tab:epic_poc}
 \begin{tabular}{@{}p{1cm}p{4.8cm}p{5.2cm}p{1.3cm}@{}}
 \toprule
 \textbf{EPIC} & \textbf{Nombre} & \textbf{Referencias normativas} & \textbf{MoSCoW} \\
 \midrule
-08 & Registro de Auditoría Inmutable & ARCOTEL Art.~4.9, 4.18; LCE Art.~39(c) & Must \\
+Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
 \bottomrule
 \end{tabular}
 \end{table}
 \normalsize
 
-Este EPIC garantiza la infraestructura e invariantes de inmutabilidad del Servicio de Registro
-Inmutable (ILS). No duplica los eventos específicos de otros EPICs sino que centraliza
-y sella los eventos que cada módulo del sistema emite hacia él. El almacenamiento se
-realiza en un sistema físicamente externo al motor CA. Su alcance comprende: recepción de
-eventos de todos los módulos; inmutabilidad estructural del log mediante operaciones
-exclusivamente de escritura; evidencia criptográfica por evento mediante
-\textit{hash-chaining} SHA-256 y firma del HSM; verificabilidad \textit{offline} sin
-acceso a la base de datos activa; exportación de logs para auditor externo sin incluir
-datos personales en texto claro; y alerta ante cualquier intento de modificación o brecha
-de integridad del log. A partir de ese resultado, la Tabla~\ref{tab:bd_poc} precisa el driver 
-que complementa el origen del módulo de auditoría y su fuente normativa.
+At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis praesentium voluptatum deleniti atque corrupti quos dolores et quas molestias excepturi sint occaecati cupiditate non provident. Et harum quidem rerum facilis est et expedita distinctio, nam libero tempore, cum soluta nobis est eligendi optio cumque nihil impedit quo minus id quod maxime placeat facere possimus. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.
 
 \small
 \begin{table}[H]
 \centering
-\caption{Business Driver motivador del módulo de auditoría}
+\caption{Lorem ipsum dolor sit amet, consectetur adipiscing elit.}
 \label{tab:bd_poc}
 \begin{tabular}{@{}p{0.7cm}p{6.0cm}p{2.3cm}p{3.7cm}@{}}
 \toprule
 \textbf{BD} & \textbf{Driver} & \textbf{Tipo} & \textbf{Fuente normativa} \\
 \midrule
-BD-04 & Garantizar trazabilidad completa e inmutable con garantías criptográficas
-  verificables por terceros sin depender del operador &
-  Regulatorio / Legal &
-  LCE Art.~31, 39(c) · ARCOTEL Art.~4.9, 4.18, 14.l · LOPDP Art.~43 \\
+Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
 \bottomrule
 \end{tabular}
 \end{table}
 \normalsize
 
-Este driver establece la necesidad de trazabilidad verificable por terceros y delimita el
-alcance regulatorio del módulo. Su formulación justifica la implementación del PoC del
-módulo de auditoría como validación de la viabilidad del enfoque propuesto. Desde este 
-resultado funcional, la Tabla~\ref{tab:nfr_poc} resume los NFRs derivados del driver 
-BD-04, sus valores objetivo y su prioridad MoSCoW.
+Et harum quidem rerum facilis est et expedita distinctio, nam libero tempore, cum soluta nobis est eligendi optio cumque nihil impedit quo minus id quod maxime placeat facere possimus. Temporibus autem quibusdam et aut officiis debitis aut rerum necessitatibus saepe eveniet ut et voluptates repudiandae sint et molestiae non recusandae. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
 
 \small
 \begin{table}[H]
 \centering
-\caption{NFRs derivados del Business Driver BD-04}
+\caption{Et harum quidem rerum facilis est et expedita.}
 \label{tab:nfr_poc}
 \begin{tabular}{@{}p{1cm}p{3.4cm}p{3.1cm}p{4cm}p{1.2cm}@{}}
 \toprule
-\textbf{ID} & \textbf{Nombre} & \textbf{Sub-caract. ISO~25010} & \textbf{Valor objetivo} &
-\textbf{MoSCoW} \\
+\textbf{ID} & \textbf{Nombre} & \textbf{Sub-caract. ISO~25010} & \textbf{Valor objetivo} & \textbf{MoSCoW} \\
 \midrule
-NFR-06 & Minimización de datos personales en el ILS &
-         Confidencialidad &
-         El ILS almacena únicamente \texttt{payload\_hash}; ningún dato personal en texto
-         claro & Must \\
+Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
 \midrule
-NFR-07 & Inmutabilidad y no repudio del ILS &
-         Integridad · No repudio · Responsabilidad &
-         \textbullet~100\% de eventos críticos registrados\newline
-         \textbullet~Cadena criptográfica íntegra\newline
-         \textbullet~Sin UPDATE ni DELETE & Must \\
+Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
 \midrule
-NFR-09 & Registro de cambios de configuración &
-         Responsabilidad &
-         Todo cambio genera evento en el ILS con autor, razón y \textit{timestamp} &
-         Must \\
+Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
 \bottomrule
 \end{tabular}
 \end{table}
 \normalsize
 
-Los tres NFRs traducen el mandato del driver en restricciones técnicas concretas:
-minimización de datos, inmutabilidad con no repudio y trazabilidad de cambios. Este
-conjunto fija las propiedades que el PoC debe verificar experimentalmente. Para hacerlos 
-verificables en escenario, la Tabla~\ref{tab:qas_poc} presenta los QAS derivados que 
-operacionalizan los NFRs del módulo.
+At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis praesentium voluptatum deleniti atque corrupti quos dolores et quas molestias excepturi sint occaecati cupiditate non provident. Et harum quidem rerum facilis est et expedita distinctio, nam libero tempore, cum soluta nobis est eligendi optio cumque nihil impedit quo minus id quod maxime placeat facere possimus.
 
 \small
 \begin{table}[H]
 \centering
-\caption{QAS que operacionalizan los NFRs del módulo de auditoría}
+\caption{Sed ut perspiciatis unde omnis iste natus error.}
 \label{tab:qas_poc}
 \begin{tabular}{@{}p{0.9cm}p{1.5cm}p{3.2cm}p{2.5cm}p{4.6cm}@{}}
 \toprule
 \textbf{ID} & \textbf{NFR(s)} & \textbf{Estímulo} & \textbf{Artefacto} & \textbf{Medida de respuesta} \\
 \midrule
-QAS-05 & NFR-07 · NFR-09 &
-         Un inspector de seguridad evalúa la ausencia de operaciones de modificación en el
-         ILS y la verificabilidad de la cadena criptográfica sin acceso al servidor activo &
-         Especificación de la interfaz del ILS y esquema del registro de auditoría &
-         (A) Operaciones \texttt{UPDATE}, \texttt{DELETE}, \texttt{PATCH} o \texttt{TRUNCATE}
-         declaradas en el contrato del ILS = 0.
-         (B) La cadena criptográfica es verificable \textit{offline} mediante la clave pública
-         del firmante: cumple / no cumple.
-         (C) Los reportes permiten trazabilidad completa desde la solicitud hasta la
-         revocación: cumple / no cumple \\
+Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
 \midrule
-QAS-06 & NFR-06 &
-         Un inspector de protección de datos audita los campos almacenados por el ILS
-         vinculados a titulares de certificados &
-         Esquema del registro inmutable &
-         Campos con datos personales identificables en texto claro presentes en el
-         esquema del ILS = 0 \\
+Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
 \bottomrule
 \end{tabular}
 \end{table}
 \normalsize
 
-Los QAS especifican condiciones observables para verificar la cadena criptográfica, la
-ausencia de operaciones de modificación y la eliminación de datos personales en texto claro.
-Este nivel convierte requisitos en escenarios con medidas que sustentan la validación del
-desempeño del prototipo.
+Ut enim ad minima veniam, quis nostrum exercitationem ullam corporis suscipit laboriosam, nisi ut aliquid ex ea commodi consequatur. Quis autem vel eum iure reprehenderit qui in ea voluptate velit esse quam nihil molestiae consequatur, vel illum qui dolorem eum fugiat quo voluptas nulla pariatur.
 
 % ----------------------------------------------------------------------
 \subsection{Requisitos Funcionales}\label{subsec:req_funcionales}
 
-El catálogo funcional se organiza en doce EPICs. Siguiendo el mismo proceso de derivación,
-se presentan los cuatro EPICs que estructuran el flujo crítico de la CA: ciclo de vida del
-certificado, publicación de artefactos, gestión normativa de perfiles y auditoría
-inmutable. El catálogo completo, que incluye los EPICs correspondientes a identificación y
-autenticación de suscriptores (EPIC-02), gestión de autoridades de registro delegadas
-(EPIC-03), motor de estado de certificados (EPIC-04), seguridad técnica y gestión de claves
-de la CA (EPIC-07), cumplimiento normativo y reportes (EPIC-09), portal de suscriptores
-(EPIC-10), entrega segura de credenciales (EPIC-11) y servicio de sellado de tiempo
-(EPIC-12), se incluye en el \hyperref[anx:backlog_completo]{Anexo~A}.
+Quis autem vel eum iure reprehenderit qui in ea voluptate velit esse quam nihil molestiae consequatur, vel illum qui dolorem eum fugiat quo voluptas nulla pariatur. At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis praesentium voluptatum deleniti atque corrupti quos dolores et quas molestias excepturi sint occaecati cupiditate non provident. Temporibus autem quibusdam et aut officiis debitis aut rerum necessitatibus saepe eveniet ut et voluptates repudiandae sint et molestiae non recusandae. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
 
-La Tabla~\ref{tab:epics_core} presenta los cuatro EPICs con su prioridad MoSCoW y
-referencias normativas principales.
+Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam eaque ipsa quae ab illo inventore veritatis.
 
 \begin{table}[H]
 \centering
 \small
-\caption{EPICs más relevantes para el negocio}
+\caption{Excepteur sint occaecat cupidatat non proident, sunt in.}
 \label{tab:epics_core}
 \begin{tabular}{@{}p{1cm}p{3.8cm}p{7.2cm}p{1.3cm}@{}}
 \toprule
 \textbf{EPIC} & \textbf{Nombre} & \textbf{Referencias normativas} & \textbf{MoSCoW} \\
 \midrule
-01 & Ciclo de Vida del Certificado &
-  ARCOTEL Art.~4.12, 4.13, 4.14; Art.~5.1 lit.~l.3 & Must \\
+Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
 \midrule
-05 & Repositorio y Publicación &
-  ARCOTEL Art.~4.7, 4.20; Art.~5.1 & Must \\
+Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
 \midrule
-06 & Gestión de Perfiles de Certificado &
-  ARCOTEL Art.~6; Anexos~1a--4b y 5--8; Disp.~Gral.~1\textordfeminine & Must \\
+Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
 \midrule
-08 & Registro de Auditoría Inmutable &
-  ARCOTEL Art.~4.9, 4.18; LCE Art.~39(c) & Must \\
+Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-Estos EPICs representan el eje operativo que conduce desde la emisión y revocación hasta la
-publicación y la trazabilidad de eventos. La prioridad \textit{Must} en los cuatro casos
-refleja su condición de requisitos no delegables y formaliza el conjunto funcional derivado
-de estándares y normativa. A continuación se describe el alcance funcional de cada EPIC
-exceptuando el descrito en la Subsección~\ref{subsec:cadena_poc}.
+Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam eaque ipsa quae ab illo inventore veritatis.
 
-\paragraph{EPIC-01 — Ciclo de Vida del Certificado.}
-Orquesta todos los estados por los que transita un certificado desde la solicitud hasta su
-expiración o revocación. Su alcance comprende: el \textit{workflow} de aprobación con estados y
-\textit{timeouts} definidos; la notificación al suscriptor post-emisión con registro de
-aceptación y \textit{timestamp}; la renovación con misma clave; el re-\textit{key} con
-nueva clave generada en el HSM; la modificación de datos del suscriptor; la revocación con
-razón codificada e \textit{invalidity date}; la suspensión temporal y reactivación; y el
-fin de suscripción con revocación en cascada.
+\paragraph{Et harum quidem rerum facilis est et expedita.}
+Ut enim ad minima veniam, quis nostrum exercitationem ullam corporis suscipit laboriosam, nisi ut aliquid ex ea commodi consequatur. Quis autem vel eum iure reprehenderit qui in ea voluptate velit esse quam nihil molestiae consequatur, vel illum qui dolorem eum fugiat quo voluptas nulla pariatur. At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis praesentium voluptatum deleniti atque corrupti quos dolores et quas molestias excepturi sint occaecati cupiditate non provident. Temporibus autem quibusdam et aut officiis debitis aut rerum necessitatibus saepe eveniet ut et voluptates repudiandae sint et molestiae non recusandae.
 
-\paragraph{EPIC-05 — Repositorio y Publicación.}
-Provee la infraestructura de red que aloja y distribuye los objetos producidos por la CA.
-No genera ningún objeto criptográfico sino que los recibe de los EPICs productores y los
-publica con alta disponibilidad. Una restricción crítica de diseño es que las URLs del
-repositorio se embeben dentro de cada certificado emitido para toda su vida útil; cambiar
-una URL requiere revocar y reemitir todos los certificados que la referencian, por lo que
-deben definirse antes del primer certificado de producción. El alcance comprende: el
-alojamiento de CRL y de certificados de CA raíz y Sub-CA; la publicación de la Declaración
-de Prácticas de Certificación (CPS) y las Políticas de Certificado (CP) en versión pública;
-el control de acceso diferenciado según el tipo de recurso; el \textit{health check} de
-disponibilidad de todos los \textit{endpoints}; y el registro y control de permanencia de
-las URLs durante la vida útil de los certificados que las referencian.
+\paragraph{Duis aute irure dolor in reprehenderit in voluptate.}
+Ut enim ad minima veniam, quis nostrum exercitationem ullam corporis suscipit laboriosam, nisi ut aliquid ex ea commodi consequatur. Quis autem vel eum iure reprehenderit qui in ea voluptate velit esse quam nihil molestiae consequatur, vel illum qui dolorem eum fugiat quo voluptas nulla pariatur. Et harum quidem rerum facilis est et expedita distinctio, nam libero tempore, cum soluta nobis est eligendi optio cumque nihil impedit quo minus id quod maxime placeat facere possimus. Temporibus autem quibusdam et aut officiis debitis aut rerum necessitatibus saepe eveniet ut et voluptates repudiandae sint et molestiae non recusandae. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
 
-\paragraph{EPIC-06 — Gestión de Perfiles de Certificado.}
-Administra el catálogo de perfiles de certificado de entidad final. Los valores de
-extensiones X.509 v3, algoritmos, períodos de validez y tamaños de clave no son
-discrecionales sino que están prescritos por la normativa ARCOTEL vigente para los cuatro
-perfiles regulados (persona natural, persona jurídica, representante legal y sello
-electrónico). Su alcance comprende: la definición de perfiles por tipo con sus extensiones
-(Key Usage, EKU, Basic Constraints, SAN); la asignación de OID de política bajo árbol del
-número de empresa privada de la IANA (PEN-IANA) por perfil; el versionado de perfiles sin
-afectar certificados en emisión activa bajo la versión anterior; y la validación de cada
-solicitud contra el perfil correspondiente antes de delegar la emisión al motor
-criptográfico.
+\paragraph{Et harum quidem rerum facilis est et expedita.}
+Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit, sed quia non numquam eius modi tempora incidunt ut labore et dolore magnam aliquam quaerat voluptatem. Ut enim ad minima veniam, quis nostrum exercitationem ullam corporis suscipit laboriosam, nisi ut aliquid ex ea commodi consequatur. Quis autem vel eum iure reprehenderit qui in ea voluptate velit esse quam nihil molestiae consequatur, vel illum qui dolorem eum fugiat quo voluptas nulla pariatur. At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis praesentium voluptatum deleniti atque corrupti quos dolores et quas molestias excepturi sint occaecati cupiditate non provident. Temporibus autem quibusdam et aut officiis debitis aut rerum necessitatibus saepe eveniet ut et voluptates repudiandae sint et molestiae non recusandae.
 
 % ----------------------------------------------------------------------
 \subsection{Requisitos No Funcionales}\label{subsec:nfr}
 
-Los NFRs del núcleo se derivan de seis Business Drivers. La Tabla~\ref{tab:bd_nfr_core}
-los identifica junto con su tipo y fuente normativa; el catálogo completo de ocho drivers
-se documenta en el \hyperref[anx:business_drivers]{Anexo~B}.
+Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt.
 
 \begin{table}[H]
 \centering
 \small
-\caption{Business Drivers que originan los NFRs principales}
+\caption{Duis aute irure dolor in reprehenderit in voluptate.}
 \label{tab:bd_nfr_core}
 \begin{tabular}{@{}p{0.7cm}p{6.0cm}p{2.3cm}p{3.7cm}@{}}
 \toprule
 \textbf{BD} & \textbf{Driver} & \textbf{Tipo} & \textbf{Fuente normativa} \\
 \midrule
-BD-01 & Garantizar continuidad operativa sin interrupciones que comprometan la validez legal
-        de firmas y sellos emitidos &
-        Regulatorio / Operativo &
-        LCE Art.~30(b)(c) · ARCOTEL Art.~4.7, 4.13 \\
+Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
 \midrule
-BD-03 & Proveer respuesta en tiempo real al estado de cualquier certificado emitido,
-        de forma libre y gratuita &
-        Funcional / Rendimiento &
-        Reglamento LCE Art.~12 · RFC~6960 · ARCOTEL Art.~4.12, 4.17 \\
+Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
 \midrule
-BD-04 & Garantizar trazabilidad completa e inmutable con garantías criptográficas
-        verificables por terceros sin depender del operador &
-        Regulatorio / Legal &
-        LCE Art.~31, 39(c) · ARCOTEL Art.~4.9, 4.18, 14.l · LOPDP Art.~43 \\
+Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
 \midrule
-BD-05 & Permitir la incorporación de nuevos perfiles de certificado sin reescribir el motor CA &
-        Técnico / Estratégico &
-        Objetivo de investigación \\
+Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
 \midrule
-BD-06 & Cumplir con los perfiles X.509 y la normativa ARCOTEL vigente para que los
-        certificados sean reconocidos en el ecosistema digital ecuatoriano &
-        Regulatorio / Conformidad &
-        ARCOTEL Art.~6, 7, 8, Anexos~1a--4b · CA/B Forum BR \\
+Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
 \midrule
-BD-07 & Garantizar protección de datos personales desde el diseño estructural,
-        no como capa adicional &
-        Legal / Privacidad &
-        LOPDP Art.~10(e)(f) · ARCOTEL Art.~4.2 \\
+Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-Los Business Drivers de la Tabla~\ref{tab:bd_nfr_core} concentran los mandatos regulatorios,
-operativos y de rendimiento que gobiernan el núcleo de la CA; su combinación delimita el
-espacio de calidad que los requisitos deben cubrir y explica por qué el énfasis recae en
-continuidad, trazabilidad, conformidad y privacidad. Con ese marco, los NFRs expresan los
-atributos de calidad como restricciones medibles; la Tabla~\ref{tab:nfr_core} presenta los
-once NFRs vinculados a los EPICs relevantes y el catálogo completo de 24 NFRs se incluye en
-el \hyperref[anx:nfr_completo]{Anexo~C}.
+At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis praesentium voluptatum deleniti atque corrupti quos dolores et quas molestias excepturi sint occaecati cupiditate non provident. Temporibus autem quibusdam et aut officiis debitis aut rerum necessitatibus saepe eveniet ut et voluptates repudiandae sint et molestiae non recusandae. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
 
 \small
 \begin{longtable}{@{}p{1cm}p{3.4cm}p{3.1cm}p{4cm}p{1.2cm}@{}}
-\caption{NFRs vinculados a los EPICs más relevantes del negocio}\label{tab:nfr_core}\\
+\caption{Lorem ipsum dolor sit amet, consectetur adipiscing elit.}\label{tab:nfr_core}\\
 \toprule
-\textbf{ID} & \textbf{Nombre} & \textbf{Sub-caract. ISO~25010} & \textbf{Valor objetivo} &
-\textbf{MoSCoW} \\
+\textbf{ID} & \textbf{Nombre} & \textbf{Sub-caract. ISO~25010} & \textbf{Valor objetivo} & \textbf{MoSCoW} \\
 \midrule
 \endfirsthead
 \multicolumn{5}{l}{\small\itshape Continuación de la Tabla~\thetable}\\[2pt]
 \toprule
-\textbf{ID} & \textbf{Nombre} & \textbf{Sub-caract. ISO~25010} & \textbf{Valor objetivo} &
-\textbf{MoSCoW} \\
+\textbf{ID} & \textbf{Nombre} & \textbf{Sub-caract. ISO~25010} & \textbf{Valor objetivo} & \textbf{MoSCoW} \\
 \midrule
 \endhead
 \bottomrule
 \endlastfoot
-NFR-06 & Minimización de datos personales en el ILS &
-      Confidencialidad &
-      El ILS almacena únicamente \texttt{payload\_hash}; ningún dato personal en texto
-      claro & Must \\
+Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
 \midrule
-NFR-07 & Inmutabilidad y no repudio del ILS &
-      Integridad · No repudio · Responsabilidad &
-      \textbullet~100\% de eventos críticos registrados\newline
-      \textbullet~Cadena criptográfica íntegra\newline
-      \textbullet~Sin UPDATE ni DELETE & Must \\
+Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
 \midrule
-NFR-09 & Registro de cambios de configuración &
-      Responsabilidad &
-      Todo cambio genera evento en el ILS con autor, razón y \textit{timestamp} &
-      Must \\
+Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
 \midrule
-NFR-10 & Disponibilidad del servicio de certificación &
-      Disponibilidad · Tolerancia a fallos &
-      \textbullet~Arquitectura sin punto único de fallo estructural\newline
-      \textbullet~SLA declarado por el adoptante en su CPS & Must \\
+Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
 \midrule
-NFR-12 & Continuidad de flujos críticos &
-      Tolerancia a fallos &
-      Los flujos de emisión, revocación y OCSP no dependen de intermediario asíncrono &
-      Must \\
+Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
 \midrule
-NFR-13 & Monitoreo de CRL y salud del repositorio &
-      Disponibilidad &
-      \textbullet~\textit{Health check} operativo en todos los \textit{endpoints}\newline
-      \textbullet~Alerta de \textit{nextUpdate} configurable por el adoptante & Must \\
+Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
 \midrule
-NFR-14 & Latencia de emisión de certificados &
-      Comportamiento temporal &
-      \textbullet~Motor core sin dependencias externas de identidad en ruta crítica\newline
-      \textbullet~Umbral definido por el adoptante en su CPS & Must \\
+Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
 \midrule
-NFR-18 & Incorporación de nuevos perfiles sin rediseño del motor &
-      Cap.~de ser modificado · Adaptabilidad &
-      Perfil nuevo mediante plantilla de configuración sin modificar código del motor &
-      Should \\
+Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
 \midrule
-NFR-21 & Corrección e interoperabilidad de perfiles X.509 &
-      Corrección funcional · Interoperabilidad &
-      100\% de certificados emitidos superan validación con herramienta estándar X.509 &
-      Must \\
+Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
 \midrule
-NFR-22 & OCSP de acceso libre y gratuito &
-      Interoperabilidad · Pertinencia funcional &
-      OCSPRequest sin credenciales recibe OCSPResponse válida y firmada & Must \\
+Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
 \midrule
-NFR-23 & Gestión progresiva de URLs del repositorio &
-      Disponibilidad · Cap.~de ser modificado &
-      El sistema registra qué URL está embebida en cada certificado y calcula su
-      período de operación obligatoria & Must \\
+Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
 \midrule
-NFR-25 & Consulta pública de estado de certificado por número de serie &
-      Pertinencia funcional · Disponibilidad &
-      \textbullet~Endpoint público sin autenticación retorna estado, fechas de emisión, caducidad y vigencia\newline
-      \textbullet~Campos de revocación y suspensión presentes cuando el estado lo requiere &
-      Must \\
+Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
 \end{longtable}
 \normalsize
 
-El conjunto priorizado cubre las condiciones que gobiernan la secuencia de operación: la
-emisión y revocación sin interrupciones, la disponibilidad de repositorio y OCSP, la
-corrección de perfiles X.509 y la preservación de evidencia auditada. Su formulación en
-valores objetivo traduce requisitos no funcionales en restricciones medibles que se
-validan en el prototipo y la evaluación. La Tabla~\ref{tab:qas_core} presenta los once
-escenarios de calidad que operacionalizan estos NFRs; el catálogo completo de 26 QAS se
-documenta en el \hyperref[anx:qas_completo]{Anexo~D}.
+Quis autem vel eum iure reprehenderit qui in ea voluptate velit esse quam nihil molestiae consequatur, vel illum qui dolorem eum fugiat quo voluptas nulla pariatur. At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis praesentium voluptatum deleniti atque corrupti quos dolores et quas molestias excepturi sint occaecati cupiditate non provident. Et harum quidem rerum facilis est et expedita distinctio, nam libero tempore, cum soluta nobis est eligendi optio cumque nihil impedit quo minus id quod maxime placeat facere possimus.
 
 \footnotesize
 \begin{longtable}{@{}p{0.9cm}p{1.5cm}p{3.2cm}p{2.5cm}p{4.6cm}@{}}
-\caption{QAS que operacionalizan los NFRs principales}\label{tab:qas_core}\\
+\caption{At vero eos et accusamus et iusto odio.}\label{tab:qas_core}\\
 \toprule
 \textbf{ID} & \textbf{NFR(s)} & \textbf{Estímulo} & \textbf{Artefacto} & \textbf{Medida de respuesta} \\
 \midrule
@@ -392,102 +214,31 @@ documenta en el \hyperref[anx:qas_completo]{Anexo~D}.
 \endhead
 \bottomrule
 \endlastfoot
-QAS-05 & NFR-07 · NFR-08 &
-  Inspector verifica ausencia de operaciones de modificación en el ILS y que la cadena
-  criptográfica es validable sin acceso al servidor activo &
-  Contrato de interfaz del ILS; esquema del registro append-only; diseño hash-chain;
-  integración ILS--Fabric &
-  (A) \texttt{UPDATE}/\texttt{DELETE}/\texttt{PATCH}/\texttt{TRUNCATE} en contrato = 0.
-  (B) Cadena criptográfica verificable offline con clave pública: cumple/no cumple.
-  (C) Reportes con trazabilidad completa desde solicitud hasta revocación: cumple/no cumple \\
+Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
 \midrule
-QAS-06 & NFR-06 &
-  Inspector de protección de datos audita los campos almacenados por el ILS vinculados
-  a titulares de certificados &
-  Esquema del registro inmutable --- definición de campos &
-  (1) Campos con datos personales en texto claro = 0.
-  (2) Único identificador del payload es hash SHA-256 \\
+Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
 \midrule
-QAS-09 & NFR-12 · NFR-19 &
-  Verificación de que ningún flujo crítico atraviesa mensajería asíncrona como paso
-  obligatorio y que los arcos desde contenedores críticos son publicaciones unidireccionales
-  sin espera de confirmación &
-  C4~N2 --- arcos de salida de contenedores críticos hacia mensajería; arcos de retorno &
-  (A) Arcos críticos→mensajería con semántica síncrona o espera = 0.
-  (B) Arcos de retorno mensajería→contenedores críticos = 0 \\
+Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
 \midrule
-QAS-10 & NFR-12 · NFR-17 &
-  Verificación de que el contenedor de generación de CRL no comparte dependencias de
-  diseño con el motor de emisión &
-  C4~N2 --- arcos entre contenedor de emisión y contenedor de revocación/CRL &
-  (1) Arcos de dependencia directa emisión→revocación/CRL = 0.
-  (2) Contenedor de revocación ausente en dependencias eferentes del motor de emisión \\
+Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
 \midrule
-QAS-11 & NFR-10 · NFR-12 · NFR-19 &
-  Verificación de que los contenedores de emisión y OCSP no declaran estado en memoria
-  compartido entre instancias &
-  C4~N2 --- diseño interno de contenedores de emisión y OCSP &
-  (1) Motor de emisión sin estado de sesión compartido entre instancias: cumple/no cumple.
-  (2) Contenedor OCSP sin estado de sesión compartido entre instancias: cumple/no cumple \\
+Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
 \midrule
-QAS-12 & NFR-17 · NFR-18 &
-  Incorporación de nuevo perfil de certificado mediante configuración del catálogo de
-  perfiles &
-  C4~N2/N3 --- catálogo de perfiles; motor de emisión &
-  (1) Contenedores cuyo diseño requiere cambio para incorporar el perfil = 0.
-  (2) Perfiles definidos como constantes dentro del motor de emisión = 0 \\
+Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
 \midrule
-QAS-13 & NFR-17 · NFR-18 &
-  (A) Incorporar nuevo perfil sin modificar motor ni contenedores existentes.
-  (B) Sustituir componentes de HSM, ILS o mensajería por implementaciones propias sin
-  modificar el motor &
-  C4~N3 --- catálogo de perfiles; interfaces de abstracción para HSM, ILS y mensajería &
-  (A) Dependencias del motor hacia implementaciones concretas de perfiles = 0.
-  (B) Contenedores sin interfaz sustituible declarada para sus dependencias externas = 0 \\
+Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
 \midrule
-QAS-14 & NFR-18 &
-  Incorporación de una nueva CA Subordinada a la jerarquía existente &
-  C4~N2 --- motor de emisión; catálogo de perfiles; integración HSM &
-  (1) Cambios en el motor de emisión para incorporar Sub-CA = 0.
-  (2) Perfil de Sub-CA registrado bajo el mismo contrato que cualquier otro perfil:
-  cumple/no cumple \\
+Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
 \midrule
-QAS-19 & NFR-21 &
-  Verificación de que el catálogo garantiza conformidad X.509 con RFC~5280 y Anexos
-  ARCOTEL antes de delegar la firma al motor de emisión &
-  C4~N2/N3 --- catálogo de perfiles: mecanismo de validación contra schema X.509;
-  flujo catálogo→emisión &
-  (1) Caminos en el flujo donde el motor recibe solicitud sin validación previa del
-  catálogo = 0.
-  (2) Campos obligatorios de cada perfil regulado declarados en el schema del catálogo:
-  cumple/no cumple \\
+Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
 \midrule
-QAS-21 & NFR-13 &
-  Verificación de que todos los endpoints del repositorio exponen health check y existe
-  mecanismo de alerta de \texttt{nextUpdate} &
-  Contrato de interfaz del repositorio --- endpoints declarados &
-  (1) Endpoints del repositorio sin health check = 0.
-  (2) Mecanismo de alerta de \texttt{nextUpdate} declarado en el diseño:
-  cumple/no cumple \\
+Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
 \midrule
-QAS-26 & NFR-25 &
-  Verificación de que el endpoint de consulta pública (M-07) expone los campos exigidos
-  por ARCOTEL Art.~4.7 sin requerir autenticación del consultante &
-  C4~N2/N3 --- endpoint de consulta pública por número de serie en M-07;
-  componente de publicación de metadatos en M-01 &
-  (1) Campos estado, fecha de emisión, caducidad y vigencia presentes en toda respuesta:
-  4/4.
-  (2) Fecha de revocación y motivo presentes cuando estado = revocado: cumple/no cumple.
-  (3) Endpoint sin mecanismo de autenticación del cliente: cumple/no cumple \\
+Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
 \end{longtable}
 \normalsize
 
-Estos escenarios convierten los NFRs en verificaciones observables sobre contratos,
-diagramas C4 y artefactos de diseño, fijando condiciones que pueden inspeccionarse sin
-acceder al sistema en producción. En conjunto, los QAS se consolidan como los principales
-porque capturan las exigencias regulatorias y operativas de mayor criticidad y permiten
-interpretar, de forma directa, si la arquitectura preserva auditabilidad, continuidad de
-flujos críticos y conformidad operativa de repositorio, perfiles y servicios de consulta.
+Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam eaque ipsa quae ab illo inventore veritatis.
 
 % ======================================================================
 % 6.2 — ARQUITECTURA DE REFERENCIA
@@ -495,128 +246,51 @@ flujos críticos y conformidad operativa de repositorio, perfiles y servicios de
 
 \section{Arquitectura de Referencia}\label{sec:arquitectura}
 
-Esta sección presenta el análisis de estilos arquitectónicos y los diagramas C4 de contexto
-y contenedores que conforman la arquitectura de referencia. Los artefactos TOGAF
-complementarios (Business Drivers y patrones tácticos) se documentan en los
-\hyperref[anx:business_drivers]{Anexo~B} y \hyperref[anx:tacticos_artefacts]{Anexo~F};
-el catálogo de ADRs en el \hyperref[anx:adrs]{Anexo~G}.
+Quis autem vel eum iure reprehenderit qui in ea voluptate velit esse quam nihil molestiae consequatur, vel illum qui dolorem eum fugiat quo voluptas nulla pariatur. At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis praesentium voluptatum deleniti atque corrupti quos dolores et quas molestias excepturi sint occaecati cupiditate non provident.
 
 % ----------------------------------------------------------------------
 \subsection{Nivel 1 --- Diagrama de Contexto}\label{subsec:c4_n1}
 
-El diagrama de contexto (C4 Nivel~1) representa el sistema bajo diseño y sus relaciones
-con actores externos sin revelar la estructura interna \cite{brown2022c4}. Define las
-fronteras del sistema y las dependencias externas que condicionan las decisiones de diseño.
-La Figura~\ref{fig:c4_n1} presenta el diagrama de contexto de la arquitectura de referencia.
+Temporibus autem quibusdam et aut officiis debitis aut rerum necessitatibus saepe eveniet ut et voluptates repudiandae sint et molestiae non recusandae. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
 
-\begin{figure}[H]
-\centering
-\includegraphics[width=\textwidth]{figs/resultados/c4-nv1.pdf}
-\caption[Diagrama de Contexto C4 Nivel~1]{Diagrama de Contexto: el sistema CA de referencia
-y sus actores externos.}
-\label{fig:c4_n1}
-\end{figure}
+% ----------------------------------------------------------------------
+% EJEMPLO de figura (copia el bloque, descomentalo y reemplaza ruta y caption):
+% \begin{figure}[H]
+%   \centering
+%   \includegraphics[width=\textwidth]{figs/mi_figura.pdf}
+%   \caption[Titulo corto]{Descripcion de la figura.}
+%   \label{fig:mi_figura}   % se cita con: Figura~\ref{fig:mi_figura}
+% \end{figure}
+% ----------------------------------------------------------------------
 
-Como se observa, el sistema interactúa con cuatro categorías de actores externos. Los clientes (P-01 a
-P-04) comprenden personas naturales, miembros de empresa, representantes legales y personas
-jurídicas que solicitan, renuevan o piden una revocación de certificados conforme a los cuatro perfiles
-regulados por ARCOTEL; su diversidad motiva el principio PA-07, puesto que cada perfil
-tiene extensiones X.509 distintas sin que el motor de emisión requiera cambios. Los actores
-externos comprenden a ARCOTEL (P-10), que acredita a la CA, recibe reportes, verifica
-cumplimiento normativo y aprueba nuevas raíces, y al auditor externo de seguridad (P-06),
-que accede en modo solo lectura para verificar la integridad del registro de auditoría sin
-depender del operador. Los actores internos son el operador de registro (P-08),
-que aprueba o rechaza solicitudes de certificado, y el administrador (P-09), que gestiona
-configuración, plantillas de perfil y monitoreo. Los sistemas externos incluyen la
-RA Delegada (P-07), que verifica identidad presencial y remite solicitudes ya aprobadas
-vía interfaz mTLS, y el consumidor del ILS (S-07), entidad externa que registra sus propios
-eventos en el log inmutable y recibe recibos criptográficos auditables.
+Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt. Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit, sed quia non numquam eius modi tempora incidunt ut labore et dolore magnam aliquam quaerat voluptatem. Ut enim ad minima veniam, quis nostrum exercitationem ullam corporis suscipit laboriosam, nisi ut aliquid ex ea commodi consequatur. At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis praesentium voluptatum deleniti atque corrupti quos dolores et quas molestias excepturi sint occaecati cupiditate non provident. Et harum quidem rerum facilis est et expedita distinctio, nam libero tempore, cum soluta nobis est eligendi optio cumque nihil impedit quo minus id quod maxime placeat facere possimus.
 
-JUnto a estos, seis sistemas externos adicionales completan el ecosistema: el Registro Civil (S-01) y el SRI (S-02)
-validan cédula, pasaporte y RUC de personas jurídicas; el sistema de verificación biométrica
-(S-03) ejecuta liveness detection para solicitudes por canal virtual; el proveedor de
-notificaciones (S-04) distribuye alertas multicanal en nombre de la CA; el proveedor DSCF
-(S-05) suministra dispositivos seguros de creación de firma (tokens USB, tarjetas
-inteligentes y HSM en nube); y el HSM (S-06) custodia las claves privadas de la jerarquía
-CA. Todos los sistemas externos se comunican con el sistema a través del contenedor
-M-08 External Adapter Gateway, materializando el principio PA-02.
+Temporibus autem quibusdam et aut officiis debitis aut rerum necessitatibus saepe eveniet ut et voluptates repudiandae sint et molestiae non recusandae. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam eaque ipsa quae ab illo inventore veritatis. Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit, sed quia non numquam eius modi tempora incidunt ut labore et dolore magnam aliquam quaerat voluptatem.
 
 % ----------------------------------------------------------------------
 \subsection{Análisis de Estilos Arquitectónicos y Decisión Adoptada}\label{subsec:estilos}
 
-La selección del estilo base se apoyó en la evaluación comparativa de nueve estilos
-arquitectónicos frente a diez criterios derivados de los Business Drivers y los Principios
-Arquitectónicos establecidos en la Preliminary Phase de TOGAF. Los criterios
-de peso alto cubren: bajo acoplamiento entre componentes, aislamiento de componentes
-críticos, resiliencia ante fallos localizados, modificabilidad, trazabilidad y auditabilidad,
-y consistencia transaccional de procesos críticos. Los criterios de peso medio cubren:
-gobernabilidad operacional, independencia tecnológica, gestión eficiente de carga e
-interoperabilidad con sistemas externos. Los nueve estilos evaluados siguen la clasificación
-de Richards y Ford entre estilos monolíticos (Big Ball of Mud, Layered, Pipeline y
-Microkernel) y distribuidos (Service-Based, Event-Driven, Space-Based, SOA con ESB y
-Microservices) \cite{richards2020fundamentals}. La Figura~\ref{fig:estilos_chart} sintetiza el
-resultado de la evaluación mostrando el número de criterios cumplidos y parcialmente
-cumplidos por cada estilo.
+Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam eaque ipsa quae ab illo inventore veritatis. Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt. Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit, sed quia non numquam eius modi tempora incidunt ut labore et dolore magnam aliquam quaerat voluptatem. Ut enim ad minima veniam, quis nostrum exercitationem ullam corporis suscipit laboriosam, nisi ut aliquid ex ea commodi consequatur.
 
-\begin{figure}[H]
-\centering
-\includegraphics[width=\textwidth]{figs/resultados/arquitecturas_chart-1.pdf}
-\caption[El estilo arquitectónico Service-Based es el que satisface la mayor cantidad de criterios de evaluación]
-{El estilo arquitectónico Service-Based es el que satisface la mayor cantidad de criterios de evaluación.}
-\label{fig:estilos_chart}
-\end{figure}
+Ut enim ad minima veniam, quis nostrum exercitationem ullam corporis suscipit laboriosam, nisi ut aliquid ex ea commodi consequatur. Quis autem vel eum iure reprehenderit qui in ea voluptate velit esse quam nihil molestiae consequatur, vel illum qui dolorem eum fugiat quo voluptas nulla pariatur. At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis praesentium voluptatum deleniti atque corrupti quos dolores et quas molestias excepturi sint occaecati cupiditate non provident. Et harum quidem rerum facilis est et expedita distinctio, nam libero tempore, cum soluta nobis est eligendi optio cumque nihil impedit quo minus id quod maxime placeat facere possimus. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
 
-El único estilo con cero evaluaciones negativas sobre los diez criterios es 
-Service-Based Architecture, que obtiene resultado positivo en los seis criterios de peso
-alto y en el criterio de interoperabilidad, presentando únicamente resultado parcial en el
-criterio de gestión de carga, de peso medio. Los cuatro estilos monolíticos no satisfacen
-la resiliencia ante fallos localizados porque comparten unidad de despliegue y un fallo en
-cualquier componente compromete la totalidad del sistema. Event-Driven Architecture satisface siete criterios pero resulta inadecuada como base porque
-la consistencia transaccional que los procesos de emisión y revocación exigen es incompatible
-con la eventual consistency que la asincronía introduce: la normativa vigente exige que una
-revocación se refleje de forma inmediata en las consultas OCSP, sin ventanas de consistencia
-eventual \cite{arcotel20240176}. Microservices Architecture satisface igualmente siete
-criterios, pero su operación exige infraestructura de orquestación de contenedores, mallas
-de servicios y pipelines de CI/CD avanzados cuya complejidad es prohibitiva para las CA
-ecuatorianas de tamaño medio; este factor de rechazo se documenta como ADR-06.
-
-La deficiencia de Service-Based Architecture en el criterio de gestión de carga motiva una
-composición dirigida por criterios: de Event-Driven Architecture se incorpora exclusivamente
-la cola de mensajes persistente para flujos de menor criticidad: notificaciones, alertas y
-registros no urgentes; la restricción explícita es que los flujos de emisión, revocación y
-validación OCSP permanecen síncronos (ADR-07, ADR-08), de Microkernel Architecture se adopta
-el patrón de extensión por configuración: un núcleo genérico de emisión que admite nuevos
-perfiles normativos mediante plantillas sin modificar el código del motor, con lo que cada
-nueva resolución ARCOTEL que introduzca un perfil de certificado se incorpora como
-configuración, no como rediseño (ADR-06). La arquitectura resultante hereda los cero
-resultados negativos de Service-Based Architecture y añade cobertura plena sobre el criterio
-de gestión de carga mediante la cola asíncrona acotada a flujos no críticos.
+Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit, sed quia non numquam eius modi tempora incidunt ut labore et dolore magnam aliquam quaerat voluptatem. Ut enim ad minima veniam, quis nostrum exercitationem ullam corporis suscipit laboriosam, nisi ut aliquid ex ea commodi consequatur. At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis praesentium voluptatum deleniti atque corrupti quos dolores et quas molestias excepturi sint occaecati cupiditate non provident. Temporibus autem quibusdam et aut officiis debitis aut rerum necessitatibus saepe eveniet ut et voluptates repudiandae sint et molestiae non recusandae. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
 
 % ----------------------------------------------------------------------
 \subsection{Visión Arquitectónica}\label{subsec:vision_arq}
 
-La Architecture Vision Statement sintetiza el resultado esperado de la arquitectura con
-independencia de las decisiones de implementación.
+Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam eaque ipsa quae ab illo inventore veritatis.
 
 \begin{quote}\itshape
-Una Autoridad de Certificación acreditada en Ecuador que adopte esta arquitectura de
-referencia opera sobre un motor de certificación modular y agnóstico al perfil: un conjunto
-de servicios con responsabilidad única, comunicados exclusivamente mediante contratos de
-interfaz explícitos y estándares abiertos, donde ningún cambio normativo de ARCOTEL requiere
-rediseñar el motor de emisión, solo configurar una nueva plantilla. Los flujos operativos
-secundarios se procesan de forma desacoplada sin comprometer la integridad ni la latencia de
-las operaciones críticas. El resultado es reducción estructural del acoplamiento respecto a
-sistemas PKI monolíticos, disponibilidad continua de validación, latencia de emisión
-controlada, auditabilidad criptográficamente comprobable, cumplimiento normativo continuo con
-ARCOTEL-2024-0176 y protección de datos personales por diseño conforme a la LOPDP.
+Temporibus autem quibusdam et aut officiis debitis aut rerum necessitatibus saepe eveniet ut et voluptates repudiandae sint et molestiae non recusandae. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam eaque ipsa quae ab illo inventore veritatis. Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt.
+
 \end{quote}
 
-La Tabla~\ref{tab:restricciones_arq} resume las restricciones externas (regulatorias y de
-seguridad) y las decisiones de diseño que las materializan estructuralmente.
+Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt.
 
 \small
 \begin{longtable}{@{}p{0.8cm}p{2.0cm}p{9.0cm}@{}}
-\caption{Restricciones arquitectónicas y decisiones de diseño}\label{tab:restricciones_arq}\\
+\caption{Neque porro quisquam est, qui dolorem ipsum quia.}\label{tab:restricciones_arq}\\
 \toprule
 \textbf{ID} & \textbf{Tipo} & \textbf{Descripción} \\
 \midrule
@@ -628,45 +302,40 @@ seguridad) y las decisiones de diseño que las materializan estructuralmente.
 \endhead
 \bottomrule
 \endlastfoot
-RC-01 & Externa & RSA $\geq$\,2\,048\,bits usuarios finales, $\geq$\,4\,096\,bits infraestructura CA; SHA-256 mínimo (ARCOTEL Art.~13, 23) \\
+Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
 \midrule
-RC-02 & Externa & HSM FIPS~140-2 Level~3 y/o Common Criteria EAL4+ (ARCOTEL Art.~9) \\
+Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
 \midrule
-RC-03 & Externa & OCSP libre, gratuito, en tiempo real, sin autenticación de cliente (ARCOTEL Art.~4.17) \\
+Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
 \midrule
-RC-04 & Externa & Claves privadas CA nunca en claro fuera del HSM; la CA no accede a la clave privada del suscriptor (ARCOTEL Art.~4.6, 11b) \\
+Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
 \midrule
-RC-05 & Externa & Perfiles conformes a Anexos 1a--4b y 5--8 de ARCOTEL-2024-0176 más perfiles de extensibilidad \\
+Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
 \midrule
-RC-06 & Externa & Datos personales limitados a la necesidad del tratamiento; supresión al vencer la finalidad (LOPDP Art.~10(e)(i)) \\
+Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
 \midrule
-RC-07 & Externa & Publicación permanente e ininterrumpida de DPC, políticas, certificados emitidos, revocados y suspendidos (ARCOTEL Art.~4.7) \\
+Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
 \midrule
-D-01 & Diseño & El ILS registra hash criptográfico del payload; ningún dato personal en texto claro (PA-08) \\
+Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
 \midrule
-D-02 & Diseño & Toda comunicación inter-servicio se autentica con mTLS; certificados emitidos por la propia CA (PA-04) \\
+Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
 \midrule
-D-03 & Diseño & Cada servicio accede solo a su propio esquema de base de datos; ningún acceso cruzado a datos persistentes de otro (PA-02) \\
+Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
 \midrule
-D-04 & Diseño & El Message Broker Service es el canal principal de comunicación; async preferente; sync limitado a HSM, transacciones ACID, OCSP y queries con respuesta inmediata (ADR-31) \\
+Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
 \end{longtable}
 \normalsize
 
-Estas decisiones clave explican por qué el diagrama de contenedores adopta su forma actual
-y cómo cada contenedor se justifica por una decisión trazable. En conjunto, permiten
-interpretar la arquitectura como una secuencia de elecciones estructurales coherentes y
-alineadas con principios y restricciones previas.
+Quis autem vel eum iure reprehenderit qui in ea voluptate velit esse quam nihil molestiae consequatur, vel illum qui dolorem eum fugiat quo voluptas nulla pariatur. Et harum quidem rerum facilis est et expedita distinctio, nam libero tempore, cum soluta nobis est eligendi optio cumque nihil impedit quo minus id quod maxime placeat facere possimus.
 
 % ----------------------------------------------------------------------
 \subsection{Principios Arquitectónicos}\label{subsec:principios_arq}
 
-Los ocho principios arquitectónicos gobiernan toda decisión técnica de la arquitectura de
-referencia y establecen las restricciones que ninguna decisión puede violar. El catálogo
-completo con justificaciones e implicaciones se presenta en la Tabla~\ref{tab:principios_inline}.
+Quis autem vel eum iure reprehenderit qui in ea voluptate velit esse quam nihil molestiae consequatur, vel illum qui dolorem eum fugiat quo voluptas nulla pariatur. At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis praesentium voluptatum deleniti atque corrupti quos dolores et quas molestias excepturi sint occaecati cupiditate non provident.
 
 \small
 \begin{longtable}{@{}p{0.75cm}p{3.0cm}p{8.0cm}@{}}
-\caption{Principios arquitectónicos adoptados}\label{tab:principios_inline}\\
+\caption{At vero eos et accusamus et iusto odio.}\label{tab:principios_inline}\\
 \toprule
 \textbf{ID} & \textbf{Enunciado} & \textbf{Implicación principal} \\
 \midrule
@@ -678,40 +347,34 @@ completo con justificaciones e implicaciones se presenta en la Tabla~\ref{tab:pr
 \endhead
 \bottomrule
 \endlastfoot
-PA-01 & Primacía de la norma & Algoritmos criptográficos, perfiles de certificado y mecanismos de validación están prescritos por LCE y ARCOTEL; no son elegibles libremente \\
+Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
 \midrule
-PA-02 & Separación de responsabilidades & Cada contenedor tiene una sola responsabilidad; ninguno accede directamente a los datos persistentes de otro; los contratos de interfaz son el único canal de comunicación \\
+Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
 \midrule
-PA-03 & Custodia criptográfica en hardware & Ninguna clave privada de la jerarquía CA existe en claro fuera de un HSM FIPS~140-2~L3; toda operación criptográfica se ejecuta dentro del perímetro del hardware \\
+Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
 \midrule
-PA-04 & Zero Trust & Toda comunicación inter-servicio se autentica con mTLS; los certificados de cliente son emitidos por la propia CA \\
+Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
 \midrule
-PA-05 & Trazabilidad e inmutabilidad & Toda operación del ciclo de vida genera una entrada en el ILS con encadenamiento criptográfico; el registro es comprobable offline sin acceso a la BD operativa \\
+Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
 \midrule
-PA-06 & Neutralidad tecnológica & La arquitectura prescribe estándares (PKCS\#11, RFC~6960, RFC~3161) e interfaces; el adoptante elige los productos que los implementen \\
+Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
 \midrule
-PA-07 & Extensibilidad sin rediseño & La incorporación de un nuevo perfil de certificado se limita a crear una plantilla en el catálogo; el motor de emisión no se modifica, no se recompila, no se redespliega \\
+Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
 \midrule
-PA-08 & Privacidad por diseño & El ILS registra el hash criptográfico del payload, no datos personales en claro; los datos del suscriptor residen exclusivamente en el esquema del servicio que los requiere; la privacidad por diseño implica además que los datos personales almacenados deben protegerse mediante cifrado en reposo \\
+Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
 \end{longtable}
 \normalsize
 
-La tabla explicita la partición del sistema en unidades de despliegue con responsabilidades
-claras y protocolos definidos, lo que facilita interpretar las fronteras de cambio y de
-datos. En conjunto, se observa el equilibrio entre flujos síncronos críticos y canales
-asíncronos, preservando aislamiento y trazabilidad sin comprometer la operación normativa.
+Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit, sed quia non numquam eius modi tempora incidunt ut labore et dolore magnam aliquam quaerat voluptatem. Ut enim ad minima veniam, quis nostrum exercitationem ullam corporis suscipit laboriosam, nisi ut aliquid ex ea commodi consequatur.
 
 % ----------------------------------------------------------------------
 \subsection{Decisiones Arquitectónicas Clave}\label{subsec:adrs_principales}
 
-Las decisiones arquitectónicas clave se formalizan como ADRs siguiendo la metodología TOGAF
-ADM (ADR-02). La Tabla~\ref{tab:adrs_core} recoge los diez ADRs que directamente condicionan
-la estructura del diagrama de contenedores (C4~N2); el catálogo completo de 39 ADRs se
-documenta en el \hyperref[anx:adrs]{Anexo~G}.
+Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
 
 \footnotesize
 \begin{longtable}{@{}p{0.9cm}p{4.5cm}p{3.0cm}p{3.4cm}@{}}
-\caption{ADRs con impacto directo en el diseño de contenedores (C4~N2)}\label{tab:adrs_core}\\
+\caption{Nemo enim ipsam voluptatem quia voluptas sit aspernatur.}\label{tab:adrs_core}\\
 \toprule
 \textbf{ADR} & \textbf{Decisión} & \textbf{Consecuencia} & \textbf{ADRs relacionados} \\
 \midrule
@@ -723,82 +386,40 @@ documenta en el \hyperref[anx:adrs]{Anexo~G}.
 \endhead
 \bottomrule
 \endlastfoot
-ADR-04 & HSM FIPS~140-2~L3 obligatorio para claves CA y par del suscriptor generado por la CA &
-  Crea el contenedor M-04 HSM Integration Service como única interfaz PKCS\#11 al hardware &
-  PA-03 · RC-02 \\
+Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
 \midrule
-ADR-06 & Adoptar estilo compuesto EA-10 (Service-Based + elementos de Event-Driven y Microkernel) &
-  10 contenedores de grano grueso con BD compartida DS-01; arquitectura sin microservicios &
-  ADR-07 · ADR-08 · ADR-31 \\
+Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
 \midrule
-ADR-07 & RA Service (BFF) y RA Portal (SPA) como unidades de despliegue separadas &
-  Crea M-06 RA Service y M-09 RA Portal como contenedores independientes; RBAC centralizado en M-06 &
-  ARCOTEL-2024-0176 \\
+Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
 \midrule
-ADR-08 & Microkernel en catálogo de perfiles: núcleo genérico más plantillas intercambiables por perfil &
-  Nuevo perfil ARCOTEL = nueva plantilla de configuración; sin modificar M-01 CA Core Service &
-  PA-07 · RC-05 \\
+Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
 \midrule
-ADR-09 & Modelo de aislamiento HSM de 6 capas (Monitor Object + Scoped Locking + Lifecycle Callback) &
-  M-04 implementa zeroize FIPS~140-2 al destruir sesiones PKCS\#11; protección ante excepciones no manejadas &
-  ADR-13 · ADR-22 \\
+Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
 \midrule
-ADR-23 & External Adapter Gateway como Anti-Corruption Layer (ACL) stateless con Plugin Registry &
-  Crea M-08 External Adapter Gateway; M-06 no invoca APIs externas directamente (Ce RA Service $\leq$\,5) &
-  ADR-25 · PA-02 \\
+Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
 \midrule
-ADR-27 & Message Broker Service con interfaz abstracta \texttt{IMessageBroker} como canal principal &
-  Crea M-10 Message Broker Service; productores publican vía \texttt{IMessageBroker.publish()} post-commit &
-  ADR-31 · ADR-32 · ADR-35 \\
+Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
 \midrule
-ADR-31 & Comunicación asíncrona preferente; sync limitado a HSM, ACID, OCSP, queries con respuesta inmediata &
-  Supersede restricciones previas sobre sync; interacciones nuevas asumen async por defecto &
-  ADR-27 · D-04 \\
+Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
 \midrule
-ADR-33 & Ce (Acoplamiento Eferente) $\leq$\,5 como métrica de diseño a nivel C4~N2 &
-  Ningún contenedor referencia más de 5 contenedores externos; Ce mide acoplamiento saliente &
-  NFR-19 · PA-02 \\
+Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
 \midrule
-ADR-39 & TTL caché OCSP = 5s con invalidación activa síncrona por CRL Service (Observer síncrono) &
-  Ventana máxima de inconsistencia 5s; invalidación activa reduce a $<$\,1s nominal en revocación &
-  RC-03 · NFR-06 \\
+Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
 \end{longtable}
 \normalsize
 
-Los diez ADRs expuestos operan como restricciones de diseño: cada contenedor del diagrama
-C4~N2 existe porque al menos un ADR lo crea o delimita su alcance, y ningún contenedor
-puede modificar su protocolo de comunicación sin revisar el ADR correspondiente. La
-trazabilidad completa entre decisiones, consecuencias y métricas de acoplamiento garantiza
-que la arquitectura sea auditable en su proceso de construcción, no solo en su resultado.
+Temporibus autem quibusdam et aut officiis debitis aut rerum necessitatibus saepe eveniet ut et voluptates repudiandae sint et molestiae non recusandae. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.
 
 % ----------------------------------------------------------------------
 \subsection{Nivel 2 --- Diagrama de Contenedores}\label{subsec:c4_n2}
 
-Con la visión arquitectónica, los principios y los ADRs establecidos, el diagrama de
-contenedores materializa esas decisiones en unidades de despliegue concretas. La
-Figura~\ref{fig:c4_n2} presenta el diagrama completo.
+Ut enim ad minima veniam, quis nostrum exercitationem ullam corporis suscipit laboriosam, nisi ut aliquid ex ea commodi consequatur. At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis praesentium voluptatum deleniti atque corrupti quos dolores et quas molestias excepturi sint occaecati cupiditate non provident.
 
-\begin{figure}[H]
-\centering
-\includegraphics[width=\textwidth]{figs/resultados/c4-nv2.pdf}
-\caption[Diagrama de Contenedores C4 Nivel~2]{Diagrama de Contenedores de la arquitectura
-de referencia.}
-\label{fig:c4_n2}
-\end{figure}
-
-El diagrama expone diez contenedores de grano grueso organizados alrededor de una base de
-datos compartida (DS-01) con esquemas aislados por contenedor. El canal de comunicación
-principal es asíncrono vía \texttt{IMessageBroker} (ADR-27); las interacciones síncronas
-quedan acotadas a las operaciones con el HSM, las transacciones ACID de revocación, el
-protocolo OCSP y las consultas con respuesta inmediata. El estilo compuesto EA-10 es
-visible en la coexistencia de contenedores de servicio grueso (M-01 a M-09) con un
-contenedor de mensajería desacoplada (M-10 Message Broker Service) y un núcleo de catálogo
-extensible por configuración (ADR-08). La Tabla~\ref{tab:contenedores} detalla la
-responsabilidad y protocolo principal de cada contenedor.
+Et harum quidem rerum facilis est et expedita distinctio, nam libero tempore, cum soluta nobis est eligendi optio cumque nihil impedit quo minus id quod maxime placeat facere possimus. Temporibus autem quibusdam et aut officiis debitis aut rerum necessitatibus saepe eveniet ut et voluptates repudiandae sint et molestiae non recusandae. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt.
 
 \footnotesize
 \begin{longtable}{@{}p{2.3cm}p{1.4cm}p{5.5cm}p{2.5cm}@{}}
-\caption{Contenedores de la arquitectura de referencia}\label{tab:contenedores}\\
+\caption{Nemo enim ipsam voluptatem quia voluptas sit aspernatur.}\label{tab:contenedores}\\
 \toprule
 \textbf{Contenedor} & \textbf{Tipo} & \textbf{Responsabilidad} & \textbf{Protocolo principal} \\
 \midrule
@@ -810,218 +431,60 @@ responsabilidad y protocolo principal de cada contenedor.
 \endhead
 \bottomrule
 \endlastfoot
-M-01 CA Core Service & App &
-  Gestiona la emisión de certificados X.509 y coordina la generación de claves y la firma
-  digital con el HSM &
-  REST/HTTPS mTLS · Síncr.\newline \texttt{IMessageBroker} · Asíncr. \\
+Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
 \midrule
-M-02 Validation Service (OCSP) & App &
-  Responde consultas de estado de certificados conforme RFC~6960; caché pre-firmada para
-  SLA bajo carga (TTL 5s, invalidación activa) &
-  REST/HTTPS · Síncr. (OCSP queries)\newline \texttt{IMessageBroker} · Asíncr. \\
+Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
 \midrule
-M-03 CRL / Revocation Service & App &
-  Administra la revocación y suspensión de certificados; publica CRLs ordinarias y
-  extraordinarias; notifica a OCSP síncronamente al revocar &
-  REST/HTTPS mTLS · Síncr.\newline \texttt{IMessageBroker} · Asíncr. \\
+Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
 \midrule
-M-04 HSM Integration Service & App &
-  Abstrae y coordina el acceso al HSM para ejecución de operaciones criptográficas;
-  FIPS~140-2~L3; quórum 3-of-5 para claves CA &
-  PKCS\#11 v2.40 (driver HSM)\newline REST/HTTPS mTLS · Síncr. \\
+Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
 \midrule
-M-05 Immutable Log Service (ILS) & App &
-  Registra evidencias auditables con encadenamiento criptográfico; confirmación selectiva
-  de eventos de alta relevancia regulatoria en Hyperledger Fabric 2.5 &
-  REST/HTTPS mTLS · Síncr. (firma HSM)\newline \texttt{IMessageBroker} · Asíncr. (consume eventos) \\
+Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
 \midrule
-M-06 RA Service (BFF) & App &
-  Gestiona la validación de identidad y la aprobación de solicitudes de certificado;
-  Backend for Frontend con RBAC conforme ARCOTEL-2024-0176 &
-  REST/HTTPS mTLS · Síncr.\newline \texttt{IMessageBroker} · Asíncr. \\
+Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
 \midrule
-M-07 Repository Service & App &
-  Publica certificados, CRLs, cadenas de confianza y documentos de política de la CA;
-  endpoint de consulta pública por número de serie (ARCOTEL Art.~4.7) &
-  LDAP / HTTP · Síncr. (CDP/AIA)\newline \texttt{IMessageBroker} · Asíncr. (consume eventos) \\
+Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
 \midrule
-M-08 External Adapter Gateway & Infra. &
-  Anti-Corruption Layer (ACL) stateless con Plugin Registry para sistemas externos
-  (Registro Civil S-01, SRI S-02, biométrico S-03, TSA S-04); Ce~=~1 &
-  REST/HTTPS · Síncr. (adaptadores)\newline \texttt{IMessageBroker} · Asíncr. (consume eventos) \\
+Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
 \midrule
-M-09 RA Portal & Web &
-  SPA (Single Page Application) para operadores y suscriptores; stateless, sin BD propia;
-  interactúa exclusivamente con M-06 &
-  REST/HTTPS · Síncr.\newline WebSocket (notificaciones tiempo real) \\
+Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
 \midrule
-M-10 Message Broker Service & Infra. &
-  Canal principal de comunicación asíncrona entre contenedores mediante publicación y
-  suscripción de eventos; interfaz abstracta \texttt{IMessageBroker} (ADR-27, ADR-32) &
-  \texttt{IMessageBroker} · Asíncr. \\
+Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
 \midrule
-DS-01 CA Shared Database & BD &
-  Almacena los datos operacionales de los servicios de certificación; esquemas aislados por
-  servicio (Data Mapper ADR-30); sin acceso cruzado entre contenedores &
-  Base de datos · Schemas aislados \\
+Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
 \midrule
-DS-02 Immutable Audit Log & BD &
-  Almacena las evidencias inmutables de auditoría con encadenamiento criptográfico y firma
-  HSM; modo append-only; implementación: Hyperledger Fabric 2.5 &
-  Base de datos · Append-only \\
+Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
 \midrule
-DS-03 LDAP Directory & Directorio &
-  Almacena y publica certificados, CRLs y cadenas de confianza conforme RFC~5280 (CDP/AIA);
-  acceso público de lectura &
-  LDAP \\
+Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
 \end{longtable}
 \normalsize
 
-La arquitectura materializa el principio PA-02 mediante la asignación de un único esquema de
-datos por contenedor: ningún servicio accede directamente a los datos persistentes de otro
-(ADR-30). La comunicación asíncrona entre contenedores se realiza mediante publicación
-directa post-commit a través de la interfaz \texttt{IMessageBroker} (ADR-27, ADR-32);
-los productores dependen únicamente del contrato abstracto, sin conocer a sus suscriptores.
-El broker opera como capa de transporte no confiable por diseño: la integridad de los
-mensajes queda garantizada por la firma del \textit{Command} (ADR-10) y el token de un
-solo uso (ADR-28), que permiten al \textit{CommandProcessor} rechazar cualquier mensaje
-manipulado o reinyectado sin ejecutar ninguna operación de dominio. 
-El HSM permanece fuera del perímetro del sistema
-como sistema externo, accedido exclusivamente por M-04 mediante PKCS\#11~v2.40,
-materializando el principio PA-03. La métrica de acoplamiento eferente Ce se mantiene en
-promedio de 2,7 arcos por contenedor; la única excepción es M-06 con Ce~=~6, valor que
-supera el umbral Ce~$\leq$~5 de ADR-33 y está documentado como consecuencia aceptada de su
-rol de orquestador BFF del portal RA.
+Et harum quidem rerum facilis est et expedita distinctio, nam libero tempore, cum soluta nobis est eligendi optio cumque nihil impedit quo minus id quod maxime placeat facere possimus. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam eaque ipsa quae ab illo inventore veritatis.
 
 % ----------------------------------------------------------------------
 \subsection{Nivel 3 --- Diagramas de Componentes}\label{subsec:c4_n3}
 
-Los diagramas de componentes (C4 Nivel~3) detallan la estructura interna de cada contenedor
-arquitectónicamente relevante, describiendo cómo se organiza la lógica interna y cómo se
-materializan los patrones tácticos establecidos en los ADRs de la Sección~\ref{subsec:adrs_principales}
-y documentados en el \hyperref[anx:tacticos_artefacts]{Anexo~F}.
-Se examinan los cuatro contenedores con mayor relevancia estructural: M-01 CA Core Service,
-M-02 Validation Service (OCSP), M-03 CRL / Revocation Service y M-05 Immutable Log Service.
+Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam eaque ipsa quae ab illo inventore veritatis.
 
 % --- M-01 -----------------------------------------------------------
-El primer contenedor, M-01 CA Core Service, concentra la lógica de emisión de certificados X.509.
-La Figura~\ref{fig:c4_n3_m01} expone sus once componentes internos organizados en tres
-capas: la entrada REST/mTLS (\texttt{CertificateIssuanceController}), la orquestación
-transaccional (\texttt{IssuanceOrchestrator}, \texttt{IssuancePipeline} y
-\texttt{SubjectDataFormatValidator}) y la capa de persistencia y publicación
-(\texttt{CertificateRepository}, \texttt{EventPublisher} y \texttt{CertificatePublisher}).
+Et harum quidem rerum facilis est et expedita distinctio, nam libero tempore, cum soluta nobis est eligendi optio cumque nihil impedit quo minus id quod maxime placeat facere possimus. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
 
-\begin{figure}[H]
-\centering
-\includegraphics[width=\textwidth]{figs/resultados/m01-c4-nv3.pdf}
-\caption[C4 N3: M-01 CA Core Service]{Diagrama de componentes del contenedor M-01 CA Core Service.}
-\label{fig:c4_n3_m01}
-\end{figure}
-
-El diseño revela varios invariantes tácticos. La restricción de acoplamiento Ce~$\leq$~5
-(ADR-33) se mantiene al concentrar todo el acceso a la base de datos en el único
-\texttt{CertificateRepository} y el acceso al HSM en \texttt{HSMAdapter}. El
-\texttt{ProfileCatalog} actúa como punto de extensión del núcleo Microkernel (ADR-08):
-nuevos perfiles de emisión se incorporan sin modificar la lógica del \texttt{IssuancePipeline}.
-El \texttt{CertificateStateManager} formaliza la máquina de estados X.509
-(\texttt{PENDING $\rightarrow$ ACTIVE $\rightarrow$ SUSPENDED $\rightarrow$ REVOKED
-$\rightarrow$ EXPIRED}) como componente independiente, separando el ciclo de vida del acto
-de emisión. El \texttt{EventPublisher} publica eventos directamente post-commit vía
-\texttt{IMessageBroker} (ADR-27), en coherencia con la latencia de emisión exigida por NFR-05. 
+Quis autem vel eum iure reprehenderit qui in ea voluptate velit esse quam nihil molestiae consequatur, vel illum qui dolorem eum fugiat quo voluptas nulla pariatur. Et harum quidem rerum facilis est et expedita distinctio, nam libero tempore, cum soluta nobis est eligendi optio cumque nihil impedit quo minus id quod maxime placeat facere possimus. Temporibus autem quibusdam et aut officiis debitis aut rerum necessitatibus saepe eveniet ut et voluptates repudiandae sint et molestiae non recusandae. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
 
 % --- M-02 -----------------------------------------------------------
-El contenedor M-02 complementa a M-01 desde
-la perspectiva de los clientes verificadores: mientras M-01 emite, M-02 responde a las
-consultas de estado de los certificados activos. La Figura~\ref{fig:c4_n3_m02} detalla 
-los nueve componentes del contenedor M-02 Validation
-Service (OCSP), responsable de responder a consultas de estado de certificados en tiempo
-real conforme al protocolo RFC~6960. El diagrama permite observar cómo el diseño resuelve
-simultáneamente dos requisitos en tensión: alta disponibilidad de respuesta y coherencia
-inmediata tras una revocación.
+Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit, sed quia non numquam eius modi tempora incidunt ut labore et dolore magnam aliquam quaerat voluptatem. Ut enim ad minima veniam, quis nostrum exercitationem ullam corporis suscipit laboriosam, nisi ut aliquid ex ea commodi consequatur. At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis praesentium voluptatum deleniti atque corrupti quos dolores et quas molestias excepturi sint occaecati cupiditate non provident.
 
-\begin{figure}[H]
-\centering
-\includegraphics[width=\textwidth]{figs/resultados/m02-c4-nv3.pdf}
-\caption[C4 N3: M-02 Validation Service (OCSP)]{Diagrama de componentes del contenedor M-02 Validation Service (OCSP).}
-\label{fig:c4_n3_m02}
-\end{figure}
-
-El componente más crítico en términos de rendimiento es \texttt{OcspResponseCache}, que
-almacena en memoria las respuestas OCSP ya firmadas y reduce las invocaciones al HSM a
-solo las entradas sin caché. La gestión de invalidación es explícita y síncrona:
-\texttt{CacheInvalidationController} recibe notificación directa de M-03 post-revocación,
-y \texttt{CacheInvalidationProcessor} elimina la entrada del certificado revocado sin
-consultar la base de datos, minimizando el acoplamiento eferente de ese flujo.
-\texttt{OcspResponseBuilder} es el único propietario de la estructura
-\texttt{BasicOCSPResponse}, manteniendo la conformidad con RFC~6960 en un único punto.
-El \texttt{OcspSigningGateway} actúa como adaptador puro hacia M-04 (HSM Integration
-Service), garantizando que las respuestas OCSP se firmen con la clave delegada del OCSP
-Responder y nunca con la clave raíz de la CA. 
+Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit, sed quia non numquam eius modi tempora incidunt ut labore et dolore magnam aliquam quaerat voluptatem. Ut enim ad minima veniam, quis nostrum exercitationem ullam corporis suscipit laboriosam, nisi ut aliquid ex ea commodi consequatur. Quis autem vel eum iure reprehenderit qui in ea voluptate velit esse quam nihil molestiae consequatur, vel illum qui dolorem eum fugiat quo voluptas nulla pariatur. At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis praesentium voluptatum deleniti atque corrupti quos dolores et quas molestias excepturi sint occaecati cupiditate non provident. Temporibus autem quibusdam et aut officiis debitis aut rerum necessitatibus saepe eveniet ut et voluptates repudiandae sint et molestiae non recusandae.
 
 % --- M-03 -----------------------------------------------------------
-La siguiente figura examina M-03, el
-contenedor que origina las notificaciones de revocación que M-02 consume. 
-La Figura~\ref{fig:c4_n3_m03} presenta los diez componentes de M-03 CRL / Revocation
-Service. Este contenedor tiene responsabilidad dual: procesar comandos de revocación
-individuales y generar periódicamente las listas de certificados revocados (CRL) conformes
-al estándar RFC~5280. El diagrama expone cómo ambos flujos comparten la misma base de datos
-pero operan con lógicas de control independientes.
+Ut enim ad minima veniam, quis nostrum exercitationem ullam corporis suscipit laboriosam, nisi ut aliquid ex ea commodi consequatur. At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis praesentium voluptatum deleniti atque corrupti quos dolores et quas molestias excepturi sint occaecati cupiditate non provident. Temporibus autem quibusdam et aut officiis debitis aut rerum necessitatibus saepe eveniet ut et voluptates repudiandae sint et molestiae non recusandae.
 
-\begin{figure}[H]
-\centering
-\includegraphics[width=\textwidth]{figs/resultados/m03-c4-nv3.pdf}
-\caption[C4 N3: M-03 CRL / Revocation Service]{Diagrama de componentes del contenedor M-03 CRL / Revocation Service.}
-\label{fig:c4_n3_m03}
-\end{figure}
-
-La dualidad de responsabilidades se refleja en dos flujos internos diferenciados. En el flujo
-de revocación, síncrono y transaccional, \texttt{RevocationController} recibe y valida la solicitud entrante,
-\texttt{RevocationCommandProcessor} ejecuta la transacción ACID sobre la base de datos,
-\texttt{CertificateStateManager} actualiza el estado del certificado y
-\texttt{EventPublisher} notifica el evento vía \texttt{IMessageBroker} (ADR-27). El flujo
-de generación de CRL es asíncrono y basado en temporizador: \texttt{CrlSchedulerAdapter}
-dispara la generación en los intervalos configurados, \texttt{CrlGenerationOrchestrator}
-coordina el ciclo, \texttt{CrlBuilder} construye el \texttt{TBSCertList} a partir del
-estado actual de certificados revocados, \texttt{CrlSigningGateway} firma la CRL en el HSM
-y \texttt{CrlPublicationAdapter} la publica en el repositorio público. El
-\texttt{RevocationRepository} es el único punto de acceso a la base de datos en ambos
-flujos, cumpliendo la restricción Ce~$\leq$~5 de ADR-33.
-
+Ut enim ad minima veniam, quis nostrum exercitationem ullam corporis suscipit laboriosam, nisi ut aliquid ex ea commodi consequatur. At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis praesentium voluptatum deleniti atque corrupti quos dolores et quas molestias excepturi sint occaecati cupiditate non provident. Et harum quidem rerum facilis est et expedita distinctio, nam libero tempore, cum soluta nobis est eligendi optio cumque nihil impedit quo minus id quod maxime placeat facere possimus. Temporibus autem quibusdam et aut officiis debitis aut rerum necessitatibus saepe eveniet ut et voluptates repudiandae sint et molestiae non recusandae. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
 
 % --- M-05 -----------------------------------------------------------
-Finalmente, el contenedor de mayor densidad
-estructural es M-05 Immutable Log Service, que registra los eventos generados por los tres
-contenedores anteriores. La Figura~\ref{fig:c4_n3_m05} expone los catorce componentes del contenedor M-05
-Immutable Log Service (ILS), el de mayor complejidad interna de la arquitectura. Su
-propósito es garantizar la trazabilidad regulatoria de todos los eventos de la CA mediante
-un log hash-encadenado con notarización selectiva en Hyperledger Fabric (ADR-29).
+Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam eaque ipsa quae ab illo inventore veritatis.
 
-\begin{figure}[H]
-\centering
-\includegraphics[width=\textwidth]{figs/resultados/m05-c4-nv3.pdf}
-\caption[C4 N3: M-05 Immutable Log Service]{Diagrama de componentes del contenedor M-05 Immutable Log Service (ILS).}
-\label{fig:c4_n3_m05}
-\end{figure}
-
-El motor de hash-encadenado (\texttt{HashChainEngine}) es el núcleo estructural del
-contenedor: calcula
-$\mathit{entry\_hash} = \textup{SHA-256}(\mathit{data\_hash} \| \mathit{prev\_hash} \|
-\mathit{seq} \| \mathit{ts})$ para cada entrada, garantizando que cualquier modificación
-retroactiva rompa la cadena completa de forma detectable. El verificador de integridad
-(\texttt{ChainIntegrityVerifier}) comprueba la cadena completa en el arranque del servicio
-con lógica \textit{fail-fast}: el ILS no acepta escrituras si detecta una brecha en la
-secuencia. La integración con Hyperledger Fabric se implementa con un patrón
-\textit{fire-and-forget} en \texttt{FabricEndorsementProvider}, acompañado de reintentos
-gestionados por \texttt{FabricRetryQueue}, evitando que la latencia de la red Fabric afecte
-el tiempo de respuesta del registro principal. El puente de firma HSM
-(\texttt{HsmSigningBridge}) captura la firma y el \texttt{hsm\_timestamp} UTC para cada
-entrada, añadiendo no repudio criptográfico. El acceso al log se gobierna por roles
-(\texttt{CA\_OPERATOR}, \texttt{EXTERNAL\_SOURCE} y \texttt{EXTERNAL\_AUDITOR}) a través
-del gestor de acceso (\texttt{AuditAccessManager}), separando la escritura y la consulta
-en dos controladores con acoplamiento nulo entre sí. La notarización en Fabric complementa
-el hash-chain local de PA-05 con una segunda capa de inmutabilidad distribuida, cuya
-solidez descansa en la descentralización real de la red y en la independencia entre
-sus organizaciones participantes.
+Quis autem vel eum iure reprehenderit qui in ea voluptate velit esse quam nihil molestiae consequatur, vel illum qui dolorem eum fugiat quo voluptas nulla pariatur. At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis praesentium voluptatum deleniti atque corrupti quos dolores et quas molestias excepturi sint occaecati cupiditate non provident. Et harum quidem rerum facilis est et expedita distinctio, nam libero tempore, cum soluta nobis est eligendi optio cumque nihil impedit quo minus id quod maxime placeat facere possimus. Temporibus autem quibusdam et aut officiis debitis aut rerum necessitatibus saepe eveniet ut et voluptates repudiandae sint et molestiae non recusandae. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
 
 % ======================================================================
 % 6.3 — PROTOTIPO: MÓDULO DE AUDITORÍA (ILS)
@@ -1029,63 +492,18 @@ sus organizaciones participantes.
 
 \section{Prototipo: Módulo de Auditoría (ILS)}\label{sec:prototipo}
 
-Esta sección presenta el diagrama de implementación del prototipo desarrollado para
-validar experimentalmente la capa de auditoría de la arquitectura de referencia. El
-Immutable Log Service (ILS) integra un log hash-encadenado en PostgreSQL con
-confirmación selectiva de eventos de alta relevancia regulatoria en Hyperledger Fabric,
-más un servidor TSA conforme a RFC~3161. Las especificaciones del entorno experimental
-(nodos, límites de memoria y versiones de software) se documentan en el
-\hyperref[anx:poc_entorno]{Anexo~H}.
+Temporibus autem quibusdam et aut officiis debitis aut rerum necessitatibus saepe eveniet ut et voluptates repudiandae sint et molestiae non recusandae. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.
 
 % ----------------------------------------------------------------------
 \subsection{Implementación: Diagrama de Código (C4 Nivel 4)}\label{subsec:c4_n4}
 
-El Nivel~4 del modelo C4 descompone el módulo ILS hasta el nivel de clase, verificando
-la correspondencia entre los componentes definidos en el N3 y las clases implementadas en
-el prototipo~\cite{brown2022c4}. El diagrama de clases expone 19 clases distribuidas en
-tres grupos funcionales: los controladores de entrada (escritura y consulta), el núcleo de
-orquestación y persistencia, y la infraestructura de mensajería asíncrona que implementa
-la interfaz \texttt{IMessageBroker} del canal de comunicación M-10.
+Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt. Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit, sed quia non numquam eius modi tempora incidunt ut labore et dolore magnam aliquam quaerat voluptatem. Quis autem vel eum iure reprehenderit qui in ea voluptate velit esse quam nihil molestiae consequatur, vel illum qui dolorem eum fugiat quo voluptas nulla pariatur.
 
-\begin{figure}[H]
-\centering
-\includegraphics[width=\textwidth]{figs/resultados/class-diagram.pdf}
-\caption[C4 N4: M-05 Immutable Log Service]{Diagrama de clases del módulo M-05 Immutable Log Service, correspondiente al Nivel~4 del modelo C4.}
-\label{fig:c4_n4}
-\end{figure}
+Temporibus autem quibusdam et aut officiis debitis aut rerum necessitatibus saepe eveniet ut et voluptates repudiandae sint et molestiae non recusandae. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.
 
-El diagrama cumple íntegramente la especificación del N3. Los 14 componentes definidos
- están presentes y correctamente conectados; los adicionales
-(\texttt{KafkaProducer}, \texttt{KafkaConsumer}, \texttt{ReplyHandler},
-\texttt{LedgerEventRegistrationController} y \texttt{NtpTimestampProvider}) son
-realizaciones técnicas de abstracciones del N3: \texttt{KafkaProducer} y
-\texttt{KafkaConsumer} materializan el contrato \texttt{IMessageBroker} prescrito por
-ADR-31, mientras que \texttt{NtpTimestampProvider} encapsula la fuente de tiempo requerida
-por el \texttt{HashChainEngine} sin exponerla como dependencia directa de \texttt{LogEntryWriter}.
+Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam eaque ipsa quae ab illo inventore veritatis.
 
-El núcleo del diseño es \texttt{LogEntryWriter}, que orquesta ocho componentes mediante
-relaciones de composición: \texttt{AuditLogEntryFactory} construye la entrada inmutable,
-\texttt{HashChainEngine} calcula el hash de cadena, \texttt{HsmSigningBridge} firma el
-\texttt{entry\_hash} y captura el \texttt{hsm\_timestamp} UTC invocando al HSM Integration
-Service, \texttt{AuditLogDataMapper} persiste el registro en la base de datos,
-\texttt{ExtensionDataMapper}
-gestiona los metadatos opcionales por caso de uso, \texttt{FabricRouteConfig} determina
-si el evento requiere notarización, \texttt{FabricEndorsementProvider} ejecuta
-el envío asíncrono al ledger y \texttt{ReceiptBuilder} construye el recibo devuelto al
-invocador.
-
-La resistencia a la incorporación de nuevos módulos se sostiene en tres mecanismos de
-diseño independientes. Primero, \texttt{FabricRouteConfig} lee \texttt{fabric-routes.yaml}
-en tiempo de arranque: añadir un nuevo módulo como fuente de eventos no requiere modificar
-ninguna clase, solo declarar la ruta del nuevo origen en el archivo de configuración.
-Segundo, \texttt{ExtensionDataMapper} aísla los metadatos específicos por caso de uso en
-métodos privados (\texttt{-insertCaCertificate}, \texttt{-insertCaProcess}): un nuevo
-módulo con extensión propia añade un método privado en \texttt{ExtensionDataMapper} y deja
-\texttt{LogEntryWriter} sin cambios. Tercero, \texttt{HsmSigningBridge} abstrae la interfaz
-con el hardware criptográfico: cualquier cambio de algoritmo o proveedor HSM queda confinado
-a M-04 sin que M-05 requiera modificación alguna, satisfaciendo la garantía de alcance
-de QAS-14 (crypto-agility).
-
+Et harum quidem rerum facilis est et expedita distinctio, nam libero tempore, cum soluta nobis est eligendi optio cumque nihil impedit quo minus id quod maxime placeat facere possimus. Temporibus autem quibusdam et aut officiis debitis aut rerum necessitatibus saepe eveniet ut et voluptates repudiandae sint et molestiae non recusandae. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt.
 
 % ======================================================================
 % 6.4 — EVALUACIÓN DE LA ARQUITECTURA Y EL PROTOTIPO
@@ -1093,32 +511,16 @@ de QAS-14 (crypto-agility).
 
 \section{Evaluación de la Arquitectura y el Prototipo}\label{sec:evaluacion}
 
-Esta sección presenta los resultados de la evaluación de la arquitectura y el prototipo
-mediante dos métodos complementarios. El primero es el experimento GQM, que valida el
-comportamiento del módulo ILS mediante seis objetivos de medición y treinta y cinco
-preguntas operacionales documentados en el \hyperref[anx:gqm_catalogo]{Anexo~I}. El
-segundo es el análisis ATAM, que evalúa la arquitectura de referencia completa a través
-del árbol de utilidad, la identificación de riesgos y la detección de compromisos entre
-atributos de calidad. Los resultados GQM se presentan en las subsecciones~\ref{subsec:poc_g1g2}
-y~\ref{subsec:poc_metricas}; el análisis ATAM se desarrolla en la
-subsección~\ref{subsec:atam}.
+Quis autem vel eum iure reprehenderit qui in ea voluptate velit esse quam nihil molestiae consequatur, vel illum qui dolorem eum fugiat quo voluptas nulla pariatur. At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis praesentium voluptatum deleniti atque corrupti quos dolores et quas molestias excepturi sint occaecati cupiditate non provident. Et harum quidem rerum facilis est et expedita distinctio, nam libero tempore, cum soluta nobis est eligendi optio cumque nihil impedit quo minus id quod maxime placeat facere possimus. Temporibus autem quibusdam et aut officiis debitis aut rerum necessitatibus saepe eveniet ut et voluptates repudiandae sint et molestiae non recusandae.
 
 % ----------------------------------------------------------------------
 \subsection{Proceso GQM: Correctitud Funcional (G1--G2)}\label{subsec:poc_g1g2}
 
-La suite GQM se ejecutó el 26 de mayo de 2026 (\texttt{2026-05-26T01:53:59\,UTC}) sobre el
-entorno descrito en el \hyperref[anx:poc_entorno]{Anexo~H}, con resultado global de 129
-pasos aprobados y 0 fallos en una duración de 162,1\,s. Los objetivos G1 y G2 evalúan
-la correctitud funcional del módulo ILS en los dos escenarios de negocio más críticos:
-el ciclo de vida completo del certificado (G1) y el firmado electrónico multi-firmante (G2). Para cada objetivo se definen primero las
-preguntas operacionales, que delimitan los comportamientos a verificar, y a continuación
-el diseño de medición, que establece la métrica exacta y el umbral de aceptación derivado
-del NFR asociado. La Tabla~\ref{tab:preguntas_g1} presenta las trece preguntas que
-operacionalizan G1, organizadas según el caso de prueba al que corresponden.
+Et harum quidem rerum facilis est et expedita distinctio, nam libero tempore, cum soluta nobis est eligendi optio cumque nihil impedit quo minus id quod maxime placeat facere possimus. Temporibus autem quibusdam et aut officiis debitis aut rerum necessitatibus saepe eveniet ut et voluptates repudiandae sint et molestiae non recusandae. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam eaque ipsa quae ab illo inventore veritatis.
 
 \footnotesize
 \begin{longtable}{@{}p{0.75cm}p{8.5cm}p{2.5cm}@{}}
-\caption{Preguntas operacionales --- G1: Correctitud funcional del ciclo de vida del certificado}\label{tab:preguntas_g1}\\
+\caption{Lorem ipsum dolor sit amet, consectetur adipiscing elit.}\label{tab:preguntas_g1}\\
 \toprule
 \textbf{ID} & \textbf{Pregunta} & \textbf{Caso de prueba} \\
 \midrule
@@ -1130,75 +532,39 @@ operacionalizan G1, organizadas según el caso de prueba al que corresponden.
 \endhead
 \bottomrule
 \endlastfoot
-Q1.1 &
-  ¿Se registran en el ILS los eventos operativos de pre-emisión sin generar ningún evento en Fabric? &
-  Caso 1, Pasos 1--4 \\
+Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
 \midrule
-Q1.2 &
-  ¿Se registra \texttt{CA\_KEY\_GENERATED} en el ILS y se confirma en Fabric? &
-  Caso 1, Paso 5 \\
+Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
 \midrule
-Q1.3 &
-  ¿Se registra \texttt{CERTIFICATE\_ISSUED} en el ILS con hash encadenado y se confirma en Fabric? &
-  Caso 1, Paso 6 \\
+Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
 \midrule
-Q1.4 &
-  ¿Se registran en el ILS los eventos de entrega del certificado (P12, descarga, destrucción de clave) sin generar eventos en Fabric? &
-  Caso 1, Pasos 7--9 \\
+Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
 \midrule
-Q1.5 &
-  ¿Permanece íntegro el hash chain tras las fases de pre-emisión, issuance y entrega? &
-  Caso 1, Paso 10 \\
+Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
 \midrule
-Q1.6 &
-  ¿Se registra \texttt{CERTIFICATE\_REVOKED} en el ILS y se confirma en Fabric con transacción independiente de la emisión? &
-  Caso 1, Paso 11 \\
+Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
 \midrule
-Q1.7 &
-  ¿Se registra en el ILS la exportación del log para el auditor externo sin generar evento en Fabric? &
-  Caso 1, Paso 12 \\
+Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
 \midrule
-Q1.8 &
-  ¿Es posible reconstruir el ciclo completo de un certificado desde PostgreSQL por \texttt{cert\_serial}? &
-  Caso 1, Paso 13 \\
+Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
 \midrule
-Q1.9 &
-  ¿Permanece íntegro el hash chain al final del ciclo completo de 14 pasos? &
-  Caso 1, Paso 14 \\
+Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
 \midrule
-Q1.10 &
-  ¿Se registran correctamente todos los eventos del ciclo de renovación con los tres eventos blockchain independientes? &
-  Caso 3 \\
+Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
 \midrule
-Q1.11 &
-  ¿Se registra y notariza el ciclo completo de revocación de emergencia con solo la revocación en blockchain? &
-  Caso 4 \\
+Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
 \midrule
-Q1.12 &
-  ¿Queda registrada una solicitud rechazada en el ILS sin generar ningún evento en blockchain, manteniendo la integridad del hash chain? &
-  Caso 5 \\
+Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
 \midrule
-Q1.13 &
-  ¿Se procesan correctamente 3 certificados en lote con sus 6 eventos blockchain confirmados en Fabric y trazabilidad completa por \texttt{cert\_serial}? &
-  Caso 6 \\
+Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
 \end{longtable}
 \normalsize
 
-Las trece preguntas revelan la estructura del experimento: Q1.1 a Q1.9 cubren el ciclo
-estándar de catorce pasos (emisión, entrega, revocación, trazabilidad y verificación de
-integridad), mientras que Q1.10 a Q1.13 extienden la cobertura a ciclos derivados con
-requisitos de confirmación Fabric distintos. Una característica central del diseño es la
-selectividad de la notarización: solo tres tipos de evento (generación de clave CA, emisión
-y revocación de certificado) generan transacciones en el ledger distribuido; el resto se
-registra exclusivamente en el log local del ILS. Esta distinción queda explícita en las
-preguntas Q1.1, Q1.4 y Q1.7, que verifican que los eventos operativos ordinarios no
-produzcan confirmaciones Fabric innecesarias. Por otra parte, la Tabla~\ref{tab:preguntas_g2} recoge las
-cuatro preguntas del objetivo G2, que concentran la evaluación en el escenario de firma
-electrónica CAdES-BES con múltiples firmantes.
+Ut enim ad minima veniam, quis nostrum exercitationem ullam corporis suscipit laboriosam, nisi ut aliquid ex ea commodi consequatur. Quis autem vel eum iure reprehenderit qui in ea voluptate velit esse quam nihil molestiae consequatur, vel illum qui dolorem eum fugiat quo voluptas nulla pariatur. At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis praesentium voluptatum deleniti atque corrupti quos dolores et quas molestias excepturi sint occaecati cupiditate non provident. Et harum quidem rerum facilis est et expedita distinctio, nam libero tempore, cum soluta nobis est eligendi optio cumque nihil impedit quo minus id quod maxime placeat facere possimus. Temporibus autem quibusdam et aut officiis debitis aut rerum necessitatibus saepe eveniet ut et voluptates repudiandae sint et molestiae non recusandae.
 
 \footnotesize
 \begin{longtable}{@{}p{0.75cm}p{8.5cm}p{2.5cm}@{}}
-\caption{Preguntas operacionales --- G2: Correctitud funcional del firmado electrónico}\label{tab:preguntas_g2}\\
+\caption{Temporibus autem quibusdam et aut officiis debitis aut.}\label{tab:preguntas_g2}\\
 \toprule
 \textbf{ID} & \textbf{Pregunta} & \textbf{Caso de prueba} \\
 \midrule
@@ -1210,38 +576,21 @@ electrónica CAdES-BES con múltiples firmantes.
 \endhead
 \bottomrule
 \endlastfoot
-Q2.1 &
-  ¿Se registra correctamente cada firma individual \texttt{DOCUMENT\_SIGN} con confirmación en Fabric? &
-  Caso 2, todos los escenarios \\
+Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
 \midrule
-Q2.2 &
-  ¿Escala el sistema de 1 a 5 firmantes sin degradación en la tasa de aceptación? &
-  Caso 2 \\
+Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
 \midrule
-Q2.3 &
-  ¿La trazabilidad del documento es completa en PostgreSQL para cada escenario de firma? &
-  Caso 2 \\
+Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
 \midrule
-Q2.4 &
-  ¿El hash chain permanece íntegro después de los 8 eventos \texttt{DOCUMENT\_SIGN} acumulados? &
-  Caso 2, verificación final \\
+Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
 \end{longtable}
 \normalsize
 
-G2 es estructuralmente más compacto que G1: las cuatro preguntas verifican un único tipo
-de evento (\texttt{DOCUMENT\_SIGN}) bajo tres niveles de concurrencia creciente (1, 2 y 5
-firmantes simultáneos), lo que permite evaluar la escalabilidad del registro sin
-introducir nuevos tipos de datos en el log. La pregunta Q2.4, que verifica la integridad
-del hash chain tras los ocho eventos acumulados del Caso~2, opera sobre el mismo log
-que acumuló los eventos de G1, comprobando que ambos objetivos compartan el mismo
-sustrato de auditoría sin interferencia. Con las preguntas definidas para G1 y G2, la
-Tabla~\ref{tab:gqm_g1_diseno} formaliza el diseño de medición de G1, especificando para
-cada grupo de preguntas el foco de verificación, la métrica observable y el umbral de
-aceptación.
+Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam eaque ipsa quae ab illo inventore veritatis. Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt. Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit, sed quia non numquam eius modi tempora incidunt ut labore et dolore magnam aliquam quaerat voluptatem.
 
 \footnotesize
 \begin{longtable}{@{}p{0.85cm}p{4.2cm}p{3.4cm}p{1.6cm}p{1.5cm}@{}}
-\caption{Diseño GQM --- G1: Correctitud funcional del ciclo de vida del certificado}\label{tab:gqm_g1_diseno}\\
+\caption{Sed ut perspiciatis unde omnis iste natus error.}\label{tab:gqm_g1_diseno}\\
 \toprule
 \textbf{Preg.} & \textbf{Foco de verificación} & \textbf{Métrica} & \textbf{Umbral} & \textbf{ASR} \\
 \midrule
@@ -1253,59 +602,25 @@ aceptación.
 \endhead
 \bottomrule
 \endlastfoot
-Q1.1 Q1.4 Q1.7 &
-  Registro en ILS-only de eventos operativos sin confirmación Fabric &
-  \texttt{fabric\_confirmations} por evento operativo &
-  0 confirmaciones &
-  NFR-07 QAS-05 \\
+Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
 \midrule
-Q1.2 Q1.3 Q1.6 &
-  Confirmación en Hyperledger Fabric de \texttt{CA\_KEY\_GENERATED}, \texttt{CERTIFICATE\_ISSUED} y \texttt{CERTIFICATE\_REVOKED} &
-  \textbullet~\texttt{fabric\_status}\newline\textbullet~\texttt{fabric\_tx\_id} &
-  \textbullet~CONFIRMED\newline\textbullet~$\neq$ null &
-  NFR-07 QAS-05 \\
+Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
 \midrule
-Q1.3 &
-  Latencia desde publicación en \texttt{audit.events.ledger} hasta receipt de confirmación Fabric &
-  Tiempo hasta confirmación &
-  $\leq$\,10\,000\,ms &
-  NFR-07 \\
+Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
 \midrule
-Q1.5 Q1.9 &
-  Integridad del hash chain tras ciclo completo de catorce pasos (once entries) &
-  \textbullet~\texttt{verifyChain().ok}\newline\textbullet~\texttt{entriesChecked} &
-  \textbullet~true\newline\textbullet~$\geq$\,11 &
-  NFR-07 QAS-05 \\
+Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
 \midrule
-Q1.8 &
-  Trazabilidad forense del ciclo de vida por \texttt{cert\_serial} en PostgreSQL &
-  \textbullet~ISSUED y REVOKED presentes\newline\textbullet~\texttt{seq(ISSUED)} $<$ \texttt{seq(REVOKED)} &
-  Logs en orden cronológico &
-  NFR-07 QAS-05 \\
+Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
 \midrule
-Q1.10--Q1.13 &
-  Correctitud de ciclos derivados: renovación (3~tx), revocación de emergencia (1~tx), solicitud rechazada (0~tx) y emisión en lote (6~tx) &
-  \textbullet~Pasos OK / total\newline\textbullet~Eventos blockchain por ciclo &
-  \textbullet~100\,\%\newline\textbullet~0, 1 o 6 según diseño &
-  NFR-07 QAS-05 \\
+Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
 \end{longtable}
 \normalsize
 
-El diseño de G1 organiza las trece preguntas en seis grupos de medición según la
-dimensión de correctitud que cada uno evalúa. El primer grupo (Q1.1, Q1.4, Q1.7) verifica
-el filtro de selectividad: ningún evento operativo debe producir confirmaciones en Fabric.
-El segundo grupo (Q1.2, Q1.3, Q1.6) verifica la ruta afirmativa: los tres tipos de evento
-de alta relevancia regulatoria deben obtener \texttt{fabric\_status = CONFIRMED} con
-\texttt{fabric\_tx\_id} no nulo. La latencia de confirmación Fabric tiene umbral propio
-(Q1.3, $\leq$~10\,000\,ms), deliberadamente conservador respecto al tiempo finalmente observado
-(3\,002\,ms), para absorber variaciones de red en entornos de producción. Los grupos
-restantes verifican integridad del hash chain en puntos de control clave y trazabilidad
-forense por número de serie. La Tabla~\ref{tab:gqm_g2_diseno} presenta el diseño
-equivalente para G2.
+Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam eaque ipsa quae ab illo inventore veritatis. Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt. Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit, sed quia non numquam eius modi tempora incidunt ut labore et dolore magnam aliquam quaerat voluptatem.
 
 \footnotesize
 \begin{longtable}{@{}p{0.85cm}p{4.2cm}p{3.4cm}p{1.6cm}p{1.5cm}@{}}
-\caption{Diseño GQM --- G2: Correctitud funcional del firmado electrónico}\label{tab:gqm_g2_diseno}\\
+\caption{Et harum quidem rerum facilis est et expedita.}\label{tab:gqm_g2_diseno}\\
 \toprule
 \textbf{Preg.} & \textbf{Foco de verificación} & \textbf{Métrica} & \textbf{Umbral} & \textbf{ASR} \\
 \midrule
@@ -1317,108 +632,53 @@ equivalente para G2.
 \endhead
 \bottomrule
 \endlastfoot
-Q2.1--Q2.3 &
-  Registro y confirmación Fabric de firmas CAdES-BES para 1, 2 y 5 firmantes;
-  trazabilidad en PostgreSQL por \texttt{cert\_serial} &
-  \textbullet~\texttt{fabric\_status} $\times$~N\newline\textbullet~\texttt{firma\_order} 1\,..\,N &
-  \textbullet~CONFIRMED\newline\textbullet~100\,\%\newline\textbullet~orden creciente &
-  NFR-07 QAS-05 \\
+Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
 \midrule
-Q2.4 &
-  Integridad del hash chain tras ocho eventos \texttt{DOCUMENT\_SIGN} acumulados &
-  \textbullet~\texttt{verifyChain().ok}\newline\textbullet~\texttt{entriesChecked} &
-  \textbullet~true\newline\textbullet~$\geq$\,19 &
-  NFR-07 \\
+Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
 \end{longtable}
 \normalsize
 
-El diseño de G2 consolida sus cuatro preguntas en dos grupos: el primero verifica la
-confirmación Fabric de cada firma individual y la trazabilidad por número de serie del
-certificado firmante en los tres escenarios de concurrencia; el segundo verifica la
-integridad del hash chain tras los ocho eventos \texttt{DOCUMENT\_SIGN} acumulados, con
-umbral \texttt{entriesChecked}~$\geq$~19, que refleja la suma de los once entries de G1
-más los ocho de G2 hasta ese punto del experimento. La separación en dos grupos de
-medición distingue la correctitud del protocolo de confirmación (dependiente de la red
-Fabric) de la correctitud del mecanismo de hash-encadenado (local al ILS), permitiendo
-diagnosticar fallos en cada dimensión de forma independiente.
+Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt. Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit, sed quia non numquam eius modi tempora incidunt ut labore et dolore magnam aliquam quaerat voluptatem. Ut enim ad minima veniam, quis nostrum exercitationem ullam corporis suscipit laboriosam, nisi ut aliquid ex ea commodi consequatur. Quis autem vel eum iure reprehenderit qui in ea voluptate velit esse quam nihil molestiae consequatur, vel illum qui dolorem eum fugiat quo voluptas nulla pariatur. Et harum quidem rerum facilis est et expedita distinctio, nam libero tempore, cum soluta nobis est eligendi optio cumque nihil impedit quo minus id quod maxime placeat facere possimus.
 
-La Tabla~\ref{tab:poc_funcionales} resume los seis casos funcionales (G1) y el caso de
-firmado electrónico (G2). Todos los ciclos se completaron sin fallos. El tiempo de
-confirmación Fabric para \texttt{CERTIFICATE\_ISSUED} fue de 3\,002\,ms (Q1.3;
-umbral $\leq$\,10\,000\,ms) y para \texttt{DOCUMENT\_SIGN} el máximo registrado fue de
-3\,004\,ms (Q2.1). El verificador de integridad (\texttt{verifyChain()}) confirmó la integridad
-del hash chain en todas las verificaciones intermedias y finales.
+Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam eaque ipsa quae ab illo inventore veritatis. Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt.
 
 \begin{table}[H]
 \centering
 \small
-\caption{Resultados de correctitud funcional (G1--G2)}
+\caption{Excepteur sint occaecat cupidatat non proident, sunt in.}
 \label{tab:poc_funcionales}
 \begin{tabular}{@{}p{0.5cm}p{3.0cm}p{0.8cm}p{0.8cm}p{6.1cm}@{}}
 \toprule
 \textbf{G} & \textbf{Suite} & \textbf{PASS} & \textbf{FAIL} & \textbf{Observación} \\
 \midrule
-G1 & Caso 1 --- Ciclo Estándar & 19 & 0 &
-  \textbullet~\texttt{CERTIFICATE\_ISSUED} confirmado en 3\,002\,ms\newline
-  \textbullet~\texttt{verifyChain().ok} en chainMid (9 entries) y chainFinal (11 entries) \\
+Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
 \midrule
-G1 & Caso 3 --- Renovación & 16 & 0 &
-  \textbullet~3 tx Fabric independientes (CA\_KEY\_GEN, ISSUED, REVOKED)\newline
-  \textbullet~\texttt{verifyChain().ok} post-renovación \\
+Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
 \midrule
-G1 & Caso 4 --- Revocación emergencia & 10 & 0 &
-  \textbullet~1 tx Fabric (CERTIFICATE\_REVOKED)\newline
-  \textbullet~7 eventos ILS-only\newline
-  \textbullet~\texttt{verifyChain().ok} post-incidente \\
+Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
 \midrule
-G1 & Caso 5 --- Solicitud rechazada & 8 & 0 &
-  \textbullet~0 eventos Fabric\newline
-  \textbullet~6 eventos ILS-only\newline
-  \textbullet~\texttt{verifyChain().ok} sin ninguna emisión \\
+Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
 \midrule
-G1 & Caso 6 --- Emisión en lote & 32 & 0 &
-  \textbullet~20 entries en ILS\newline
-  \textbullet~6 tx Fabric (3 CA\_KEY\_GEN + 3 ISSUED)\newline
-  \textbullet~\texttt{entriesChecked}\,=\,63 post-lote \\
+Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
 \midrule
-G2 & Caso 2 --- Firmado multi-firma & 31 & 0 &
-  \textbullet~8 \texttt{DOCUMENT\_SIGN} confirmados\newline
-  \textbullet~Máximo 3\,004\,ms por firma\newline
-  \textbullet~\texttt{entriesChecked}\,=\,19 tras Caso~2 \\
+Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-Los resultados confirman que todos los ciclos se completaron sin ningún fallo. En la columna
-de observaciones, \textit{chainMid} denota una verificación de integridad intermedia ejecutada
-con el log parcialmente poblado durante el transcurso del caso de prueba, mientras que
-\textit{chainFinal} corresponde a la verificación ejecutada al término del caso con la
-totalidad de entries registrados. El término \textit{tx~Fabric} designa un evento de alta
-relevancia regulatoria confirmado en el ledger distribuido de Hyperledger Fabric, a
-diferencia de los eventos registrados únicamente en el log local del ILS. La selectividad
-de la notarización queda reflejada en los casos 4 y 5: la revocación de emergencia genera
-una única transacción Fabric mientras registra siete eventos ILS-only; la solicitud rechazada
-no produce ninguna transacción en el ledger, preservando así la integridad del hash chain
-sin emitir evidencia criptográfica de una operación que no se materializó.
+Et harum quidem rerum facilis est et expedita distinctio, nam libero tempore, cum soluta nobis est eligendi optio cumque nihil impedit quo minus id quod maxime placeat facere possimus. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam eaque ipsa quae ab illo inventore veritatis.
 
 % ----------------------------------------------------------------------
 \subsection{Resultados de Métricas por Escenario}\label{subsec:poc_metricas}
 
-Los objetivos G3 a G6 cubren las dimensiones de integridad y control de acceso (G3--G4),
-rendimiento bajo carga sostenida (G5) y trazabilidad forense (G6). Su proceso de medición
-completo, incluyendo preguntas operacionales y diseño de métricas, se documenta en el
-\hyperref[anx:gqm_catalogo]{Anexo~I}; a continuación se presentan los resultados
-observados.
+Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam eaque ipsa quae ab illo inventore veritatis. Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit, sed quia non numquam eius modi tempora incidunt ut labore et dolore magnam aliquam quaerat voluptatem.
 
-\paragraph{G3--G4 --- Integridad y seguridad.}
-Las pruebas de seguridad acumularon 8 pasos sin fallos en dos dimensiones complementarias:
-la robustez del hash chain frente a modificaciones directas en la base de datos (G3) y el
-control de acceso e integridad del receipt de auditoría (G4). La
-Tabla~\ref{tab:poc_seguridad} detalla los resultados por métrica.
+\paragraph{Temporibus autem quibusdam et aut officiis debitis aut.}
+Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit, sed quia non numquam eius modi tempora incidunt ut labore et dolore magnam aliquam quaerat voluptatem. Quis autem vel eum iure reprehenderit qui in ea voluptate velit esse quam nihil molestiae consequatur, vel illum qui dolorem eum fugiat quo voluptas nulla pariatur.
 
 \small
 \begin{longtable}{@{}p{1.4cm}p{4.1cm}p{4.5cm}p{1.0cm}@{}}
-\caption{Resultados de integridad y seguridad (G3--G4)}\label{tab:poc_seguridad}\\
+\caption{Ut enim ad minima veniam, quis nostrum exercitationem.}\label{tab:poc_seguridad}\\
 \toprule
 \textbf{Métrica} & \textbf{Verificación} & \textbf{Resultado observado} & \textbf{Est.} \\
 \midrule
@@ -1430,108 +690,61 @@ Tabla~\ref{tab:poc_seguridad} detalla los resultados por métrica.
 \endhead
 \bottomrule
 \endlastfoot
-M3.1.1 &
-  Modificación directa de \texttt{data\_hash} mediante \texttt{UPDATE} SQL &
-  Aceptada por la base de datos; comportamiento esperado para actor con privilegios de escritura &
-  PASS \\
+Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
 \midrule
-M3.2.3 &
-  Detección de discrepancia sin consultar Fabric &
-  \texttt{entry\_hash} almacenado difiere del \texttt{data\_hash} modificado; corrupción detectable localmente &
-  PASS \\
+Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
 \midrule
-M3.3.3 &
-  Restauración del valor original &
-  Hash chain devuelto a estado íntegro &
-  PASS \\
+Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
 \midrule
-M3.4.1 M3.4.2 &
-  Localización del \texttt{sequence\_number} corrupto por \texttt{verifyChain()} &
-  No aplica por diseño: bloque \texttt{finally} del test restaura el valor antes de cualquier llamada a \texttt{verifyChain()} &
-  No aplica \\
+Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
 \midrule
-M4.1.1 &
-  Control de acceso: solicitud sin \texttt{X-Audit-Source} &
-  Endpoint HTTP responde con código 401 &
-  PASS \\
+Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
 \midrule
-M4.2.2 &
-  Anti-replay para \textit{payloads} idénticos &
-  \texttt{entry\_id} distintos generados para cada solicitud &
-  PASS \\
+Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
 \midrule
-M4.3.1 &
-  Consistencia entre receipt del servicio y PostgreSQL &
-  \texttt{entry\_hash} coincide exactamente &
-  PASS \\
+Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
 \end{longtable}
 \normalsize
 
-La protección opera en dos capas: los permisos de solo lectura SQL constituyen la barrera
-para clientes de auditoría ordinarios, mientras que el hash chain detecta cualquier
-alteración realizada por un actor privilegiado que eluda esa restricción. Las métricas
-M3.4.1 y M3.4.2 no aplican por diseño en ejecución nominal (la corrupción activa no es
-observable durante la suite porque el bloque \texttt{finally} garantiza la restauración
-antes de cualquier verificación de integridad).
+Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam eaque ipsa quae ab illo inventore veritatis. Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt. Ut enim ad minima veniam, quis nostrum exercitationem ullam corporis suscipit laboriosam, nisi ut aliquid ex ea commodi consequatur. Quis autem vel eum iure reprehenderit qui in ea voluptate velit esse quam nihil molestiae consequatur, vel illum qui dolorem eum fugiat quo voluptas nulla pariatur.
 
-\paragraph{G5 --- Rendimiento bajo carga.}
-Las pruebas de rendimiento ejecutaron cinco escenarios de estrés con distintos tipos de
-carga y volumen de mensajes (burst de emisión, carga sostenida, firma múltiple, revocación
-en burst y carga mixta), midiendo la latencia del producer Kafka, la tasa de error y la
-tasa de confirmación Fabric en cada uno. La Tabla~\ref{tab:poc_estres} presenta los
-resultados.
+\paragraph{Neque porro quisquam est, qui dolorem ipsum quia.}
+Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit, sed quia non numquam eius modi tempora incidunt ut labore et dolore magnam aliquam quaerat voluptatem. Ut enim ad minima veniam, quis nostrum exercitationem ullam corporis suscipit laboriosam, nisi ut aliquid ex ea commodi consequatur. Quis autem vel eum iure reprehenderit qui in ea voluptate velit esse quam nihil molestiae consequatur, vel illum qui dolorem eum fugiat quo voluptas nulla pariatur.
 
 \begin{table}[H]
 \centering
 \small
-\caption{Resultados de las pruebas de estrés (G5)}
+\caption{At vero eos et accusamus et iusto odio.}
 \label{tab:poc_estres}
 \begin{tabular}{@{}p{3.0cm}p{0.7cm}p{0.9cm}p{0.9cm}p{0.9cm}p{1.0cm}p{1.0cm}p{1.8cm}p{0.8cm}@{}}
 \toprule
-\textbf{Escenario} & \textbf{N} &
-\textbf{avg} \textbf{(ms)} & \textbf{p95} \textbf{(ms)} & \textbf{p99} \textbf{(ms)} &
-\textbf{Error} & \textbf{Fabric} &
-\textbf{Throughput} \textbf{(msg/s)} & \textbf{Est.} \\
+Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
 \midrule
-\textit{Umbral} & & $\leq$\,2\,000 & $\leq$\,5\,000 & &
-  $\leq$\,5\,\% & $\geq$\,95\,\% & & \\
+Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
 \midrule
-Burst (CERT\_ISSUED) & 50 & 2 & 3 & 3 & 0,0\% & 100,0\% & 4,99 & PASS \\
+Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
 \midrule
-Carga Sostenida & 200 & 2 & 3 & 3 & 0,0\% & 100,0\% & 14,18 & PASS \\
+Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
 \midrule
-Multi-firma (SIGN) & 100 & 4 & 5 & 6 & 0,0\% & 100,0\% & 9,98 & PASS \\
+Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
 \midrule
-Revocación Burst & 50 & 2 & 3 & 4 & 0,0\% & 100,0\% & 4,99 & PASS \\
+Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
 \midrule
-Carga Mixta & 100 & 2 & 3 & 3 & 0,0\% & 100,0\% & 9,97 & PASS \\
+Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-Todos los escenarios superaron los cuatro umbrales configurados. La latencia promedio del
-producer Kafka se mantuvo entre 2\,ms y 4\,ms, dos órdenes de magnitud por debajo del
-umbral de 2\,000\,ms, con p95 máximo de 5\,ms. La tasa de confirmación Fabric alcanzó el
-100\,\% en los cinco escenarios. El escenario de carga sostenida (200 mensajes) exhibió el
-mayor throughput (14,18\,msg/s). Los eventos \texttt{DOCUMENT\_SIGN} registraron la
-latencia más elevada (4\,ms promedio, 5\,ms p95), consistente con el mayor peso
-computacional de las operaciones de firma respecto a los eventos de ciclo de vida de
-certificados.
+Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam eaque ipsa quae ab illo inventore veritatis. Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit, sed quia non numquam eius modi tempora incidunt ut labore et dolore magnam aliquam quaerat voluptatem. Ut enim ad minima veniam, quis nostrum exercitationem ullam corporis suscipit laboriosam, nisi ut aliquid ex ea commodi consequatur.
 
-Estas latencias miden el canal de mensajería asíncrono, las variables de latencia
-asociadas a operaciones criptográficas dentro de hardware HSM físico FIPS~140-2~L3 no
-fueron consideradas en la PoC por restricciones de recursos, ya que la adquisición de
-dicho hardware supera el alcance académico del proyecto.
+Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam eaque ipsa quae ab illo inventore veritatis. Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt.
 
-\paragraph{G6 --- Trazabilidad forense.}
-Las cuatro operaciones de consulta forense se completaron sin fallos, demostrando que la
-combinación del log local con el estado confirmado en Fabric es suficiente para reconstruir
-el ciclo de vida completo de un certificado sin acceso privilegiado al servicio activo. La
-Tabla~\ref{tab:poc_forense} resume los resultados por operación.
+\paragraph{Ut enim ad minima veniam, quis nostrum exercitationem.}
+Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam eaque ipsa quae ab illo inventore veritatis.
 
 \small
 \begin{longtable}{@{}p{3.0cm}p{1.2cm}p{5.7cm}p{1.0cm}@{}}
-\caption{Resultados de trazabilidad forense (G6)}\label{tab:poc_forense}\\
+\caption{Excepteur sint occaecat cupidatat non proident, sunt in.}\label{tab:poc_forense}\\
 \toprule
 \textbf{Operación} & \textbf{Caso} & \textbf{Resultado observado} & \textbf{Est.} \\
 \midrule
@@ -1543,40 +756,17 @@ Tabla~\ref{tab:poc_forense} resume los resultados por operación.
 \endhead
 \bottomrule
 \endlastfoot
-Historial por \texttt{cert\_serial} (M6.1.1) &
-  Caso~1 &
-  \textbullet~5 tipos de evento recuperados (umbral $\geq$\,2)\newline
-  \textbullet~\texttt{seq(ISSUED)}\,=\,6 $<$ \texttt{seq(REVOKED)}\,=\,10\newline
-  \textbullet~Ambos con \texttt{fabric\_status\,=\,CONFIRMED} &
-  PASS \\
+Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
 \midrule
-Vinculación de renovación &
-  Caso~3 &
-  Serial anterior revocado con \texttt{revocation\_reason:\,superseded} vinculado al nuevo serial emitido &
-  PASS \\
+Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
 \midrule
-Consulta por lote de seriales &
-  Caso~6 &
-  3 entradas \texttt{CERTIFICATE\_ISSUED} recuperadas, una por certificado emitido &
-  PASS \\
+Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
 \midrule
-Detección de manipulación post-registro &
-  No Aplica &
-  Log local y estado Fabric suficientes sin acceso privilegiado al servicio activo &
-  PASS \\
+Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
 \end{longtable}
 \normalsize
 
-El Caso~1 reveló el patrón de ciclo de vida completo con cinco tipos de evento, orden
-cronológico confirmado y trazabilidad cruzada hacia Fabric para los dos eventos de alta
-relevancia regulatoria. La renovación del Caso~3 demostró que la vinculación entre
-seriales consecutivos es posible a través del campo \texttt{revocation\_reason}, sin
-necesidad de una tabla de relaciones adicional en la base de datos. La emisión en lote
-del Caso~6 verificó que la consulta por lote de seriales recupera exactamente una entrada
-\texttt{CERTIFICATE\_ISSUED} por certificado, manteniendo la trazabilidad individual
-dentro de una operación colectiva. Finalmente, la detección de manipulación post-registro
-confirmó que la combinación del log local con el estado Fabric es suficiente para
-identificar alteraciones sin requerir acceso privilegiado al servicio activo.
+Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam eaque ipsa quae ab illo inventore veritatis. Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt. Ut enim ad minima veniam, quis nostrum exercitationem ullam corporis suscipit laboriosam, nisi ut aliquid ex ea commodi consequatur. Quis autem vel eum iure reprehenderit qui in ea voluptate velit esse quam nihil molestiae consequatur, vel illum qui dolorem eum fugiat quo voluptas nulla pariatur.
 
 % ======================================================================
 % 6.4.3 — ANÁLISIS ATAM
@@ -1585,27 +775,17 @@ identificar alteraciones sin requerir acceso privilegiado al servicio activo.
 % ----------------------------------------------------------------------
 \subsection{Análisis ATAM de la Arquitectura de Referencia}\label{subsec:atam}
 
-Esta subsección presenta los resultados de la evaluación estructural de la arquitectura de
-referencia mediante el \textit{Architecture Tradeoff Analysis Method}~(ATAM). El análisis
-se circunscribe a los once QAS presentados en la subsección~\ref{subsec:nfr}.
-Se exponen el Árbol de Utilidad con los QAS priorizados, el
-análisis de sensitivity points y tradeoff points, los \textit{risks} identificados, los \textit{non-risks}
-formales y un resumen consolidado de hallazgos.
+At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis praesentium voluptatum deleniti atque corrupti quos dolores et quas molestias excepturi sint occaecati cupiditate non provident. Et harum quidem rerum facilis est et expedita distinctio, nam libero tempore, cum soluta nobis est eligendi optio cumque nihil impedit quo minus id quod maxime placeat facere possimus. Temporibus autem quibusdam et aut officiis debitis aut rerum necessitatibus saepe eveniet ut et voluptates repudiandae sint et molestiae non recusandae.
 
-La evaluación contó con la colaboración de dos stakeholders del dominio: un desarrollador de software con experiencia en el dominio y el director de una CA, quienes aportaron perspectivas de la industria en la revisión de los escenarios de calidad y la identificación de trade-offs.
+Ut enim ad minima veniam, quis nostrum exercitationem ullam corporis suscipit laboriosam, nisi ut aliquid ex ea commodi consequatur. Quis autem vel eum iure reprehenderit qui in ea voluptate velit esse quam nihil molestiae consequatur, vel illum qui dolorem eum fugiat quo voluptas nulla pariatur.
 
 \subsubsection*{Árbol de Utilidad}
 
-Los once QAS del Utility Tree provienen del catálogo operacionalizado en la
-Tabla~\ref{tab:qas_core}. La Tabla~\ref{tab:atam_utility_tree}
-los organiza por atributo de calidad; las prioridades se expresan como par (importancia
-para el negocio, dificultad de evaluación arquitectónica) donde H\,=\,alto y M\,=\,medio.
-El Árbol de Utilidad con los QAS del catálogo completo se incluye en el
-\hyperref[anx:utility_tree]{Anexo~J}.
+Temporibus autem quibusdam et aut officiis debitis aut rerum necessitatibus saepe eveniet ut et voluptates repudiandae sint et molestiae non recusandae. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.
 
 \footnotesize
 \begin{longtable}{@{}p{2.5cm}p{1.0cm}p{7.0cm}p{1.5cm}@{}}
-\caption{Utility Tree --- QAS evaluados por atributo de calidad}\label{tab:atam_utility_tree}\\
+\caption{Ut enim ad minima veniam, quis nostrum exercitationem.}\label{tab:atam_utility_tree}\\
 \toprule
 \textbf{Atributo} & \textbf{QAS} & \textbf{Enunciado resumido} & \textbf{Prioridad} \\
 \midrule
@@ -1617,288 +797,145 @@ El Árbol de Utilidad con los QAS del catálogo completo se incluye en el
 \endhead
 \bottomrule
 \endlastfoot
-Auditabilidad & QAS-05 &
-  Hash chain verificable \textit{offline} sin acceso al servidor activo; operaciones
-  \texttt{UPDATE}/\texttt{DELETE}/\texttt{PATCH} declaradas en el contrato del ILS = 0 &
-  (H,\,H) \\
+Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
 \midrule
-Privacidad & QAS-06 &
-  Campos con datos personales identificables en texto claro en el esquema del ILS = 0 &
-  (H,\,M) \\
+Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
 \midrule
-Disponibilidad & QAS-09 &
-  Arcos de flujo crítico hacia mensajería asíncrona con semántica síncrona o espera = 0;
-  arcos de retorno mensajería $\rightarrow$ contenedores críticos = 0 &
-  (H,\,H) \\
+Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
 \midrule
-Disponibilidad & QAS-10 &
-  Arcos de dependencia directa motor de emisión $\rightarrow$ contenedor de
-  revocación/CRL = 0 &
-  (H,\,H) \\
+Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
 \midrule
-Disponibilidad & QAS-11 &
-  Estado de sesión compartido entre instancias del motor de emisión: no cumple;
-  estado de sesión compartido entre instancias del contenedor OCSP: no cumple &
-  (H,\,M) \\
+Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
 \midrule
-Disponibilidad & QAS-21 &
-  \textit{Endpoints} del repositorio sin \textit{health check} = 0;
-  mecanismo de alerta de \texttt{nextUpdate} declarado en el diseño &
-  (H,\,M) \\
+Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
 \midrule
-Extensibilidad & QAS-12 &
-  Contenedores cuyo diseño requiere cambio para incorporar el nuevo perfil = 0;
-  perfiles definidos como constantes dentro del motor de emisión = 0 &
-  (H,\,H) \\
+Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
 \midrule
-Modificabilidad & QAS-13 &
-  Dependencias del motor hacia implementaciones concretas de perfiles, HSM, ILS
-  o mensajería = 0 &
-  (H,\,M) \\
+Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
 \midrule
-Modificabilidad & QAS-14 &
-  Cambios en el motor de emisión para incorporar Sub-CA = 0; perfil de Sub-CA
-  registrado bajo el mismo contrato que cualquier otro perfil &
-  (H,\,M) \\
+Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
 \midrule
-Corrección funcional & QAS-19 &
-  Caminos donde el motor recibe solicitud sin validación previa del catálogo = 0;
-  campos obligatorios de cada perfil regulado declarados en el \textit{schema} del catálogo &
-  (H,\,M) \\
+Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
 \midrule
-Consulta pública & QAS-26 &
-  Campos estado, fecha de emisión, caducidad y vigencia en toda respuesta = 4/4;
-  \textit{endpoint} sin mecanismo de autenticación del cliente &
-  (H,\,M) \\
+Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
 \end{longtable}
 \normalsize
 
-De los once QAS evaluados, cuatro reciben la clasificación de máxima prioridad (H,\,H):
-QAS-05 (auditabilidad), QAS-09 y QAS-10 (disponibilidad) y QAS-12 (extensibilidad).
-Los siete QAS restantes presentan clasificación (H,\,M) y en conjunto, son la base del análisis
-de sensitivity points y tradeoff points que se presenta a continuación.
+Et harum quidem rerum facilis est et expedita distinctio, nam libero tempore, cum soluta nobis est eligendi optio cumque nihil impedit quo minus id quod maxime placeat facere possimus. Temporibus autem quibusdam et aut officiis debitis aut rerum necessitatibus saepe eveniet ut et voluptates repudiandae sint et molestiae non recusandae.
 
 \subsubsection*{Sensitivity Points y Tradeoff Points}
-La evaluación identificó ocho sensitivity points y un tradeoff point alineados con los
-QAS del Utility Tree; el catálogo completo se documenta en el
-\hyperref[anx:atam_sp_tp_risk]{Anexo~K}. La Tabla~\ref{tab:atam_st_risk} presenta los cinco
-clasificados como \textit{risk}, detallando el atributo de calidad afectado y el identificador de
-\textit{risk} asociado.
+Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam eaque ipsa quae ab illo inventore veritatis. Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt.
 
 \footnotesize
 \begin{longtable}{@{}p{0.8cm}p{4.2cm}p{2.1cm}p{1.5cm}p{2.5cm}@{}}
-\caption{Sensitivity Points y Tradeoff Points clasificados como \textit{risk}}\label{tab:atam_st_risk}\\
+\caption{Excepteur sint occaecat cupidatat non proident, sunt in.}\label{tab:atam_st_risk}\\
 \toprule
-\textbf{ID} & \textbf{Descripción resumida} & \textbf{Atributo} & \textbf{QAS} &
-  \textbf{Risk} \\
+\textbf{ID} & \textbf{Descripción resumida} & \textbf{Atributo} & \textbf{QAS} & \textbf{Risk} \\
 \midrule
 \endfirsthead
 \multicolumn{5}{l}{\footnotesize\itshape Continuación de la Tabla~\thetable}\\[2pt]
 \toprule
-\textbf{ID} & \textbf{Descripción resumida} & \textbf{Atributo} & \textbf{QAS} &
-  \textbf{Risk} \\
+\textbf{ID} & \textbf{Descripción resumida} & \textbf{Atributo} & \textbf{QAS} & \textbf{Risk} \\
 \midrule
 \endhead
 \bottomrule
 \endlastfoot
-S10 &
-  Inmutabilidad del objeto Memento dependiente de la implementación del adoptante &
-  Auditabilidad & QAS-05 & R-NR-E \\
+Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
 \midrule
-S11 &
-  Completitud de la cobertura del \texttt{AuditInterceptor}; rutas bypass no
-  detectables por la RA &
-  Auditabilidad & QAS-05 & R-NR-F \\
+Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
 \midrule
-S17 &
-  Aislamiento de esquema de datos personales nominal vs.\ real (LOPDP) &
-  Privacidad & QAS-06 & R-NR-I \\
+Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
 \midrule
-T3 &
-  Hyperledger Fabric como implementación de \texttt{IAuditLogger}; latencia de
-  notarización bajo carga real no validada antes de la PoC &
-  \textbullet~Auditabilidad\newline\textbullet~Modificabilidad &
-  \textbullet~QAS-05\newline\textbullet~QAS-13 & T3-risk \\
+Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
 \end{longtable}
 \normalsize
 
-Los tres sensitivity points clasificados como \textit{risk} (S10, S11, S17) corresponden a
-decisiones cuyas consecuencias no están completamente especificadas por la RA y dependen
-de la implementación del adoptante. El tradeoff point (T3) identifica
-tensiones estructurales con impacto directo sobre la auditabilidad. La
-Tabla~\ref{tab:atam_st_nonrisk} presenta los cinco clasificados como \textit{non-risk}, detallando
-el atributo de calidad afectado y el razonamiento que respalda la decisión, el catálogo
-completo se documenta en el \hyperref[anx:atam_sp_tp_nonrisk]{Anexo~K}.
+Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam eaque ipsa quae ab illo inventore veritatis. Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt. Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit, sed quia non numquam eius modi tempora incidunt ut labore et dolore magnam aliquam quaerat voluptatem.
 
 \footnotesize
 \begin{longtable}{@{}p{0.8cm}p{3.5cm}p{2.0cm}p{1.5cm}p{4.0cm}@{}}
-\caption{Sensitivity Points y Tradeoff Points clasificados como \textit{non-risk}}\label{tab:atam_st_nonrisk}\\
+\caption{Ut enim ad minima veniam, quis nostrum exercitationem.}\label{tab:atam_st_nonrisk}\\
 \toprule
-\textbf{ID} & \textbf{Descripción resumida} & \textbf{Atributo} & \textbf{QAS} &
-  \textbf{Razonamiento} \\
+\textbf{ID} & \textbf{Descripción resumida} & \textbf{Atributo} & \textbf{QAS} & \textbf{Razonamiento} \\
 \midrule
 \endfirsthead
 \multicolumn{5}{l}{\footnotesize\itshape Continuación de la Tabla~\thetable}\\[2pt]
 \toprule
-\textbf{ID} & \textbf{Descripción resumida} & \textbf{Atributo} & \textbf{QAS} &
-  \textbf{Razonamiento} \\
+\textbf{ID} & \textbf{Descripción resumida} & \textbf{Atributo} & \textbf{QAS} & \textbf{Razonamiento} \\
 \midrule
 \endhead
 \bottomrule
 \endlastfoot
-S8 &
-  Comunicación asíncrona preferente vía \textit{broker} &
-  Disponibilidad & QAS-09 &
-  ADR-31 establece el \textit{broker} como canal preferente; la desconexión estructural
-  entre productores y consumidores es verificable en el C4~N2 \\
+Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
 \midrule
-S9 &
-  \textit{Statelessness} de contenedores de servicio &
-  Disponibilidad & QAS-11 &
-  QAS-11 documenta la propiedad como verificable; ningún contenedor declara estado de
-  sesión compartido entre instancias \\
+Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
 \midrule
-S12 &
-  Estabilidad de la interfaz \texttt{IAuditLogger} &
-  \textbullet~Auditabilidad\newline\textbullet~Modificabilidad & QAS-13 &
-  La interfaz está definida en la RA y es el contrato que habilita la intercambiabilidad
-  del \textit{ledger} (ADR-03/ADR-29) \\
+Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
 \midrule
-S13 &
-  Estabilidad de la interfaz \texttt{ICertificateProfile} &
-  Extensibilidad & QAS-12 &
-  Contrato del Microkernel (ADR-08); su estabilidad es una decisión arquitectónica
-  explícita, no un riesgo pendiente \\
+Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
 \midrule
-S14 &
-  Ausencia de efectos secundarios en la cadena Chain of Responsibility &
-  Extensibilidad & QAS-12 &
-  ADR-16 establece que cada eslabón es intercambiable; la ausencia de efectos secundarios
-  compartidos es consecuencia estructural del patrón \\
+Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
 \end{longtable}
 \normalsize
 
-S8 y S9 se sustentan en propiedades de disponibilidad: la desconexión entre productores
-y consumidores es consecuencia del canal asíncrono preferente, y ningún contenedor
-declara estado de sesión compartido entre instancias. S12 y S13 corresponden a contratos
-de interfaz con estabilidad declarada: \texttt{IAuditLogger} habilita la intercambiabilidad
-del ledger e \texttt{ICertificateProfile} es el punto de extensión del catálogo de
-perfiles. S14 es consecuencia estructural del patrón Chain of Responsibility, que impide
-por construcción efectos secundarios compartidos entre eslabones. Documentar estos
-hallazgos previene que revisiones futuras los traten como decisiones pendientes de
-análisis.
+Temporibus autem quibusdam et aut officiis debitis aut rerum necessitatibus saepe eveniet ut et voluptates repudiandae sint et molestiae non recusandae. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
 
 \subsubsection*{\textit{Risks} Identificados}
-En el contexto del ATAM, un \textit{risk} es una decisión arquitectónica potencialmente
-problemática: puede ser una decisión no tomada que deja una brecha en el diseño, o una
-decisión tomada cuyas consecuencias no están completamente comprendidas. El catálogo
-completo de \textit{risks} del análisis se documenta en el
-\hyperref[anx:atam_risks]{Anexo~L}; la Tabla~\ref{tab:atam_risks} consolida los cinco
-derivados de los QAS descritos en el Utility Tree.
+Quis autem vel eum iure reprehenderit qui in ea voluptate velit esse quam nihil molestiae consequatur, vel illum qui dolorem eum fugiat quo voluptas nulla pariatur. At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis praesentium voluptatum deleniti atque corrupti quos dolores et quas molestias excepturi sint occaecati cupiditate non provident. Et harum quidem rerum facilis est et expedita distinctio, nam libero tempore, cum soluta nobis est eligendi optio cumque nihil impedit quo minus id quod maxime placeat facere possimus.
 
 \small
 \begin{longtable}{@{}p{1.1cm}p{2.8cm}p{4.2cm}p{1.8cm}p{1.5cm}@{}}
-\caption{\textit{Risks} identificados en el análisis ATAM}\label{tab:atam_risks}\\
+\caption{Duis aute irure dolor in reprehenderit in voluptate.}\label{tab:atam_risks}\\
 \toprule
-\textbf{ID} & \textbf{Tipo} & \textbf{\textit{Gap} o decisión sin especificar} &
-  \textbf{Atributo} & \textbf{QAS} \\
+\textbf{ID} & \textbf{Tipo} & \textbf{\textit{Gap} o decisión sin especificar} & \textbf{Atributo} & \textbf{QAS} \\
 \midrule
 \endfirsthead
 \multicolumn{5}{l}{\small\itshape Continuación de la Tabla~\thetable}\\[2pt]
 \toprule
-\textbf{ID} & \textbf{Tipo} & \textbf{\textit{Gap} o decisión sin especificar} &
-  \textbf{Atributo} & \textbf{QAS} \\
+\textbf{ID} & \textbf{Tipo} & \textbf{\textit{Gap} o decisión sin especificar} & \textbf{Atributo} & \textbf{QAS} \\
 \midrule
 \endhead
 \bottomrule
 \endlastfoot
-R-NR-E &
-  \textbullet~Decisión tomada\newline\textbullet~Consecuencias no comprendidas &
-  El objeto Memento no tiene \textit{enforcement} de inmutabilidad en la RA;
-  depende de la implementación del adoptante &
-  Auditabilidad & QAS-05 \\
+Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
 \midrule
-R-NR-F &
-  \textbullet~Decisión tomada\newline\textbullet~Consecuencias no comprendidas &
-  Rutas de invocación que eludan el \textit{framework} AOP producen operaciones
-  no registradas en el ILS; la RA no define un mecanismo de verificación de cobertura &
-  Auditabilidad & QAS-05 \\
+Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
 \midrule
-T3-risk &
-  \textbullet~Decisión tomada\newline\textbullet~Consecuencias no comprendidas &
-  Latencia de notarización en Fabric (\textasciitilde{}500\,ms--2\,s en
-  \texttt{test-network}); impacto bajo carga real no comprendido antes de la PoC &
-  \textbullet~Auditabilidad\newline\textbullet~Modificabilidad &
-  \textbullet~QAS-05\newline\textbullet~QAS-13 \\
+Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
 \midrule
-R-NR-I &
-  \textbullet~Decisión tomada\newline\textbullet~Consecuencias no comprendidas &
-  El aislamiento de esquema LOPDP es nominal si el adoptante implementa separación de
-  tablas sin controles de acceso a nivel de esquema de base de datos ni cifrado en reposo &
-  Privacidad & QAS-06 \\
+Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
 \end{longtable}
 \normalsize
 
-T3-risk queda resuelto por los resultados del experimento GQM: la latencia de
-confirmación de Fabric se mantuvo dentro del umbral establecido en los cinco escenarios
-de carga evaluados (Tabla~\ref{tab:poc_estres}).
+Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam eaque ipsa quae ab illo inventore veritatis.
 
 \subsubsection*{\textit{Non-Risks} Documentados}
-Un \textit{non-risk} es una decisión cuyo valor actual produce un resultado aceptable respaldado
-por razonamiento explícito, documentar estos hallazgos previene que revisiones futuras
-cuestionen decisiones sin el contexto de evaluación que las respalda. El catálogo
-completo se documenta en el \hyperref[anx:atam_nonrisks]{Anexo~M}; la
-Tabla~\ref{tab:atam_nonrisks} presenta los dos \textit{non-risks} formales alineados con los QAS
-del Utility Tree, con los supuestos de vigencia que el adoptante debe respetar.
+Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam eaque ipsa quae ab illo inventore veritatis. Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt. Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit, sed quia non numquam eius modi tempora incidunt ut labore et dolore magnam aliquam quaerat voluptatem.
 
 \small
 \begin{longtable}{@{}p{0.8cm}p{4.5cm}p{1.4cm}p{4.5cm}@{}}
-\caption{\textit{Non-Risks} formales documentados en el análisis ATAM}\label{tab:atam_nonrisks}\\
+\caption{At vero eos et accusamus et iusto odio.}\label{tab:atam_nonrisks}\\
 \toprule
-\textbf{ID} & \textbf{Decisión arquitectónica} & \textbf{QAS} &
-  \textbf{Supuesto de vigencia} \\
+\textbf{ID} & \textbf{Decisión arquitectónica} & \textbf{QAS} & \textbf{Supuesto de vigencia} \\
 \midrule
 \endfirsthead
 \multicolumn{4}{l}{\small\itshape Continuación de la Tabla~\thetable}\\[2pt]
 \toprule
-\textbf{ID} & \textbf{Decisión arquitectónica} & \textbf{QAS} &
-  \textbf{Supuesto de vigencia} \\
+\textbf{ID} & \textbf{Decisión arquitectónica} & \textbf{QAS} & \textbf{Supuesto de vigencia} \\
 \midrule
 \endhead
 \bottomrule
 \endlastfoot
-NR-2 &
-  ADR-17: Interceptor (AOP) como mecanismo transversal de auditoría, la lógica de
-  auditoría está separada del código de dominio &
-  QAS-05 &
-  Que el \textit{framework} AOP cubra todos los puntos de entrada declarados y que no
-  se introduzcan llamadas directas que lo eludan \\
+Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
 \midrule
-NR-4 &
-  ADR-10: \textit{Command} firmado como unidad de auditoría, el
-  \textit{CommandProcessor} verifica el estado \texttt{APPROVED} antes de ejecutar &
-  QAS-05 &
-  Que el \textit{CommandProcessor} no sea modificado para aceptar estados distintos de
-  \texttt{APPROVED} y que el \textit{Command} sea la única ruta de invocación de
-  operaciones de dominio \\
+Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
 \end{longtable}
 \normalsize
 
-Ambos \textit{non-risks} están vinculados a QAS-05 y dependen de invariantes de implementación
-que la RA no puede verificar estructuralmente: la cobertura total del
-\textit{framework} AOP y la unicidad de la ruta de invocación a través del
-\textit{Command}. Su documentación expresa los supuestos que el adoptante debe respetar
-para que la garantía de auditabilidad se mantenga en producción.
+Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam eaque ipsa quae ab illo inventore veritatis. Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt.
 
 \subsubsection*{Interpretación de Hallazgos}
 
-El balance entre \textit{risks} y \textit{non-risks} refleja una arquitectura con garantías estructurales
-sólidas en auditabilidad y disponibilidad. Los cuatro \textit{risks} identificados son decisiones
-tomadas con consecuencias no completamente comprendidas, mitigables mediante restricciones
-de implementación o mediante los resultados experimentales de la PoC.
+Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
 
-R-NR-E y R-NR-F se controlan mediante restricciones de implementación documentadas en
-los ADRs correspondientes. R-NR-I depende de que el adoptante implemente controles de
-acceso a nivel de esquema de base de datos, incluyendo cifrado en reposo a nivel de motor
-de base de datos como parte de los controles mínimos requeridos por PA-08 (LOPDP);
-T3-risk queda resuelto con los resultados experimentales de la PoC.
+Ut enim ad minima veniam, quis nostrum exercitationem ullam corporis suscipit laboriosam, nisi ut aliquid ex ea commodi consequatur. Quis autem vel eum iure reprehenderit qui in ea voluptate velit esse quam nihil molestiae consequatur, vel illum qui dolorem eum fugiat quo voluptas nulla pariatur. At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis praesentium voluptatum deleniti atque corrupti quos dolores et quas molestias excepturi sint occaecati cupiditate non provident.
