@@ -1,0 +1,388 @@
+﻿\chapter{Marco Teórico} \label{cap:marco_teorico}
+
+El presente capítulo establece los fundamentos conceptuales, normativos y metodológicos que sustentan el diseño de la arquitectura de referencia propuesta. La estructura responde a cuatro pilares interdependientes: la Infraestructura de Clave Pública (PKI) como dominio del problema \cite{radzali2025_trustmodels, dulia2023_pkiapplications}; el marco normativo ecuatoriano e internacional que impone restricciones de diseño obligatorias \cite{arcotel20240176, paucar2024_firmas}; la arquitectura de software, en particular los estilos, patrones y métricas que proveen el lenguaje para construir la solución \cite{farshidi2020_patterns, haoues2017}; y los métodos TOGAF ADM y ATAM, que estructuran el proceso de diseño y su validación, respectivamente \cite{TOGAF10, kazman1998_atam}. El capítulo cierra con las tecnologías empleadas para la construcción de los artefactos de la arquitectura de referencia.
+
+% ─────────────────────────────────────────────────────────────────────────────
+
+\section{Infraestructura de Clave Pública (PKI)}
+
+La Infraestructura de Clave Pública (PKI) constituye el marco tecnológico fundamental para garantizar la autenticidad, integridad, confidencialidad y no repudio de las comunicaciones y transacciones digitales \cite{radzali2025_trustmodels, dulia2023_pkiapplications}. Su comprensión profunda es la base conceptual sobre la que se justifica la necesidad de rediseñar los sistemas monolíticos actuales hacia arquitecturas más modulares, auditables y resilientes \cite{dumitrescu2024failurespublickeyinfrastructure, prodanovic2019_pki}.
+
+\subsection{Fundamentos criptográficos: criptografía asimétrica, cadena de confianza y modelos de confianza}
+
+La criptografía asimétrica es el fundamento matemático sobre el que descansa toda la PKI \cite{wrotniak2024_provable}. A diferencia de la criptografía simétrica, en la que emisor y receptor comparten una única clave secreta, el esquema asimétrico utiliza un par de claves matemáticamente relacionadas: una \textit{clave pública}, embebida en el certificado digital y distribuida libremente, y una \textit{clave privada}, que el titular debe mantener en estricta confidencialidad \cite{radzali2025_trustmodels}. La relación matemática entre ambas garantiza que los datos cifrados con una clave solo puedan ser descifrados con la otra \cite{wrotniak2024_provable, chesnokov2020_eds}.
+
+Este par de claves habilita los mecanismos de firma digital, que proveen autenticidad, integridad y no repudio \cite{chesnokov2020_eds}. Para generar una firma, el emisor aplica una función de resumen (\textit{hash}) sobre el documento, produciendo un valor de longitud fija, y cifra dicho resumen con su clave privada \cite{chesnokov2020_eds, rashid2025establishing}. El receptor, al recibir el documento y su firma, descifra esta última con la clave pública del emisor, recomputa el resumen del documento recibido y compara ambos valores; si coinciden, obtiene evidencia criptográfica de que el documento proviene efectivamente del titular de la clave y no fue alterado en tránsito \cite{rashid2025establishing}.
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=\textwidth]{figs/marco-teorico/firma-digital-funcionamiento.pdf}
+    \caption[Funcionamiento de la firma digital]{Funcionamiento de la firma digital. Adaptado de \cite{rashid2025establishing}.}
+    \label{fig:firma-digital-funcionamiento}
+\end{figure}
+
+El concepto de cadena de confianza (\textit{chain of trust}) vincula estas operaciones criptográficas en una estructura jerárquica coherente \cite{rfc5280}. Se trata de una secuencia ordenada de certificados que conecta el certificado de una entidad final con una Autoridad de Certificación Raíz (\textit{Root CA}) de confianza reconocida \cite{rfc5280, radzali2025_trustmodels}. El proceso de \textit{validación de la ruta de certificación} verifica, de manera algorítmica, que: (i) cada certificado de la cadena fue firmado por el emisor inmediatamente superior; (ii) la cadena remonta correctamente hasta una Root CA confiable; (iii) cada certificado era matemáticamente válido en el momento de uso; y (iv) ningún certificado de la ruta ha sido revocado \cite{rfc5280, wrotniak2024_provable}.
+
+Los distintos modelos de confianza determinan cómo se organizan estas cadenas en la práctica \cite{radzali2025_trustmodels}:
+
+\begin{itemize}
+    \item \textbf{Modelo jerárquico}: Estructura centralizada y descendente en la que una única Root CA ocupa el vértice y delega funciones en CAs subordinadas, que a su vez certifican a las entidades finales \cite{prodanovic2019_pki}. Ofrece rutas de validación simples y seguridad robusta, pero introduce un Punto Único de Fallo (SPoF): si la clave privada de la Root CA se ve comprometida, toda la jerarquía pierde su validez \cite{prodanovic2019_pki, radzali2025_trustmodels}.
+
+    \item \textbf{Web of Trust}: Modelo descentralizado, empleado originalmente por PGP, en el que no existe una CA central \cite{radzali2025_trustmodels}. Los participantes se autentican mutuamente firmando sus respectivas claves públicas, distribuyendo la confianza a lo largo de la red. Aunque elimina el SPoF, resulta complejo de gestionar y es poco adecuado para entornos corporativos o gubernamentales que requieren jerarquías formales de responsabilidad \cite{radzali2025_trustmodels}.
+
+    \item \textbf{Modelo Bridge CA}: Diseñado para facilitar la interoperabilidad entre dominios PKI independientes \cite{radzali2025_trustmodels}. Una CA Puente actúa como intermediario de confianza que realiza certificaciones cruzadas entre las CAs principales de distintos dominios, utilizando \textit{policy mapping} para equiparar los requisitos de seguridad. Si bien reduce la complejidad operativa, centraliza nuevamente la vulnerabilidad en la CA Puente \cite{radzali2025_trustmodels, prodanovic2019_pki}.
+\end{itemize}
+
+\subsection{Roles del ecosistema PKI}
+
+El ecosistema PKI involucra una serie de actores con roles claramente delimitados \cite{rfc3647, dulia2023_pkiapplications}:
+
+\begin{itemize}
+    \item \textbf{Autoridad de Certificación Raíz (Root CA)}: Ancla de confianza suprema del sistema \cite{rfc3647, rfc5280}. Emite certificados autofirmados (\textit{self-signed}) cuya legitimidad es reconocida de manera explícita por los sistemas operativos y navegadores. Su clave privada es el activo más crítico del ecosistema \cite{prodanovic2019_pki, FIPS1402}.
+
+    \item \textbf{Autoridad de Certificación Subordinada (Sub-CA)}: CA cuya clave pública ha sido certificada por la Root CA o por otra Sub-CA \cite{rfc3647}. Delega las operaciones de emisión cotidianas, creando un nivel de aislamiento que protege a la Root CA de la exposición en línea \cite{prodanovic2019_pki}.
+
+    \item \textbf{Autoridad de Registro (RA)}: Entidad intermediaria que gestiona el proceso de inscripción \cite{rfc3647}. Identifica al solicitante, verifica su información y aprueba la solicitud de certificado antes de que la CA lo genere y emita \cite{rfc3647, wu2009_sshca}.
+
+    \item \textbf{Suscriptor (entidad final)}: Persona, organización o dispositivo identificado en el certificado \cite{rfc3647}. El suscriptor recibe el certificado y asume la responsabilidad de proteger la clave privada asociada \cite{rfc3647, rfc5280, arcotel20240176}.
+
+    \item \textbf{\textit{Relying Party} (parte que confía)}: Persona o sistema que recibe el certificado y confía en el vínculo verificado entre la clave pública y la identidad del suscriptor para validar firmas digitales o cifrar comunicaciones \cite{radzali2025_trustmodels, chia2021_hybridpki}.
+\end{itemize}
+
+\subsection{Estándar X.509 v3: estructura de certificado, extensiones críticas y OIDs}
+
+El estándar X.509 versión 3, perfilado para Internet por la RFC 5280, es el formato universal que vincula de forma firmada una clave pública con la identidad de un sujeto \cite{rfc5280}. La estructura básica del certificado comprende los siguientes campos principales:
+
+\begin{itemize}
+    \item \textbf{Versión}: Indica la versión del certificado; el valor ``3'' es obligatorio para incluir extensiones \cite{rfc5280}.
+    \item \textbf{Número de serie}: Entero positivo único asignado por la CA emisora \cite{rfc5280}.
+    \item \textbf{Emisor (\textit{Issuer})}: Nombre Distintivo (DN) que identifica a la CA que firmó el certificado \cite{rfc5280}.
+    \item \textbf{Sujeto (\textit{Subject})}: DN que identifica a la entidad titular de la clave pública \cite{rfc5280}.
+    \item \textbf{Validez}: Intervalo temporal definido por los campos \texttt{notBefore} y \texttt{notAfter} \cite{rfc5280}.
+    \item \textbf{Información de clave pública}: Contiene la clave pública junto con el identificador del algoritmo criptográfico empleado \cite{rfc5280}.
+\end{itemize}
+
+Las extensiones X.509 v3 añaden semántica adicional al certificado. Entre las más relevantes para la operación de una PKI empresarial se encuentran \cite{rfc5280, arcotel20240176}:
+
+\begin{itemize}
+    \item \textbf{Authority Information Access (AIA)}: Indica la ubicación del servicio OCSP del emisor y el certificado de la CA superior, esta extensión debe ser no crítica \cite{rfc5280}.
+
+    \item \textbf{CRL Distribution Points (CDP)}: Señala la URL de descarga de la Lista de Certificados Revocados (CRL) de la CA emisora, se recomienda como no crítica para maximizar la interoperabilidad \cite{rfc5280}.
+
+    \item \textbf{Extended Key Usage (EKU)}: Restringe los propósitos para los que puede usarse la clave pública, como autenticación de servidor, autenticación de cliente, firma de código o sellado de tiempo, puede ser crítica o no crítica a elección del emisor \cite{rfc5280}.
+\end{itemize}
+
+Los OIDs (\textit{Object Identifiers}) son secuencias numéricas jerárquicas y globalmente únicas, utilizadas en toda la infraestructura X.509 para identificar de manera inequívoca algoritmos criptográficos, políticas de certificación, extensiones y atributos de nombres \cite{rfc5280}. Esto garantiza que todas las aplicaciones procesen los datos de forma homogénea \cite{rfc5280, wrotniak2024_provable}.
+
+\subsection{Ciclo de vida del certificado: emisión, renovación y revocación (CRL vs.\ OCSP)}
+
+El ciclo de vida de un certificado abarca cuatro etapas principales \cite{rfc5280}:
+
+\begin{enumerate}
+    \item \textbf{Emisión}: La RA identifica y autentica la solicitud \cite{rfc3647}. Una vez aprobada, la CA genera el certificado X.509, lo firma con su clave privada y lo entrega al suscriptor \cite{rfc5280}.
+    \item \textbf{Uso}: El suscriptor emplea el certificado para las operaciones autorizadas por su EKU durante el periodo de validez \cite{rfc5280}.
+    \item \textbf{Renovación}: Emisión de un nuevo certificado que extiende únicamente el periodo de validez, sin modificar las claves ni la información del titular, difiere del \textit{re-key}, donde se genera un nuevo par de claves \cite{rfc5280}.
+    \item \textbf{Revocación}: Invalidación del certificado antes de su expiración natural, activada ante el compromiso de la clave privada, un cambio en los datos del sujeto u otras causas justificadas \cite{rfc5280, wrotniak2024_provable}.
+\end{enumerate}
+
+Para la verificación del estado de revocación existen dos mecanismos estándar con compromisos arquitectónicos relevantes \cite{rfc5280, rfc6960}:
+
+\begin{itemize}
+    \item \textbf{CRL (RFC 5280, \textit{Certificate Revocation List})}: Lista firmada y fechada emitida periódicamente por la CA que enumera los números de serie de los certificados revocados \cite{rfc5280}. Puede distribuirse masivamente y cachearse sin depender de conexión en tiempo real, pero sufre de \textit{latencia de revocación}: un certificado revocado sigue siendo aceptado por los clientes hasta la siguiente actualización de la CRL (problema del ``certificado zombie''), y el tamaño de la lista crece con el tiempo \cite{wrotniak2024_provable, dumitrescu2024failurespublickeyinfrastructure}.
+
+    \item \textbf{OCSP (RFC 6960, \textit{Online Certificate Status Protocol})}: Protocolo que permite consultar en tiempo real el estado de un certificado individual al servidor OCSP del emisor \cite{rfc6960}. Ofrece respuesta casi inmediata y bajo consumo de ancho de banda por consulta; sin embargo, introduce una dependencia de red estricta, ya que si el respondedor está inaccesible la validación puede fallar, y lo expone a ataques de Denegación de Servicio (DoS) bajo carga elevada \cite{rfc6960, panigrahi2023_blockchainpki}.
+\end{itemize}
+
+\subsection{Gestión de claves y HSM: PKCS\#11, FIPS 140-2 y \textit{key ceremony}}
+
+Las claves privadas de las CAs son el activo más crítico de la PKI; su compromiso equivale al colapso de toda la confianza que la CA sustenta \cite{FIPS1402, prodanovic2019_pki}. Para protegerlas se emplean Módulos de Seguridad de Hardware (HSM), dispositivos físicos con resistencia a la manipulación (\textit{tamper-resistant}) que generan, almacenan y operan claves criptográficas sin exponer el material de clave en texto plano al exterior \cite{FIPS1402}.
+
+El estándar FIPS 140-2, publicado por el NIST, categoriza los módulos criptográficos en cuatro niveles de seguridad incrementales \cite{FIPS1402}:
+
+\begin{itemize}
+    \item \textbf{Nivel 1}: Seguridad básica de producción, sin requisitos de seguridad física adicionales \cite{FIPS1402}.
+    \item \textbf{Nivel 2}: Añade mecanismos de evidencia de manipulación (\textit{tamper-evident}) y autenticación basada en roles \cite{FIPS1402}.
+    \item \textbf{Nivel 3}: Exige circuitos de \textit{respuesta} a la manipulación (\textit{tamper-response}): el módulo borra (\textit{zeroize}) inmediatamente todas las claves en texto plano si se detecta un intento de apertura, y requiere autenticación basada en identidad \cite{FIPS1402}.
+    \item \textbf{Nivel 4}: Protección perimetral completa a 360 grados y resistencia a fallos ambientales inducidos, como fluctuaciones extremas de voltaje o temperatura, eliminando cualquier vector de ataque físico \cite{FIPS1402}.
+\end{itemize}
+
+La interfaz estándar PKCS\#11 (\textit{Cryptoki}) es una API criptográfica independiente de la plataforma que permite al software interactuar con el HSM para ejecutar operaciones de firma y generación de claves sin extraer jamás el material de clave privada del dispositivo \cite{rfc3647, FIPS1402}.
+
+La \textit{key ceremony} es el procedimiento rigurosamente auditado mediante el cual se genera la clave raíz de la CA \cite{rfc3647}. Su diseño garantiza que ninguna persona individual tenga acceso completo a la clave privada, mediante la técnica de \textit{conocimiento dividido} (\textit{split knowledge}) y \textit{control dual}: la clave se distribuye en $m$ componentes custodiados por distintos operadores de confianza, y se requiere la participación de al menos $n$ de ellos para reconstituirla o activarla \cite{rfc3647, FIPS1402}.
+
+% ─────────────────────────────────────────────────────────────────────────────
+
+\section{Marco Normativo}
+
+El marco normativo convierte los conceptos PKI en restricciones de diseño obligatorias \cite{arcotel20240176, paucar2024_firmas}. La identificación tanto de las exigencias legales del contexto ecuatoriano como de los estándares internacionales de buenas prácticas es imprescindible para derivar los requisitos que la arquitectura de referencia debe satisfacer \cite{nakagawa2023reference}. A continuación se examinan las disposiciones del ordenamiento ecuatoriano, los estándares internacionales que orientan el diseño, y las brechas que los sistemas monolíticos no logran cubrir por diseño.
+
+\subsection{Marco legal ecuatoriano}
+
+\subsubsection{Ley de Comercio Electrónico y Firmas Electrónicas (LCE) y su Reglamento}
+
+La Ley de Comercio Electrónico, Firmas Electrónicas y Mensajes de Datos (LCE) constituye el instrumento legal fundacional de la PKI en Ecuador \cite{paucar2024_firmas}. Regula los mensajes de datos y los servicios de certificación, y otorga a la firma electrónica la misma validez legal y probatoria que la firma manuscrita \cite{paucar2024_firmas, arcotel20240176}. Su Reglamento desarrolla el régimen de acreditación supervisado por ARCOTEL y establece los procedimientos para la homologación de certificados extranjeros, condicionada al cumplimiento de estándares de confiabilidad equivalentes a los exigidos a las CA nacionales \cite{arcotel20240176}.
+
+\subsubsection{Resolución ARCOTEL-2024-0176}
+
+La Resolución Nro. ARCOTEL-2024-0176 establece la Norma Técnica para la prestación de servicios de certificación y fija los requisitos técnicos y operativos que deben cumplir las Entidades de Certificación Acreditadas \cite{arcotel20240176}. Sus mandatos de mayor relevancia arquitectónica son:
+
+\begin{itemize}
+    \item \textbf{Perfiles de certificado}: Obliga al uso del estándar X.509 v3 y define perfiles específicos, identificados mediante OIDs propietarios, para: Persona Natural, Miembro de Empresa, Representante Legal, Sello Electrónico y Sellado de Tiempo \cite{arcotel20240176}.
+    \item \textbf{Algoritmos y longitudes de clave obligatorias}: Las CA deben emplear RSA con SHA-256 y longitudes mínimas de 4096 bits para Root y Sub-CAs, y 2048 bits para certificados de usuario final y servicios operativos \cite{arcotel20240176}.
+    \item \textbf{Periodos de validez}: Recomienda una validez máxima de cinco años para los certificados de Sellado de Tiempo y de validación OCSP \cite{arcotel20240176}.
+    \item \textbf{Revocación inmediata}: Obliga a implementar mecanismos que permitan al usuario solicitar en línea la revocación de su certificado, y a la CA ejecutarla de forma inmediata \cite{arcotel20240176}.
+    \item \textbf{CRL y OCSP}: Exige la publicación de CRL con actualización periódica y la disponibilidad del servicio OCSP en tiempo real \cite{arcotel20240176}.
+\end{itemize}
+
+\subsubsection{LOPDP: implicaciones para datos personales en el proceso de emisión}
+
+La Ley Orgánica de Protección de Datos Personales (LOPDP) obliga a las entidades de certificación a garantizar la protección, confidencialidad y conservación segura de los datos personales recabados durante el proceso de emisión \cite{arcotel20240176}. Cualquier información del titular que no figure explícitamente en el certificado público debe mantenerse en estricta reserva, y las CA deben implementar medidas técnicas, como controles de acceso, cifrado en reposo y trazabilidad de accesos, que prevengan accesos no autorizados o brechas de datos \cite{arcotel20240176}.
+
+\subsection{Estándares internacionales de referencia}
+
+Los siguientes estándares, si bien no son vinculantes para las CA ecuatorianas, representan el estado del arte en gestión de clave pública y son referencia obligada para cualquier diseño de PKI robusto \cite{rfc5280, FIPS1402}:
+
+\begin{itemize}
+    \item \textbf{NIST SP 800-57}: Proporciona directrices comprehensivas de gestión de ciclo de vida de claves criptográficas, incluyendo periodos criptográficos (\textit{cryptoperiods}), longitudes de clave mínimas por horizonte temporal y procedimientos de transición de algoritmos \cite{FIPS1402}. Complementa, en el plano de las mejores prácticas, las exigencias del FIPS 140-2 que rigen los HSM.
+
+    \item \textbf{CA/Browser Forum Baseline Requirements}: Conjunto de requisitos adoptados por los principales navegadores y sistemas operativos para la emisión y gestión de certificados TLS públicos \cite{turan2024_semidecentralized}. Las CA raíces incluidas en los almacenes de confianza de los navegadores deben cumplirlos, asegurando un modelo de confianza uniforme a escala global \cite{rashid2025establishing}.
+\end{itemize}
+
+\subsection{Brecha normativa: qué exige ARCOTEL que los sistemas monolíticos no pueden satisfacer por diseño}
+
+Los sistemas PKI tradicionales, fundamentados en arquitecturas monolíticas y CA centralizadas, presentan limitaciones estructurales que les impiden satisfacer íntegramente los mandatos de la Resolución ARCOTEL-2024-0176 \cite{arcotel20240176, dumitrescu2024failurespublickeyinfrastructure}:
+
+\begin{enumerate}
+    \item \textbf{Latencia de revocación}: La exigencia de revocación inmediata y publicación periódica de CRL choca con la dependencia de los sistemas monolíticos en procesos por lotes \cite{wrotniak2024_provable}. La ventana temporal entre la solicitud de revocación y su publicación efectiva (\textit{zombie certificate window}) constituye un riesgo de seguridad no mitigable en arquitecturas batch centralizadas \cite{dumitrescu2024failurespublickeyinfrastructure}.
+
+    \item \textbf{Falta de transparencia y auditoría inmutable}: ARCOTEL exige registros de auditoría íntegros e inalterables \cite{arcotel20240176}. Los sistemas monolíticos carecen de mecanismos nativos de registro inmutable y auditoría continua verificable por terceros, lo que dificulta la detección oportuna de emisiones fraudulentas \cite{turan2024_semidecentralized, zhao2020_trustca}.
+\end{enumerate}
+
+% ─────────────────────────────────────────────────────────────────────────────
+
+\section{Arquitectura de Software}
+
+La arquitectura de software provee el lenguaje, los patrones y las herramientas necesarias para diseñar la solución \cite{farshidi2020_patterns}. Esta sección sintetiza los conceptos esenciales que fundamentan las decisiones de diseño de la arquitectura de referencia propuesta.
+
+\subsection{Arquitecturas de referencia: definición, propósito y diferencia con la arquitectura de instancia}
+
+Una arquitectura de referencia es un marco abstracto y un \textit{blueprint} reutilizable que presenta conceptos unificadores, mejores prácticas y soluciones genéricas para una clase de problemas dentro de un dominio tecnológico específico \cite{diasvalle2021, nakagawa2023reference}. Su propósito central es estandarizar y acelerar el desarrollo de sistemas, facilitar la comunicación entre partes interesadas y mejorar la interoperabilidad mediante mecanismos comunes, reduciendo costos y riesgos a través de la reutilización de activos probados \cite{diasvalle2021}.
+
+La diferencia fundamental con una arquitectura de instancia reside en el nivel de abstracción: la arquitectura de referencia opera en un plano genérico de dominio, ofreciendo mecanismos de variabilidad que soportan múltiples sistemas futuros; la arquitectura de instancia es la realización concreta y específica de un producto, derivada de la arquitectura de referencia para satisfacer los requisitos funcionales y no funcionales de un sistema particular \cite{nakagawa2023reference}.
+
+\subsection{Atributos de calidad como conductores del diseño (ISO/IEC 25010)}
+
+Los atributos de calidad son propiedades verificables del sistema que determinan en qué medida satisface las necesidades de sus partes interesadas \cite{oriol2014_qualitymodels}. En el contexto de la arquitectura de referencia PKI, los atributos conductores del diseño, alineados con la taxonomía ISO/IEC 25010, son:
+
+\begin{itemize}
+    \item \textbf{Seguridad}: Grado en que el sistema protege la información garantizando niveles apropiados de acceso \cite{haoues2017}. Incluye las subcaracterísticas de confidencialidad, integridad, no repudio, responsabilidad y autenticidad.
+
+    \item \textbf{Modificabilidad} (subcaracterística de Mantenibilidad): Capacidad del sistema para ser modificado sin introducir defectos ni degradar su calidad \cite{franca2015_soaqm}. Depende de la máxima cohesión y el mínimo acoplamiento entre módulos \cite{aldebagy2020_metrics}.
+
+    \item \textbf{Disponibilidad} (subcaracterística de Fiabilidad): Grado en que el sistema es operacional y accesible cuando se requiere \cite{franca2015_soaqm, haoues2017}. En sistemas distribuidos, exige mecanismos de redundancia, \textit{failover} y resiliencia ante fallos parciales~\cite{benhassouna2025_atraf}.
+
+    \item \textbf{Eficiencia de desempeño}: Rendimiento del sistema en relación con los recursos consumidos bajo condiciones especificadas, desglosado en comportamiento temporal (tiempos de respuesta y latencia), utilización de recursos y capacidad máxima del sistema \cite{rojas2025_performance}.
+\end{itemize}
+
+\subsection{Estilos arquitectónicos relevantes}
+
+Los estilos arquitectónicos proveen soluciones probadas a problemas recurrentes de organización estructural, estableciendo vocabulario y restricciones que guían las decisiones de diseño \cite{richards2020fundamentals, farshidi2020_patterns}. Richards y Ford documentan el siguiente espectro de estilos en el contexto de la arquitectura de software moderna, desde anti-patrones de referencia hasta arquitecturas de alta escalabilidad \cite{richards2020fundamentals}:
+
+\begin{itemize}
+    \item \textbf{Big Ball of Mud} (anti-patrón): Ausencia de toda estructura arquitectónica discernible, donde la información se comparte promiscuamente entre componentes distantes del sistema~\cite{richards2020fundamentals}. Cualquier cambio resulta cada vez más costoso e impredecible, y este anti-patrón emerge en proyectos que carecen de gobernanza sobre la calidad y la estructura del código~\cite{richards2020fundamentals}.
+
+    \item \textbf{Layered Architecture (\textit{N-Tier})}: Organiza los componentes en capas horizontales lógicas con dependencia unidireccional descendente (presentación, negocio, persistencia y datos), siendo el estándar de facto por su simplicidad y bajo costo~\cite{richards2020fundamentals}. Su limitación principal es la \textit{architecture sinkhole anti-pattern}: solicitudes que atraviesan capas sin realizar procesamiento real, añadiendo latencia sin valor~\cite{richards2020fundamentals}.
+
+    \item \textbf{Pipeline Architecture (\textit{Pipes and Filters})}: Compone el procesamiento mediante \textit{pipes} (canales unidireccionales sin estado) y \textit{filters} (componentes autocontenidos de transformación única), siendo el principio subyacente de los lenguajes de shell Unix~\cite{richards2020fundamentals}. Al desplegarse como unidad monolítica, no soporta tolerancia a fallos: el fallo de un único filtro impacta la totalidad del proceso~\cite{richards2020fundamentals}.
+
+    \item \textbf{Microkernel Architecture (\textit{Plug-in Architecture})}: Separa un \textit{core system} (funcionalidad mínima requerida) de \textit{plug-in components} independientes que extienden el comportamiento del núcleo sin modificarlo~\cite{richards2020fundamentals}. Los plugins son independientes entre sí y no deben tener dependencias cruzadas; la comunicación con el núcleo es generalmente punto a punto~\cite{richards2020fundamentals}.
+
+    \item \textbf{Service-Based Architecture}: Estilo híbrido que organiza la aplicación en servicios de dominio de grano grueso desplegados independientemente, con una base de datos centralizada compartida y un número típico de cuatro a doce servicios~\cite{richards2020fundamentals}. Garantiza integridad de datos mediante transacciones ACID (Atomicidad, Consistencia, Aislamiento y Durabilidad) estándar dentro de cada servicio, en contraste con los microservicios que dependen de consistencia eventual~\cite{richards2020fundamentals}.
+
+    \item \textbf{Event-Driven Architecture}: Estilo distribuido y asíncrono donde los productores de eventos no conocen a los consumidores, logrando alto desacoplamiento temporal~\cite{richards2020fundamentals}. Existen dos topologías: \textit{broker} (sin orquestador central, mayor desacoplamiento) y \textit{mediator} (con orquestador central, mayor control del flujo); ambas soportan únicamente consistencia eventual~\cite{richards2020fundamentals}.
+
+    \item \textbf{Space-Based Architecture}: Diseñada para alta escalabilidad y elasticidad, elimina la base de datos como restricción síncrona manteniendo los datos en \textit{grids} replicados en memoria entre unidades de procesamiento activas~\cite{richards2020fundamentals}. Las unidades se inician y detienen dinámicamente según la carga; la sincronización asíncrona implica consistencia eventual, lo que constituye su principal limitación en sistemas transaccionales regulados~\cite{richards2020fundamentals}.
+
+    \item \textbf{Orchestration-Driven SOA}: Estilo de finales de los años 1990 que centraliza toda la coordinación en un \textit{Enterprise Service Bus} (ESB)~\cite{richards2020fundamentals}. El ESB genera acoplamiento rígido hacia productos de proveedor específico, la granularidad transaccional resulta cada vez más compleja y el equipo responsable del motor se convierte inevitablemente en un cuello de botella burocrático~\cite{richards2020fundamentals}.
+
+    \item \textbf{Microservices Architecture}: Cada servicio modela un dominio o flujo de trabajo y opera como unidad completamente independiente con su propia base de datos, inspirándose en el concepto de \textit{bounded context} del diseño orientado a dominios~\cite{richards2020fundamentals}. La granularidad más fina respecto a Service-Based introduce desafíos de coordinación; los autores desaconsejan transacciones entre fronteras de servicios~\cite{richards2020fundamentals}.
+\end{itemize}
+
+\subsection{Patrones aplicados}
+
+Los patrones de diseño documentan soluciones probadas a problemas arquitectónicos recurrentes \cite{farshidi2020_patterns}. El catálogo que se presenta a continuación proviene de \textit{Pattern-Oriented Software Architecture} (en adelante POSA4) \cite{buschmann2007posa4}, y se organiza en dos subcategorías: patrones arquitectónicos, que definen la estructura y el estilo de comunicación a nivel de sistema, y patrones de diseño, que resuelven problemas recurrentes a nivel de componente. Ambas subcategorías se presentan en orden alfabético y cubren exclusivamente los patrones aplicados en la arquitectura de referencia PKI.
+
+\subsubsection{Patrones arquitectónicos}
+
+\begin{itemize}
+    \item \textbf{Anti-Corruption Layer}: Interpone una capa adaptadora entre el dominio CA y los sistemas externos, convirtiendo la interfaz provista por cada sistema externo en la interfaz que el dominio interno requiere, de forma que los cambios en las APIs externas quedan localizados en el adaptador y son transparentes para el resto del sistema~\cite{buschmann2007posa4}. A diferencia de un adaptador directo, esta capa recodifica además los conceptos del modelo externo al modelo semántico del dominio CA, protegiendo la integridad del dominio frente a la contaminación de modelos heterogéneos~\cite{buschmann2007posa4}.
+
+    \item \textbf{Broker}: Introduce un componente intermediario que encapsula los detalles de localización y comunicación entre productores y consumidores en un sistema distribuido, de modo que ninguna de las partes necesita conocer la identidad ni la ubicación de la otra~\cite{buschmann2007posa4}. El broker recibe solicitudes de los clientes, las enruta hacia el servicio correspondiente y devuelve los resultados, abstraiendo por completo la complejidad de la red y el protocolo de transporte. Este desacoplamiento opera en dos dimensiones: espacial, porque los componentes no se referencian mutuamente de forma directa; y temporal, porque el productor no bloquea su ejecución esperando respuesta del consumidor. Cuando se combina con la topología \textit{Publisher-Subscriber}, el broker gestiona además la entrega de eventos a múltiples suscriptores de forma anónima, sin que los publicadores conozcan quiénes recibirán los mensajes ni cuándo los procesarán~\cite{buschmann2007posa4}.
+
+    \item \textbf{Layers}: Organiza el sistema en capas horizontales donde cada capa solo puede comunicarse con la capa inmediatamente inferior, estableciendo una jerarquía de dependencias unidireccional y controlada~\cite{buschmann2007posa4}. Resuelve el problema del acoplamiento transversal: los cambios en una capa de infraestructura (persistencia, protocolo de red) no se propagan al dominio ni a la presentación, y cada capa puede ser probada y reemplazada de forma independiente~\cite{buschmann2007posa4}.
+
+    \item \textbf{Microkernel}: Separa la funcionalidad mínima e invariante del sistema (el núcleo) de la funcionalidad extensible implementada como plugins que se agregan sin modificar el núcleo~\cite{buschmann2007posa4}. Resuelve el problema de la extensibilidad sin rediseño: agregar una nueva capacidad equivale a desarrollar e integrar un nuevo plugin que se registra en el núcleo, manteniendo el \textit{core} estable, auditado y sin necesidad de recompilación~\cite{buschmann2007posa4}.
+
+    \item \textbf{Pipes and Filters}: Organiza el procesamiento como una secuencia de filtros independientes conectados por conductos que transportan los datos de una etapa a la siguiente~\cite{buschmann2007posa4}. Resuelve el problema de la lógica de procesamiento monolítica: cada filtro es un componente reemplazable con una única responsabilidad de transformación, lo que habilita composición, reutilización y prueba independiente de cada etapa del \textit{pipeline}~\cite{buschmann2007posa4}.
+\end{itemize}
+
+\subsubsection{Patrones de diseño}
+
+\begin{itemize}
+    \item \textbf{Command}: Encapsula una solicitud de operación como un objeto con identidad, estado y ciclo de vida propios, desacoplando al emisor de la solicitud de su ejecutor~\cite{buschmann2007posa4}. Resuelve el problema de auditoría y trazabilidad: cada operación es un artefacto persistible, transferible y potencialmente reversible, independiente del código que lo invoca o lo procesa~\cite{buschmann2007posa4}.
+
+    \item \textbf{Command Processor}: Gestiona la ejecución de objetos \textit{Command} garantizando atomicidad, registro de resultado y desacoplamiento entre el punto de entrada y la lógica de negocio ejecutada~\cite{buschmann2007posa4}. Resuelve el problema de mezclar orquestación, ejecución y auditoría en un mismo componente, centralizando el ciclo de vida del comando: recepción, validación, ejecución y registro post-ejecución~\cite{buschmann2007posa4}.
+
+    \item \textbf{Interceptor}: Define puntos de extensión en el flujo de procesamiento de solicitudes donde comportamiento transversal (auditoría, autorización, métricas) puede insertarse sin modificar los componentes interceptados~\cite{buschmann2007posa4}. Resuelve el problema de la lógica de infraestructura dispersa en el dominio: el interceptor se registra una vez y actúa automáticamente sobre todas las llamadas que atraviesan el punto de intercepción configurado~\cite{buschmann2007posa4}.
+
+    \item \textbf{Memento}: Captura y externaliza el estado interno de un objeto en un momento determinado sin violar su encapsulamiento, preservando ese \textit{snapshot} como un artefacto independiente~\cite{buschmann2007posa4}. Resuelve el problema de construir un registro histórico inmutable de estados: cada captura preserva el estado completo del objeto en el instante del evento, y el Memento resultante no puede ser alterado posteriormente sin detección~\cite{buschmann2007posa4}.
+
+    \item \textbf{Objects for States}: Representa cada estado posible de un objeto como una clase distinta que implementa el comportamiento específico correspondiente a ese estado, delegando el comportamiento del objeto al estado activo~\cite{buschmann2007posa4}. Resuelve el problema de transiciones ilegales y comportamiento condicional por estado: si cada estado es un tipo, el compilador rechaza invocaciones de operaciones no válidas para el estado actual, haciendo la máquina de estados correcta por construcción~\cite{buschmann2007posa4}.
+
+\end{itemize}
+
+\subsection{Acoplamiento Eferente (Ce) como indicador de modularidad}
+
+El Acoplamiento Eferente (\textit{Efferent Coupling}, Ce) es una métrica estructural que cuantifica el número de conexiones salientes que tiene un artefacto de software hacia otros artefactos externos de los que depende para funcionar~\cite{richards2020fundamentals}. Un Ce elevado indica un componente inestable y frágil: al depender de muchos módulos externos, cualquier cambio en esos módulos puede romper el componente. La inestabilidad de un artefacto se formaliza como $I = Ce / (Ce + Ca)$, donde $Ca$ es el Acoplamiento Aferente (conexiones entrantes); un valor de $I$ cercano a~1 indica alta inestabilidad~\cite{richards2020fundamentals}.
+
+A nivel de contenedores C4 N2, Ce(X) se define como el número de contenedores externos que X referencia directamente en sus llamadas salientes, y se mide por conteo directo de arcos de dependencia en el diagrama de contenedores~\cite{bogner2020_rama}. Un Ce elevado a este nivel degrada la modificabilidad y aumenta el riesgo de fallos en cascada ante cambios en los sistemas integrados; por ello la arquitectura de referencia establece Ce~$\leq$~5 por contenedor como umbral~\cite{bogner2017_maintainability, bogner2020_rama}.
+% ─────────────────────────────────────────────────────────────────────────────
+
+\section{TOGAF ADM}
+
+TOGAF ADM es el marco metodológico que estructura el proceso de diseño de la arquitectura de referencia \cite{TOGAF10, pamungkas2025_togafadm}. Su adopción como \textit{framework} de Arquitectura Empresarial provee un vocabulario común, un repositorio de activos y un ciclo de desarrollo iterativo que guía desde la visión estratégica hasta la definición tecnológica \cite{TOGAF10}.
+
+\subsection{Enterprise Architecture: definición, propósito y capas}
+
+La Arquitectura Empresarial (EA, \textit{Enterprise Architecture}) traduce la visión y la estrategia organizacional en un entorno integrado y coherente, alineando procesos de negocio, datos, aplicaciones y tecnología para entregar soluciones seguras, escalables y orientadas a los objetivos \cite{TOGAF10, pamungkas2025_togafadm}. Su propósito es optimizar los procesos heredados fragmentados, reducir la duplicidad de capacidades y proveer una base racional para las decisiones de inversión tecnológica \cite{TOGAF10}.
+
+El estándar TOGAF estructura la EA en cuatro dominios o capas arquitectónicas \cite{TOGAF10}:
+
+\begin{itemize}
+    \item \textbf{Arquitectura de Negocio}: Define la estrategia, la gobernanza, la estructura organizacional y los procesos de negocio clave \cite{TOGAF10}.
+    \item \textbf{Arquitectura de Datos}: Describe la estructura de los activos de datos lógicos y físicos y los recursos de gestión de datos \cite{TOGAF10}.
+    \item \textbf{Arquitectura de Aplicaciones}: Proporciona un \textit{blueprint} de las aplicaciones individuales, sus interacciones y sus relaciones con los procesos de negocio \cite{TOGAF10}.
+    \item \textbf{Arquitectura de Tecnología}: Detalla las capacidades de infraestructura, tanto de software como de hardware, necesarias para soportar el despliegue de los demás dominios \cite{TOGAF10}.
+\end{itemize}
+
+\subsection{TOGAF Standard 10th Ed.: estructura del \textit{framework}, Architecture Repository y Architecture Capability}
+
+La décima edición del estándar TOGAF, publicada por The Open Group en 2022, divide su contenido en Contenido Fundamental, con seis documentos básicos que cubren conceptos, el ADM y sus técnicas, y las TOGAF Series Guides, que proveen orientación práctica para adaptar el \textit{framework} a contextos como Ágil, Seguridad o Arquitectura de Negocio \cite{TOGAF10}.
+
+El Architecture Repository es el sistema estructurado donde se almacenan las distintas clases de productos arquitectónicos a diferentes niveles de abstracción \cite{TOGAF10}. Organiza activos como el \textit{Architecture Metamodel}, la \textit{Reference Library}, el \textit{Solutions Landscape} y el \textit{Governance Repository}, soportando el \textit{Enterprise Continuum} y habilitando la reutilización de artefactos entre proyectos \cite{TOGAF10}.
+
+La Architecture Capability define el conjunto de organismos de gobernanza, estructuras organizacionales, roles, competencias y procesos necesarios para sostener la práctica de EA como una función operativa continua dentro de la organización \cite{TOGAF10}.
+
+\subsection{Architecture Development Method (ADM): ciclo iterativo y fases}
+
+El ADM (\textit{Architecture Development Method}) es el núcleo del \textit{framework} TOGAF: un modelo de proceso iterativo, probado y repetible para desarrollar, transicionar y gobernar arquitecturas \cite{TOGAF10, pamungkas2025_togafadm}. El ciclo completo comprende una Fase Preliminar, ocho fases secuenciales (A–H) y un proceso transversal de Gestión de Requisitos que opera de forma continua a lo largo de todo el ciclo \cite{TOGAF10}:
+
+\begin{itemize}
+    \item \textbf{Fase Preliminar}: Preparación e iniciación del proceso arquitectónico \cite{TOGAF10}. Establece la Architecture Capability, personaliza el \textit{framework} a las necesidades del proyecto y define los Principios de Arquitectura fundacionales que guiarán todas las decisiones de diseño \cite{TOGAF10}.
+
+    \item \textbf{Fase A — Visión de Arquitectura}: Conduce la fase inicial del ciclo de desarrollo y establece la visión aspiracional de alto nivel \cite{TOGAF10}. Define el alcance de la iniciativa, identifica a los stakeholders y los motores de negocio, crea la Visión de Arquitectura y obtiene la aprobación formal para proceder \cite{TOGAF10, pamungkas2025_togafadm}.
+
+    \item \textbf{Fase B — Arquitectura de Negocio}: Desarrolla la arquitectura de negocio para soportar la visión acordada, definiendo la estrategia, la gobernanza, la estructura organizacional y los procesos de negocio clave que realizarán dicha visión \cite{TOGAF10}.
+
+    \item \textbf{Fase C — Arquitecturas de Sistemas de Información}: Desarrolla los \textit{blueprints} para la Arquitectura de Datos (activos de datos lógicos y físicos) y la Arquitectura de Aplicaciones (aplicaciones individuales y sus interacciones con los procesos de negocio) \cite{TOGAF10}.
+
+    \item \textbf{Fase D — Arquitectura de Tecnología}: Desarrolla la arquitectura tecnológica de soporte describiendo las capacidades de infraestructura de hardware y software necesarias, como redes, \textit{middleware}, servicios en la nube y estándares de comunicación \cite{TOGAF10}.
+
+    \item \textbf{Fase E — Oportunidades y Soluciones}: Conduce la planificación inicial de implementación, identificando los vehículos de entrega apropiados (soluciones comerciales, desarrollos a medida) que realizarán las arquitecturas definidas en las Fases B, C y D \cite{TOGAF10}.
+
+    \item \textbf{Fase F — Planificación de la Migración}: Aborda cómo transicionar desde la arquitectura de línea base hacia la arquitectura objetivo, finalizando un Plan de Implementación y Migración detallado que guía el despliegue \cite{TOGAF10}.
+
+    \item \textbf{Fase G — Gobierno de la Implementación}: Provee supervisión arquitectónica durante la implementación real del sistema, asegurando que el despliegue se alinee con la arquitectura definida y con los principios rectores \cite{TOGAF10}.
+
+    \item \textbf{Fase H — Gestión del Cambio Arquitectónico}: Establece procedimientos para gestionar los cambios a la arquitectura desplegada, monitoreando continuamente el entorno tecnológico e iniciando nuevos ciclos de desarrollo cuando sea necesario \cite{TOGAF10}.
+
+    \item \textbf{Gestión de Requisitos}: Proceso central y continuo que captura, refina y gestiona los requisitos arquitectónicos de forma dinámica a lo largo de todas las demás fases del ciclo ADM \cite{TOGAF10}. No es una fase secuencial sino el mecanismo transversal que garantiza la trazabilidad entre requisitos y decisiones arquitectónicas en cada iteración \cite{TOGAF10}.
+\end{itemize}
+
+\subsection{ADM \textit{Tailoring}: personalización del ciclo de desarrollo arquitectónico}
+
+El \textit{tailoring} del ADM es la práctica de personalizar, adaptar y ampliar el método genérico de desarrollo arquitectónico para ajustarlo al entorno, las estructuras y los procesos particulares de cada proyecto u organización \cite{TOGAF10}. TOGAF 10 establece el \textit{tailoring} no como una excepción, sino como una expectativa fundamental del estándar: dado que el ADM es un marco fundacional de propósito general, los profesionales deben adaptarlo para definir una metodología específica en lugar de aplicarlo como un conjunto de reglas rígidas \cite{TOGAF10}.
+
+Los elementos susceptibles de personalización abarcan cuatro dimensiones \cite{TOGAF10}. Las fases y sus pasos pueden reordenarse, combinarse o suprimirse según el tipo de arquitectura a producir, sin que el estándar imponga una secuencia única ni un enfoque en cascada \cite{TOGAF10}. Los entregables y el contenido del marco se seleccionan para determinar qué artefactos y bloques de construcción resultan pertinentes en el contexto específico \cite{TOGAF10}. Las técnicas, modelos y puntos de vista arquitectónicos se ajustan en función de las notaciones disponibles y los intereses de los stakeholders \cite{TOGAF10}. Finalmente, el ADM puede integrarse con otros marcos y metodologías ya establecidos en la organización, como ITIL, PMBOK o enfoques ágiles \cite{TOGAF10}. El propósito del \textit{tailoring} es garantizar que el marco aborde de manera efectiva las necesidades únicas del proyecto, evitando tanto la burocracia innecesaria como la omisión de actividades críticas \cite{TOGAF10}.
+
+\subsection{Architecture Decision Records (ADRs): formato, propósito y vínculo con principios}
+
+Un ADR (\textit{Architecture Decision Record}) documenta una decisión arquitectónica específica: el contexto que la motivó, las alternativas evaluadas, la opción seleccionada y la justificación de la elección \cite{TOGAF10}. Su propósito es crear un registro histórico inmutable que prevenga la reiteración de debates ya resueltos (\textit{relitigating past decisions}), evite el retrabajo duplicado y construya un mecanismo de confianza y alineamiento compartido entre partes interesadas \cite{TOGAF10}.
+
+Los ADRs están directamente vinculados a los Principios de Arquitectura: cuando un equipo debe desviarse de un principio establecido, el ADR captura el razonamiento de esa excepción, garantizando que la función de supervisión arquitectónica pueda rastrear el cumplimiento, las excepciones y los riesgos de manera efectiva y trazable \cite{TOGAF10}.
+
+% ─────────────────────────────────────────────────────────────────────────────
+
+\section{ATAM (\textit{Architecture Tradeoff Analysis Method})}
+
+ATAM es el método de validación que cierra el ciclo de diseño, evaluando si las decisiones arquitectónicas satisfacen adecuadamente los atributos de calidad prioritarios y exponiendo los compromisos (\textit{tradeoffs}) implícitos en cada elección estructural \cite{kazman1998_atam}.
+
+\subsection{Origen y contexto: SEI/CMU, Kazman et al.}
+
+El ATAM fue desarrollado por investigadores del \textit{Software Engineering Institute} (SEI) de la Universidad Carnegie Mellon (CMU), entre ellos Rick Kazman, Mark Klein y Mario Barbacci, como evolución del método SAAM (\textit{Software Architecture Analysis Method}) \cite{kazman1998_atam}. Su propósito es proveer una técnica estructurada y principiada para evaluar la idoneidad de una arquitectura de software respecto a múltiples atributos de calidad concurrentes y frecuentemente en tensión, sin necesidad de contar con un sistema implementado \cite{kazman1998_atam, benhassouna2025_atraf}. Esta característica lo hace particularmente adecuado para proyectos de arquitectura de referencia, donde el sistema aún no existe como instancia productiva \cite{benhassouna2025_atraf}.
+
+\subsection{Proceso ATAM: fases, roles y dinámica colaborativa}
+
+ATAM adopta un modelo espiral e iterativo que se ejecuta en cuatro fases principales \cite{kazman1998_atam}:
+
+\begin{enumerate}
+    \item \textbf{Presentación} (\textit{Scenario \& Requirements Gathering}): Elicitación de los motores de negocio, suposiciones ambientales y escenarios operativos que contextualizan la evaluación \cite{kazman1998_atam}.
+    \item \textbf{Investigación} (\textit{Architectural Views \& Scenario Realization}): La arquitectura se presenta a través de distintas perspectivas, como la estructural, la comportamental y la de despliegue, y los escenarios se mapean sobre ella para evaluar cómo la estructura los soporta \cite{kazman1998_atam}.
+    \item \textbf{Prueba} (\textit{Attribute-Specific Analyses}): Cada atributo de calidad priorizado se analiza de forma individual para estimar el comportamiento del sistema sin introducir interferencias entre atributos \cite{kazman1998_atam}.
+    \item \textbf{Reporte} (\textit{Tradeoffs / Reporting}): Síntesis de los hallazgos para identificar las áreas de tensión, consolidar los resultados y elaborar un resumen de evaluación accionable con los riesgos y no-riesgos identificados \cite{kazman1998_atam}.
+\end{enumerate}
+
+El proceso requiere la colaboración intensa de tres grupos de roles: el equipo evaluador (analistas y expertos de dominio), los \textit{stakeholders} (usuarios, desarrolladores, clientes y mantenedores) y los arquitectos (diseñadores del sistema) \cite{kazman1998_atam}.
+
+\subsection{Utility Tree: escenarios de calidad, conductores arquitectónicos y priorización}
+
+El Árbol de Utilidad (\textit{Utility Tree}) es el artefacto analítico central de ATAM \cite{kazman1998_atam}. Se construye de forma colaborativa y desglosa los atributos de calidad de alto nivel en subatributos, y finalmente en escenarios de calidad concretos y verificables que actúan como conductores arquitectónicos \cite{kazman1998_atam, benhassouna2025_atraf}.
+
+Los escenarios se priorizan mediante votación de los \textit{stakeholders} en función de dos factores: la importancia para el negocio (\textit{business importance}) y el riesgo arquitectónico percibido \cite{kazman1998_atam}. Esta priorización focaliza la evaluación en los escenarios de mayor impacto potencial, evitando el análisis exhaustivo e impracticable de la totalidad del espacio de decisiones \cite{kazman1998_atam}.
+
+\subsection{Conceptos clave: \textit{sensitivity points}, \textit{tradeoff points}, riesgos y no-riesgos}
+
+Durante la evaluación, ATAM identifica cuatro categorías de elementos arquitectónicos \cite{kazman1998_atam}:
+
+\begin{itemize}
+    \item \textbf{\textit{Sensitivity points}}: Elementos con un impacto significativo en un único atributo de calidad \cite{kazman1998_atam}. Su identificación revela los puntos de apalancamiento de la arquitectura, donde pequeñas modificaciones producen grandes cambios en el atributo afectado \cite{benhassouna2025_atraf}.
+
+    \item \textbf{\textit{Tradeoff points}}: Elementos que afectan simultáneamente a múltiples atributos de calidad, frecuentemente de forma conflictiva \cite{kazman1998_atam}. Por ejemplo, incrementar la replicación de nodos de validación mejora la disponibilidad y el rendimiento, pero puede ampliar la superficie de ataque reduciendo la seguridad \cite{kazman1998_atam}.
+
+    \item \textbf{Riesgos arquitectónicos}: Áreas de incertidumbre, fragilidad o suposiciones no respaldadas que podrían impedir al sistema satisfacer sus metas de calidad bajo condiciones de operación real \cite{kazman1998_atam}.
+
+    \item \textbf{No-riesgos}: Decisiones de diseño y elementos arquitectónicos que soportan exitosamente los escenarios prioritarios sin introducir fragilidad estructural ni tensiones identificables \cite{kazman1998_atam}.
+\end{itemize}
+
+\subsection{Aplicación en Arquitecturas de Referencia}
+
+ATAM es especialmente adecuado para arquitecturas de referencia precisamente porque no requiere ni un sistema en producción ni código ejecutable \cite{kazman1998_atam, benhassouna2025_atraf}. Evalúa decisiones de diseño, estructuras abstractas y restricciones, no métricas de ejecución \cite{kazman1998_atam}. Dado que una arquitectura de referencia es una plantilla genérica destinada a soportar múltiples instanciaciones, ATAM ha dado lugar a métodos adaptados como ATAM/R y RATRAM (\textit{Reference Architecture Tradeoff and Risk Analysis Method}), que evalúan la variabilidad de dominio, las directrices de reutilización y las restricciones estructurales a través de múltiples contextos de instanciación \cite{benhassouna2025_atraf}. Estos métodos garantizan que la arquitectura de referencia pueda derivar sistemas futuros sin comprometer los atributos de calidad prioritarios \cite{benhassouna2025_atraf}.
+
+\subsection{Vínculo \texorpdfstring{ATAM~$\leftrightarrow$~ADRs}{ATAM <-> ADRs}: cada \textit{sensitivity point} debe tener un ADR}
+
+La salida del proceso ATAM alimenta directamente los ADRs del repositorio arquitectónico \cite{kazman1998_atam, TOGAF10}. Dado que los \textit{sensitivity points} y los \textit{tradeoff points} representan intersecciones críticas donde las decisiones de diseño impactan significativamente en la calidad del sistema, cada uno de estos puntos identificados durante la evaluación ATAM debe tener un ADR correspondiente que documente la decisión adoptada y su justificación \cite{kazman1998_atam}. Este vínculo asegura que la racionalidad detrás de compromisos complejos quede registrada de forma inmutable, previniendo la reiteración de debates resueltos y creando un historial transparente de la evolución estructural de la arquitectura \cite{TOGAF10}.
+
+% ─────────────────────────────────────────────────────────────────────────────
+
+\section{Tecnologías Habilitantes}
+
+Las tecnologías habilitantes son las implementaciones concretas que materializan las decisiones arquitectónicas \cite{nakagawa2023reference}. Esta sección describe los artefactos y protocolos cuya comprensión es imprescindible para interpretar los diagramas, la selección de componentes y los compromisos de la arquitectura de referencia propuesta \cite{diasvalle2021}.
+
+\subsection{Modelo C4 (Simon Brown): niveles, diferencia con UML y notación}
+
+El Modelo C4, propuesto por Simon Brown, es un \textit{framework} ligero para visualizar la estructura estática de un sistema de software a través de mapas jerárquicos, siguiendo el principio ``\textit{overview first, zoom and filter, then details on demand}'' \cite{nakagawa2023reference}. Define cuatro niveles de abstracción progresiva:
+
+\begin{itemize}
+    \item \textbf{Contexto (Nivel 1)}: Muestra el sistema, sus usuarios directos y las dependencias externas, responde a la pregunta de qué hace el sistema y quién lo usa \cite{nakagawa2023reference}.
+    \item \textbf{Contenedores (Nivel 2)}: Presenta los bloques de construcción técnicos desplegables de forma independiente, como aplicaciones web, bases de datos y servicios, y sus interacciones principales \cite{nakagawa2023reference}.
+    \item \textbf{Componentes (Nivel 3)}: Descompone un contenedor en sus agrupaciones lógicas de funcionalidad interna \cite{nakagawa2023reference}.
+    \item \textbf{Código (Nivel 4)}: Detalla la implementación a nivel de clases e interfaces; se emplea selectivamente donde el nivel de detalle lo justifica \cite{nakagawa2023reference}.
+\end{itemize}
+
+A diferencia de UML, frecuentemente criticado por su notación compleja y su ``falsa concreción'', el Modelo C4 evita la notación pesada y se centra en la comunicación clara: cada caja se anota explícitamente con nombre, tecnología y descripción breve, y cada línea indica el propósito y el protocolo de la interacción \cite{nakagawa2023reference}.
+
+\subsection{Distributed Ledger Technology (DLT) para auditoría: blockchain permisionado y Hyperledger Fabric}
+
+La tecnología de libro mayor distribuido (DLT) resuelve la falta de transparencia de las CA monolíticas, habilitando modelos de CA Consorcio donde múltiples organizaciones operan cooperativamente la infraestructura \cite{kumagai2023_distributedpki, panigrahi2023_blockchainpki}. Las cadenas de bloques permisionadas restringen la participación a entidades conocidas y autenticadas, a diferencia de las cadenas públicas, abiertas a cualquier participante, lo que resulta fundamental para la PKI empresarial donde la confianza y la responsabilidad legal deben establecerse entre miembros específicos del consorcio \cite{turan2024_semidecentralized}.
+
+Hyperledger Fabric es la plataforma DLT permisionada de referencia para este caso de uso \cite{kumagai2023_distributedpki}. Su arquitectura modular incluye: \textit{peers} (nodos que alojan el libro mayor, ejecutan el \textit{chaincode} y firman transacciones), \textit{orderers} (nodos que secuencian las transacciones y distribuyen los bloques generados), \textit{canales} (subredes de comunicación aisladas con su propio libro mayor) y un modelo de endorsement en el que los \textit{peers} designados deben ejecutar y firmar digitalmente las transacciones para certificar su validez antes de que sean confirmadas en el libro mayor \cite{kumagai2023_distributedpki, zhao2020_trustca}.

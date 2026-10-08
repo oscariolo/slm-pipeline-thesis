@@ -1,0 +1,99 @@
+% =========================================
+% FORMATO DE TÍTULOS
+% =========================================
+
+\titleformat{\chapter}[block]{\center\bfseries}{\thechapter.}{.5em}{}
+\titleformat{\section}[block]{\bfseries}{\thesection.}{.5em}{}
+\titleformat{\subsection}[block]{\bfseries}{\thesubsection.}{.5em}{}
+\titleformat{\subsubsection}[block]{\bfseries}{\thesubsubsection.}{.5em}{}
+
+\titlespacing*{\chapter}{0pt}{-20pt}{0pt}
+\titlespacing*{\section}{0pt}{0pt}{0pt}
+\titlespacing*{\subsection}{0pt}{0pt}{0pt}
+\titlespacing*{\subsubsection}{0pt}{0pt}{0pt}
+
+% =========================================
+% CONFIGURACIÓN DE PÁGINA
+% =========================================
+
+% Márgenes
+\geometry{a4paper, portrait, margin=2.54cm}
+
+% Profundidad del índice
+\setcounter{tocdepth}{3}
+\setcounter{secnumdepth}{3}
+
+% Indentación y espaciado
+\setlength{\parindent}{0pt}
+\setstretch{1.5}
+
+% =========================================
+% CÓDIGO FUENTE
+% =========================================
+
+\lstset{
+  basicstyle=\sffamily,
+  breaklines=true,
+}
+
+% =========================================
+% ENCABEZADOS Y PIES DE PÁGINA
+% =========================================
+
+\definecolor{mycolor}{HTML}{4F81BD}
+
+\fancyhf{}
+\lhead{\hspace*{-0.4cm}\raisebox{-0.8cm}[0pt][0pt]{\includegraphics[width=4.6cm,height=1.45cm]{figs/logos/Logo_UCuenca.png}}}
+\rhead{\thepage}
+\lfoot{Aarón Sebastian Ortiz Quezada - Christian Sebastián Padilla Bernal}
+\renewcommand{\headrulewidth}{0pt}
+\renewcommand{\footrulewidth}{0.5pt}
+
+\makeatletter
+\patchcmd{\footrule}{\if@fancyplain}{\color{mycolor}\if@fancyplain}{}{}
+\makeatother
+
+\fancypagestyle{plain}{
+    \fancyhf{}
+    \fancyhead[L]{\hspace*{-0.4cm}\raisebox{-1cm}[0pt][0pt]{\includegraphics[width=4.6cm,height=1.45cm]{figs/logos/Logo_UCuenca.png}}}
+    \fancyhead[R]{\thepage}
+    \fancyfoot[L]{Aarón Sebastian Ortiz Quezada - Christian Sebastián Padilla Bernal}
+    \renewcommand{\headrulewidth}{0pt}
+    \renewcommand{\footrulewidth}{0.5pt}
+}
+\pagestyle{fancy}
+
+
+% =========================================
+% ÍNDICE: PUNTOS GUÍA EN ENTRADAS DE CAPÍTULO
+% =========================================
+
+\renewcommand{\cftchapleader}{\normalfont\cftdotfill{\cftdotsep}}
+
+% Sin espacio extra entre entradas: solo el interlineado 1.5
+\setlength{\cftbeforechapskip}{0pt}
+\AtBeginDocument{%
+  \addtocontents{lof}{\protect\renewcommand{\protect\addvspace}[1]{}}%
+  \addtocontents{lot}{\protect\renewcommand{\protect\addvspace}[1]{}}%
+}
+
+% =========================================
+% FIGURAS Y TABLAS (formato IEEE)
+% =========================================
+
+% Numeración continua: Fig. 1, 2, ... y TABLA I, II, ...
+\counterwithout{figure}{chapter}
+\counterwithout{table}{chapter}
+\renewcommand{\thetable}{\Roman{table}}
+
+\captionsetup[figure]{labelsep=period}
+\captionsetup[table]{labelsep=newline, justification=centering}
+
+% Índices: "Fig. 1. Nombre" y "TABLA I Nombre"
+\renewcommand{\cftfigpresnum}{Fig.~}
+\renewcommand{\cftfigaftersnum}{.}
+\setlength{\cftfignumwidth}{4.2em}
+\setlength{\cftfigindent}{0pt}
+\renewcommand{\cfttabpresnum}{TABLA~}
+\setlength{\cfttabnumwidth}{8em}
+\setlength{\cfttabindent}{0pt}

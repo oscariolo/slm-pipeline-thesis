@@ -1,0 +1,126 @@
+\chapter{Conclusiones}
+\label{cap:conclusiones}
+
+El presente trabajo tuvo como objetivo el diseño de una arquitectura de referencia para
+Autoridades de Certificación reguladas bajo el marco legal ecuatoriano, orientada a superar
+las limitaciones de rigidez, acoplamiento fuerte y baja escalabilidad de los sistemas PKI
+tradicionales. El proceso comprendió cuatro fases: análisis de requisitos normativos y
+funcionales, diseño de la arquitectura con el modelo C4 bajo TOGAF ADM, implementación de
+una prueba de concepto del módulo de auditoría con Hyperledger Fabric, y evaluación mediante
+el experimento GQM y el análisis ATAM. Los hallazgos de cada fase se sintetizan a continuación.
+
+El análisis de los estándares PKI (X.509, RFC~5280, RFC~6960, RFC~3161) y del marco
+regulatorio ecuatoriano encabezado por la Resolución ARCOTEL-2024-0176 permitió derivar
+una cadena de requisitos que parte de los conductores de negocio y desciende hasta
+escenarios de atributo de calidad verificables. Los seis business drivers más destacados
+(Tabla~\ref{tab:bd_nfr_core}) se descompusieron en los doce NFRs y once QAS más
+relevantes para el diseño (Tablas~\ref{tab:nfr_core} y~\ref{tab:qas_core}). El ejercicio confirmó que
+la regulación vigente impone restricciones determinantes sobre la arquitectura: la exigencia
+de respuesta OCSP inmediata tras revocación y el almacenamiento de claves exclusivamente en
+HSM certificado hacen inviables los estilos de arquitectura con consistencia eventual o sin
+aislamiento criptográfico de hardware. Estas restricciones se formalizaron en la
+Tabla~\ref{tab:restricciones_arq} y constituyeron el filtro principal para la selección del
+estilo arquitectónico. 
+
+Con esos requisitos como marco, la evaluación sistemática de nueve estilos arquitectónicos
+frente a diez criterios ponderados (Figura~\ref{fig:estilos_chart}) derivó en la selección
+del estilo compuesto EA-10: Service-Based como base, complementado con asincronía selectiva
+tomada de Event-Driven Architecture y extensibilidad basada en el patrón Microkernel.
+Service-Based fue el único estilo con cero evaluaciones negativas, satisfaciendo los seis
+criterios de peso alto y presentando solo resultado parcial en gestión de carga; esta
+limitación se subsanó con la incorporación del broker de mensajería asíncrono (ADR-27,
+ADR-31). La arquitectura resultante se materializa en diez contenedores de grano grueso
+(Figura~\ref{fig:c4_n2} y Tabla~\ref{tab:contenedores}), cada uno con responsabilidad
+delimitada por al menos una decisión arquitectónica documentada en el ADR Log. Los treinta
+y nueve ADRs agrupados en seis categorías (Tabla~\ref{tab:adrs_core} y Anexo~G) formalizan
+la justificación de cada decisión de diseño, vinculándola con los NFRs y QAS que la motivan
+y con las métricas que la validan. Entre estas, la restricción de acoplamiento eferente
+Ce~$\leq$~5 por contenedor (ADR-33), verificable directamente en los diagramas C4 de
+Nivel~3, constituye una métrica objetiva que permite auditar el grado de independencia entre
+contenedores sin herramientas de análisis estático externas.
+
+Sobre esa base, la implementación del prototipo materializó esas decisiones en el módulo M-05 Immutable
+Log Service. El módulo se descompone en 19 clases organizadas en tres grupos
+funcionales: los controladores de entrada para escritura y consulta, el núcleo de
+orquestación y persistencia centrado en \texttt{LogEntryWriter}, y la infraestructura de
+mensajería asíncrona que implementa el contrato \texttt{IMessageBroker} del canal M-10. Las
+decisiones de diseño más determinantes de la implementación son tres. Primero,
+\texttt{HashChainEngine} opera siempre activo e independiente de la configuración de Fabric,
+garantizando la integridad local del log por construcción y no por convención. Segundo,
+\texttt{FabricRouteConfig} separa la política de notarización del código: añadir un nuevo
+origen de eventos al ledger distribuido requiere solo una entrada en
+\texttt{fabric-routes.yaml}, sin modificar ninguna clase. Tercero, \texttt{HsmSigningBridge}
+abstrae la interfaz con el hardware criptográfico de M-04, confinando cualquier cambio de
+algoritmo o proveedor a ese contenedor sin afectar a M-05.
+
+La validez de este prototipo fue evaluada con el
+experimento GQM descrito en el \hyperref[anx:poc_entorno]{Anexo~H}. Los resultados
+confirman tres propiedades estructurales del diseño. En primer lugar, la selectividad de la
+notarización es correcta: solo los eventos de alta relevancia regulatoria generan
+transacciones en Hyperledger Fabric, mientras que el resto se registra exclusivamente en
+el log local, sin que esta distinción comprometa la integridad del hash chain ni la
+completitud de la trazabilidad por número de serie (Tabla~\ref{tab:poc_funcionales}).
+En segundo lugar, la integración asíncrona con Fabric no degrada el rendimiento del canal de
+mensajería bajo ninguno de los cinco escenarios de carga evaluados, lo que confirma la
+viabilidad del patrón \textit{fire-and-forget} adoptado en ADR-29
+(Tabla~\ref{tab:poc_estres}); la latencia de operaciones criptográficas en hardware HSM
+físico queda fuera del alcance de esta PoC por restricciones económicas de adquisición.
+En tercer lugar, la protección del log opera en capas
+independientes: el hash chain detecta cualquier alteración retroactiva sin necesidad de
+consultar el ledger, y el control de acceso rechaza solicitudes no autorizadas antes de
+que alcancen el mecanismo criptográfico (Tabla~\ref{tab:poc_seguridad}). La combinación
+de estas tres propiedades permite reconstruir el ciclo de vida completo de un certificado
+y auditar operaciones en lote (Tabla~\ref{tab:poc_forense}).
+
+De igual manera, el análisis ATAM examinó la arquitectura de referencia en su conjunto
+(Tablas~\ref{tab:atam_utility_tree},~\ref{tab:atam_st_risk} y~\ref{tab:atam_st_nonrisk})
+e identificó dos categorías de hallazgos diferenciadas. En los puntos donde la arquitectura
+fija la decisión de forma estructural (estabilidad de las interfaces de extensibilidad,
+aislamiento de flujos críticos respecto a la mensajería asíncrona, ausencia de estado
+compartido entre instancias de servicio), las consecuencias son completamente comprendidas y
+aceptables: la arquitectura de referencia garantiza esas propiedades por construcción, con
+independencia del adoptante. En contraste, las brechas más relevantes
+(Tabla~\ref{tab:atam_risks}) se concentran en decisiones que la arquitectura necesariamente
+delega al adoptante: la completitud del registro de auditoría ante rutas de invocación que
+puedan eludir el mecanismo transversal de intercepción, y la efectividad del aislamiento de
+datos personales a nivel de control de acceso en la base de datos. En ambos casos, la arquitectura de referencia prescribe el
+mecanismo correcto pero no puede verificar por construcción que la implementación concreta
+del adoptante lo respete; esta distinción entre garantía arquitectónica y garantía de
+implementación delimita el alcance de las propiedades que una arquitectura de referencia
+puede ofrecer. La incertidumbre sobre la latencia de Fabric como implementación del ledger
+de auditoría, identificada por el ATAM, queda resuelta por los resultados del experimento (Tabla~\ref{tab:poc_estres}): la
+latencia de confirmación observada se mantuvo dentro del umbral establecido en todos los
+escenarios evaluados.
+
+Como resultado final, la arquitectura de referencia resultante constituye una especificación formal, trazable y
+portable para Autoridades de Certificación que operen bajo el marco regulatorio ecuatoriano.
+A diferencia de adaptaciones de plataformas internacionales sin ajuste normativo, esta
+propuesta parte de los mandatos legales como restricciones de primer nivel
+(Tabla~\ref{tab:restricciones_arq}) y los transforma en decisiones de diseño auditables
+mediante el catálogo de ADRs (Anexo~G), los principios arquitectónicos
+(Tabla~\ref{tab:principios_inline}) y los diagramas C4 en cuatro niveles de abstracción
+(Figuras~\ref{fig:c4_n1} a~\ref{fig:c4_n4}). Una CA adoptante puede verificar cada decisión
+contra su contexto regulatorio, sustituir los componentes de terceros por alternativas
+conformes a los estándares prescritos (PKCS\#11, RFC~6960, RFC~3161) e incorporar nuevos
+perfiles de certificado normativos sin rediseñar el motor de emisión. Esta capacidad de
+adopción graduada, posibilitada por la separación entre estándares prescritos e
+implementaciones elegibles, constituye la contribución estructural de la propuesta al
+ecosistema ecuatoriano regulado de infraestructura de clave pública.
+
+Finalmente, como líneas de trabajo futuro, la validación experimental puede extenderse a
+los nueve módulos restantes de la arquitectura siguiendo el mismo proceso GQM aplicado al
+módulo de auditoría, con especial atención al motor de emisión y al servicio de validación
+OCSP, cuyos atributos de latencia y disponibilidad bajo carga determinan el cumplimiento
+de los requisitos de mayor criticidad regulatoria. La integración con HSM físico
+FIPS~140-2~L3 permitiría además completar la validación de rendimiento de extremo a
+extremo, condicionada al coste de adquisición del hardware. El modelado e implementación 
+completa de CA Core Service deberá incorporar además un
+control estricto del ciclo de vida de variables sensibles en memoria volátil, línea de
+trabajo identificada en R-NR-J. En el plano normativo,
+si la regulación ecuatoriana evoluciona para permitir la generación del par de claves en
+dispositivo del suscriptor, CA Core Service debería adaptarse para aceptar
+solicitudes de firma de certificado (CSR) en lugar de desencadenar la generación
+centralizada, lo que permitiría fortalecer la garantía de no repudio en sentido estricto.
+Por último, la aplicación de la arquitectura en un proceso formal de acreditación ante
+ARCOTEL proporcionaría evidencia empírica sobre la completitud de la cobertura regulatoria
+en condiciones de producción.

@@ -1,0 +1,478 @@
+\chapter{Metodología Integrada --- TOGAF ADM + ATAM + PoC} \label{cap:metodologia}
+
+% ======================================================================
+% VISIÓN GENERAL DEL PROCESO INTEGRADO
+% ======================================================================
+
+\section{Visión General del Proceso Integrado}
+
+La metodología integra tres marcos complementarios: TOGAF ADM como proceso de desarrollo arquitectónico \cite{TOGAF10}, ATAM como método de evaluación \cite{kazman1998_atam}, y un Proof of Concept (PoC) como validación experimental \cite{wieringa2014design}.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{figs/metodologia/metodologia_general.pdf}
+\caption[Visión General de la Metodología Integrada]{Organización secuencial de las seis fases de la metodología integrada con sus mecanismos de retroalimentación.}
+\label{fig:diagramageneral}
+\end{figure}
+
+La Figura~\ref{fig:diagramageneral} organiza el proceso metodológico en seis etapas secuenciales articuladas por dos mecanismos de retroalimentación y una actividad transversal.
+
+El proceso recibe cuatro fuentes de entrada: el marco regulatorio ecuatoriano, los estándares internacionales, la bibliografía científica y los \textit{stakeholders}. Estas fuentes definen el espacio de solución antes de que comience cualquier decisión de diseño.
+
+La Preliminary Phase y las Phases A+B traducen esas entradas en capacidades arquitectónicas y en una visión compartida. El Análisis de Atributos de Calidad interrumpe deliberadamente la progresión para establecer criterios de evaluación medibles antes del diseño; ninguna decisión estructural se toma sin un escenario de calidad previo que la contraste.
+
+El Diseño Arquitectónico, que abarca las Phases C y D, concentra la producción arquitectónica central. Al concluirlo, el proceso abandona formalmente el marco TOGAF: las fases E--H quedan excluidas porque una arquitectura de referencia no presupone implementación productiva ni migración organizacional \cite{TOGAF10}.
+
+Las dos etapas siguientes operan como métodos independientes de evaluación. El ATAM, en sus Steps 5 al 9, interroga las decisiones tomadas en diseño; si identifica riesgos no aceptables, genera una retroalimentación que obliga a refinar la arquitectura \cite{kazman1998_atam}. El PoC somete esas mismas decisiones a verificación empírica mediante métricas medibles; sus resultados pueden reabrir escenarios que el ATAM consideró cerrados, constituyendo así una segunda retroalimentación hacia la evaluación.
+
+Requirements Management opera de forma transversal durante todo el proceso, garantizando que cada decisión arquitectónica sea trazable a un requisito con umbral medible \cite{TOGAF10}.
+
+\subsection{Insumos del proceso metodológico}
+
+Todo ciclo arquitectónico toma como insumos un conjunto de fuentes externas e internas que actúan como restricciones y guías \cite{TOGAF10}. Para una Arquitectura de Referencia en un dominio regulado, estas fuentes incluyen:
+
+\begin{enumerate}
+\item \textbf{Marco regulatorio.} Las leyes, reglamentos y resoluciones técnicas emitidas por los organismos reguladores del dominio. En el contexto de una CA ecuatoriana, incluye la normativa de ARCOTEL \cite{arcotel20240176}, la Ley de Comercio Electrónico y la Ley de Protección de Datos Personales.
+\item \textbf{Estándares internacionales.} Los estándares técnicos adoptados por la industria del dominio (RFCs del IETF, FIPS del NIST, especificaciones del CA/Browser Forum, ETSI), que garantizan la interoperabilidad del diseño con el ecosistema global.
+\item \textbf{Bibliografía científica y técnica.} Los marcos de referencia metodológica y la literatura de arquitectura de software (\cite{bass2012saip}; \cite{buschmann2007posa4}; \cite{richards2020fundamentals}) proveen el fundamento teórico para las decisiones de diseño.
+\item \textbf{\textit{Stakeholders}.} Individuos, equipos u organizaciones con intereses en el resultado de la arquitectura, identificados y modelados en la Fase~2.
+\end{enumerate}
+
+% ======================================================================
+% FASE 1 — PRELIMINARY PHASE
+% ======================================================================
+
+\section{Fase 1 --- Preliminary Phase: Preparación del Marco de Trabajo}
+
+\subsection{Propósito y actividades}
+
+% La Preliminary Phase establece la preparación y las actividades de iniciación requeridas para crear una Architecture Capability, incluyendo la personalización del framework TOGAF y la definición de Architecture Principles \cite{TOGAF10}. En el contexto de una Arquitectura de Referencia, esta fase prepara el marco de gobernanza bajo el cual operará todo el proceso subsiguiente. Sus actividades principales, identificadas en el diagrama de flujo de la metodología (Figura~\ref{fig:diagrama_3_1}), son: Definir los Principios Arquitectónicos, ADM Tailoring, Capacidad Arquitectónica (Architecture Capability) y Repositorio de Arquitectura (Architecture Repository).
+La Preliminary Phase establece la preparación y las actividades de iniciación requeridas para crear una Architecture Capability, incluyendo la personalización del framework TOGAF y la definición de Architecture Principles \cite{TOGAF10}. En el contexto de una Arquitectura de Referencia, esta fase prepara el marco de gobernanza bajo el cual operará todo el proceso subsiguiente. Sus actividades principales, cuya secuencia se representa en la Figura~\ref{fig:diagrama_preliminary}, son: Definir los Principios Arquitectónicos, ADM Tailoring, Capacidad Arquitectónica (Architecture Capability) y Repositorio de Arquitectura (Architecture Repository).
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{figs/metodologia/m_preliminary.pdf}
+\caption[Diagrama de las actividades de la Preliminary Phase]{Preparación del marco de gobernanza que precede el ciclo ADM.}
+\label{fig:diagrama_preliminary}
+\end{figure}
+
+\subsection{Principios Arquitectónicos}
+
+En este trabajo, cada principio se documenta con tres componentes según el formato establecido por TOGAF \cite{TOGAF10}: Statement (enunciado conciso y verificable de la regla), Rationale (justificación de su importancia en relación con los objetivos y restricciones del proyecto), e Implications (consecuencias concretas de adoptar el principio sobre el diseño y las métricas derivadas).
+
+\subsection{ADM Tailoring}
+
+El TOGAF Standard establece que el ADM debe adaptarse a cada contexto, y que es esperable que las organizaciones seleccionen algunos elementos, excluyan otros y creen nuevos \cite{TOGAF10}. Para esta Arquitectura de Referencia se documentó, para cada fase del ADM: (a) si se ejecuta o se excluye, (b) con qué nivel de profundidad, (c) qué entregables se producen, y (d) la justificación de cada decisión. Los criterios aplicados fueron: el alcance del proyecto, la naturaleza de producto arquitectónico de referencia (no ligado a una organización concreta), y las restricciones externas (regulatorias, temporales, de recursos). Las Phases~E (Opportunities and Solutions), F (Migration Planning), G (Implementation Governance) y H (Architecture Change Management) se excluyen por estar orientadas a la implementación productiva y la operación de una arquitectura desplegada \cite{TOGAF10}. La función de evaluación que en un proyecto de implementación cubriría la Phase~G se aborda en esta metodología mediante ATAM como método independiente. Las fases excluidas se detallan en la Sección~\ref{sec:fases_excluidas}.
+
+\subsection{Architecture Repository}
+
+Se estableció la estructura del Architecture Repository según lo define TOGAF, organizando los artefactos producidos y consumidos durante el proceso con sus convenciones de versionado y reglas de consistencia entre artefactos \cite{TOGAF10}.
+
+\subsection{Architecture Capability}
+
+La Architecture Capability define la capacidad organizacional para ejecutar el proceso de arquitectura \cite{TOGAF10}. TOGAF establece que esta capacidad debe identificar los roles arquitectónicos requeridos y las responsabilidades asociadas a cada uno, de forma que el proceso de arquitectura tenga una estructura de governance clara antes de iniciar cualquier fase del ADM. Esta definición previa de roles garantiza que cada decisión arquitectónica tenga un responsable identificable y que los entregables producidos sean trazables a quien los generó y validó.
+
+Las entradas y salidas de la Preliminary Phase, según lo establecido por TOGAF \cite{TOGAF10}, se resumen a continuación; sus artefactos de salida constituyen el punto de partida sobre el que la Fase~2 construye la visión arquitectónica y el mapa de capacidades de negocio.
+
+\begin{table}[H]
+\centering
+\caption{Entradas y Salidas de la Fase 1}
+\label{tab:fase1_es}
+\begin{tabular}{@{}p{0.45\textwidth}p{0.48\textwidth}@{}}
+\toprule
+\multicolumn{2}{c}{\textbf{Entradas}} \\
+\midrule
+Marco legal y regulatorio & Leyes, reglamentos y resoluciones técnicas aplicables al dominio \\
+Estándares de industria & RFCs, FIPS, especificaciones del CA/Browser Forum, ETSI \\
+Bibliografía científica y académica & Marcos de referencia metodológica y literatura de arquitectura de software \\
+\textit{Stakeholders} & Individuos, equipos u organizaciones con intereses en el resultado \\
+\midrule
+\multicolumn{2}{c}{\textbf{Salidas}} \\
+\midrule
+TOGAF Preliminary Doc & Integra ADM Tailoring, Architecture Capability, Architecture Repository y Governance Framework \\
+Principios Arquitectónicos & Reglas de diseño no negociables que gobiernan todas las decisiones subsiguientes \\
+\bottomrule
+\end{tabular}
+\end{table}
+% ======================================================================
+% FASE 2 — PHASE A+B
+% ======================================================================
+
+\section{Fase 2 --- Phase A+B: Visión y Arquitectura de Negocio}
+\label{sec:vision_negocio}
+
+\subsection{Propósito integrado}
+
+Sobre la base de los Principios Arquitectónicos y el ADM Tailoring establecidos en la Fase~1, las Phases~A (Architecture Vision) y B (Business Architecture) del TOGAF ADM \cite{TOGAF10} se ejecutaron de manera integrada, compartiendo insumos y produciendo entregables interdependientes: la visión define el alcance que la arquitectura de negocio modela, y el modelado de capacidades refina la visión al hacer explícitas las responsabilidades funcionales requeridas. La Phase~B se ejecutó de forma simplificada dado que el foco del diseño está en las arquitecturas de sistemas de información y tecnología (Fase~4). Los entregables de esta fase, cuya articulación se ilustra en la Figura~\ref{fig:diagrama_phaseAB}, son el Architecture Vision, el Statement of Architecture Work, el diagrama de contexto C4 Nivel~1 y el Business Capability Map.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{figs/metodologia/m_phaseAB.pdf}
+\caption[Diagrama de las actividades de la Phase A+B]{Construcción integrada de la visión arquitectónica y el mapa de capacidades de negocio.}
+\label{fig:diagrama_phaseAB}
+\end{figure}
+
+\subsection{Architecture Vision}
+
+El entregable central de Phase~A es el documento Architecture Vision, que responde a tres preguntas en orden secuencial: por qué existe el trabajo arquitectónico y cuál es el problema que lo justifica, qué estado objetivo se persigue y qué valor produce, y para quién está diseñado el sistema y qué esperan sus \textit{stakeholders}. El documento no prescribe cómo se construye la arquitectura (eso corresponde a las Phases~B, C y D) sino que establece el criterio de aceptación al que todas las decisiones de diseño posteriores deben responder. El Architecture Vision Statement condensa estos criterios en un enunciado medible que opera como contrato entre la visión de negocio y las fases técnicas subsiguientes \cite{TOGAF10}.
+
+\subsection{Statement of Architecture Work}
+
+A partir del Architecture Vision, el Statement of Architecture Work (SAW) formaliza el alcance del trabajo arquitectónico, estableciendo de manera inequívoca los elementos IN SCOPE y OUT OF SCOPE del sistema, la frontera del sistema, los riesgos identificados en las decisiones de alcance con sus respectivas mitigaciones, las implicaciones del alcance sobre los escenarios ATAM, y el proceso de control de cambios. Su función es operacional: cada elemento IN SCOPE se convierte en un artefacto arquitectónico evaluable mediante ATAM, mientras que cada exclusión OUT OF SCOPE constituye una frontera explícita que previene la expansión no controlada del trabajo y delimita los supuestos sobre los que se construyen los escenarios de calidad \cite{TOGAF10}.
+
+\subsection{Diagrama de Contexto (C4 Nivel 1)}
+
+El diagrama de contexto (C4 Nivel~1) representa el sistema bajo diseño y los actores externos (humanos y sistemas) con los que interactúa, sin detallar la estructura interna del sistema \cite{brown2022c4}. Este nivel de abstracción corresponde a la vista contextual del TOGAF ADM \cite{TOGAF10} y opera como punto de partida para los niveles de mayor detalle desarrollados en la Fase~4, estableciendo las fronteras del sistema y las dependencias externas que condicionan las decisiones de diseño posteriores.
+
+\subsection{Business Capability Map}
+
+El Business Capability Map es el entregable de Phase~B y modela las capacidades de negocio que el sistema debe soportar, organizadas en dominios funcionales. La regla de diseño que rige este artefacto es que las capacidades describen exclusivamente qué debe poder hacer la CA, sin mencionar contenedores, componentes, protocolos ni decisiones tecnológicas, los cuales pertenecen a la fase siguiente. Esta separación deliberada entre la capa de negocio y la capa de sistemas garantiza que cada dominio de capacidad pueda trazarse de forma independiente hacia los contenedores del C4 Nivel~2 producidos en la Fase~4 \cite{TOGAF10}.
+
+La Tabla~\ref{tab:fase2_es} resume los artefactos y fuentes externas que alimentan esta fase, y los entregables que produce como insumos de la Fase~3.
+
+\begin{table}[H]
+\centering
+\caption{Entradas y Salidas de la Fase 2}
+\label{tab:fase2_es}
+\begin{tabular}{@{}p{0.45\textwidth}p{0.48\textwidth}@{}}
+\toprule
+\multicolumn{2}{c}{\textbf{Entradas}} \\
+\midrule
+Principios Arquitectónicos (Fase 1) & Restricciones de diseño que gobiernan toda decisión de visión y alcance \\
+TOGAF Preliminary (ADM Tailoring) & Define el alcance formal del ciclo ADM y las fases a ejecutar \\
+Resolución ARCOTEL-2024-0176 & Mandatos regulatorios que la arquitectura debe satisfacer obligatoriamente \cite{arcotel20240176} \\
+\midrule
+\multicolumn{2}{c}{\textbf{Salidas}} \\
+\midrule
+Architecture Vision & Declaración del estado objetivo, criterios de aceptación y Vision Statement \\
+Statement of Architecture Work (SAW) & Alcance IN/OUT SCOPE, riesgos de alcance e implicaciones para el ATAM \\
+Diagrama de Contexto (C4 Nivel~1) & Vista de más alto nivel del sistema y su entorno externo \\
+Business Capability Map & Capacidades de negocio organizadas por dominio funcional \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+% ======================================================================
+% FASE 3 — ATRIBUTOS DE CALIDAD
+% ======================================================================
+
+\section{Fase 3 --- Análisis de Atributos de Calidad}
+
+\subsection{Propósito y marcos de referencia}
+
+A partir de la Architecture Vision y el Business Capability Map producidos en la Fase~2, esta fase traduce las preocupaciones de los \textit{stakeholders} y los mandatos regulatorios en escenarios de calidad evaluables, integrando los Steps~1 y~2 de ATAM \cite{kazman1998_atam}, la taxonomía ISO/IEC~25010:2023 \cite{iso250102023}, y el método de priorización MoSCoW \cite{clegg1994moscow}; la cadena de derivación completa se representa en la Figura~\ref{fig:diagrama_calidad}.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{figs/metodologia/m_analisis_QA.pdf}
+\caption[Diagrama de las actividades del Análisis de Atributos de Calidad]{Derivación de escenarios de calidad evaluables a partir de drivers de negocio y mandatos regulatorios.}
+\label{fig:diagrama_calidad}
+\end{figure}
+
+\subsection{Definición de Business Drivers}
+
+Se identificaron los Business Drivers a partir de las preocupaciones de los \textit{stakeholders}, los objetivos del sistema y las restricciones externas. Cada driver se documentó con un identificador único, un enunciado del valor que aporta o riesgo que mitiga, su tipo (regulatorio, operativo, de seguridad, estratégico/técnico), y su fuente de origen normativa o estratégica.
+
+\subsection{Derivación de NFRs}
+
+A partir de los Business Drivers se derivaron los Requisitos No Funcionales (NFRs), que expresan en términos medibles las condiciones que el sistema debe satisfacer para que cada driver quede cubierto. Cada NFR se documenta con un identificador único, una descripción expresada como condición verificable, un umbral de aceptación numérico o condicional, y su prioridad según el método MoSCoW \cite{clegg1994moscow}, que clasifica los requisitos en cuatro categorías: \textit{Must} (no negociable), \textit{Should} (alta importancia), \textit{Could} (deseable) y \textit{Would} (fuera del alcance actual). La trazabilidad hacia el BD que origina cada NFR se mantiene mediante referencia explícita al identificador del driver. En el contexto de ATAM, la prioridad MoSCoW de un NFR opera en el Utility Tree de la Fase~5 como indicador de importancia para el negocio, donde \textit{Must} corresponde a High, \textit{Should} a Medium y \textit{Could} a Low.
+
+\subsection{Especificación de Quality Attribute Scenarios}
+
+Cada NFR se operacionalizó en uno o más Quality Attribute Scenarios (QAS) que lo convierten en un criterio evaluable: mientras el NFR establece qué debe cumplirse y con qué umbral, el QAS especifica en qué situación concreta y con qué medida observable se verificará ese cumplimiento. Los QAS se documentan en el formato ATAM de seis partes \cite{kazman1998_atam}: Fuente (origen del estímulo), Estímulo (evento que activa el escenario), Artefacto (elemento del sistema afectado), Entorno (condición del sistema en el momento del estímulo), Respuesta esperada y Medida cuantificable.
+
+Dado que esta fase precede al diseño arquitectónico de la Fase~4, el campo Artefacto de cada QAS se documenta como \textit{QA\,---\,Phase~4}, indicando que el elemento concreto del sistema afectado quedará identificado una vez que los diagramas C4 y el ADR Log estén disponibles. La Medida, en cambio, se define completamente en esta fase a partir del umbral del NFR asociado, con la restricción metodológica de que debe ser verificable contra los artefactos de diseño (diagramas C4, ADRs, Technology Reference Map) sin requerir un sistema en operación. Los escenarios cuya Medida solo pueda verificarse con datos de ejecución real quedan fuera del alcance de esta Arquitectura de Referencia y se documentan como trabajo futuro.
+
+La asignación de cada QAS a una característica y sub-característica de ISO/IEC~25010:2023 \cite{iso250102023} garantiza que los escenarios estén anclados a una taxonomía de calidad reconocida internacionalmente. La selección de esta versión de la norma se justifica por dos incorporaciones relevantes para el dominio PKI: la sub-característica de Resistencia dentro de Seguridad, aplicable a escenarios de ataque sostenido como DDoS sobre el respondedor OCSP, y la característica de Protección con Integración Segura, pertinente para componentes que interactúan con sistemas externos de identidad del Estado.
+
+\subsection{Identificación preliminar de Trade-off Points}
+
+En paralelo a la especificación de los QAS, se identificaron Trade-off Points (TPs) preliminares como elementos arquitectónicos candidatos que, según la literatura de arquitectura de software, presentan sensibilidad simultánea a múltiples atributos de calidad en direcciones opuestas \cite{kazman1998_atam,bass2012saip}. La definición precisa de Kazman et al.\ establece que un TP es un elemento arquitectónico concreto ---no una tensión abstracta--- al cual múltiples atributos son sensibles: por ejemplo, el número de réplicas de un servicio es sensible a disponibilidad (positivamente) y a seguridad (negativamente, por ampliación de la superficie de ataque).
+
+En esta fase, los TPs se documentan como candidatos porque los elementos arquitectónicos concretos del diseño aún no existen; su confirmación como TPs formales, referenciados a elementos específicos de los diagramas C4 y del ADR Log, se realiza en los Steps~5 y~6 del ATAM de la Fase~5, una vez que el diseño arquitectónico esté completo. Su propósito en esta fase es anticipar al diseño de la Fase~4 los puntos donde las decisiones tendrán consecuencias simultáneas sobre múltiples atributos de calidad.
+
+La Tabla~\ref{tab:fase3_es} resume los artefactos y marcos de referencia que alimentan esta fase, y el único entregable que produce como insumo de la Fase~4.
+
+\begin{table}[H]
+\centering
+\caption{Entradas y Salidas de la Fase 3}
+\label{tab:fase3_es}
+\begin{tabular}{@{}p{0.45\textwidth}p{0.48\textwidth}@{}}
+\toprule
+\multicolumn{2}{c}{\textbf{Entradas}} \\
+\midrule
+Architecture Vision (Fase 2) & Vision Statement, \textit{stakeholders} y sus \textit{concerns} como punto de partida para los Business Drivers \\
+Statement of Architecture Work (Fase 2) & Alcance IN/OUT SCOPE que delimita los escenarios de calidad evaluables \\
+Backlog de Requerimientos & Fuente de requerimientos funcionales que condicionan la identificación de drivers y NFRs \\
+Resolución ARCOTEL-2024-0176 & Mandatos regulatorios que originan drivers de tipo regulatorio y restricciones de NFRs \cite{arcotel20240176} \\
+ISO/IEC 25010:2023 & Taxonomía de características y sub-características para anclar cada NFR \cite{iso250102023} \\
+\midrule
+\multicolumn{2}{c}{\textbf{Salida}} \\
+\midrule
+Matriz de Atributos de Calidad (ASR) & Documento consolidado con Business Drivers, NFRs, escenarios QAS, Trade-off Points preliminares y matriz de trazabilidad BD $\rightarrow$ NFR $\rightarrow$ QAS $\rightarrow$ TP\textsubscript{prel.} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+% ======================================================================
+% FASE 4 — DISEÑO ARQUITECTÓNICO
+% ======================================================================
+
+\section{Fase 4 --- Diseño Arquitectónico (Phase C + Phase D)}
+
+\subsection{Propósito integrado}
+
+Con la Matriz ASR producida en la Fase~3 como conjunto de criterios no negociables, las Phases~C (Information Systems Architecture) y D (Technology Architecture) del TOGAF ADM \cite{TOGAF10} constituyen el núcleo del trabajo arquitectónico: transforman esos requisitos de calidad y la visión arquitectónica en un diseño concreto, estructurado y verificable. Ambas phases se ejecutaron de manera secuencial pero con retroalimentación continua, dado que las decisiones tecnológicas de Phase~D condicionan y refinan las decisiones de diseño lógico de Phase~C. Durante toda esta fase, los Steps~3 y~4 de ATAM \cite{kazman1998_atam} operaron de manera concurrente al diseño: a medida que se definen los elementos arquitectónicos, se identifican los enfoques que los soportan y se documentan como decisiones formales mediante Architecture Decision Records, siguiendo la progresión representada en la Figura~\ref{fig:diagrama_diseno}.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{figs/metodologia/m_diseno.pdf}
+\caption[Diagrama de las actividades del Diseño Arquitectónico]{Transformación de los requisitos de calidad en artefactos arquitectónicos estructurados y verificables.}
+\label{fig:diagrama_diseno}
+\end{figure}
+
+\subsection{Phase C --- Information Systems Architecture}
+
+Phase~C tiene como propósito definir la arquitectura lógica del sistema en dos dimensiones complementarias: la arquitectura de aplicaciones, que describe cómo se organiza el software en unidades desplegables y sus interacciones, y la arquitectura de datos, que define las entidades del dominio, sus relaciones y las estrategias de persistencia.
+
+\textbf{C4 Nivel 2 --- Contenedores.} La arquitectura de aplicaciones se documenta aplicando el modelo C4, que organiza la descripción arquitectónica en niveles de abstracción progresivos \cite{brown2022c4}. El Nivel~2 define los contenedores, entendidos como las unidades de despliegue, ejecución y escalado independientes del sistema. La decisión de qué constituye un contenedor es arquitectónicamente crítica, pues define las fronteras de cambio, despliegue y propiedad de datos. La literatura de arquitectura de software propone el criterio de responsabilidad única como guía principal: un contenedor debe poder describir su propósito en una frase sin recurrir a las conjunciones ``y'' o ``además'' \cite{richards2020fundamentals}. Criterios complementarios incluyen la independencia de despliegue, el aislamiento de datos y la frontera de cambio \cite{richards2020fundamentals}. Para cuantificar el acoplamiento resultante entre contenedores, se utiliza la métrica de dependencias entre servicios, que registra el número de módulos de los cuales un contenedor depende directamente y establece umbrales de aceptación verificables \cite{aldebagy2020_metrics}.
+
+\textbf{C4 Nivel 3 --- Componentes.} El Nivel~3 descompone el interior de cada contenedor en sus componentes, describiendo cómo se organiza internamente la lógica de cada unidad de despliegue. Este nivel de detalle es necesario para que las decisiones de patrón arquitectónico (definidas en los ADRs) sean trazables hasta la estructura interna del código, sin prescribir implementaciones específicas. El Nivel~4, correspondiente a la documentación desde código, se reserva para la fase de validación experimental mediante la Prueba de Concepto.
+
+\textbf{Modelo Lógico de Datos.} La arquitectura de datos define las entidades del dominio, sus atributos, relaciones y las estrategias de persistencia asignadas a cada contenedor. Para sistemas distribuidos compuestos por múltiples servicios independientes, la literatura de arquitectura de software documenta tres estrategias principales: base de datos compartida con esquemas lógicos separados, que favorece la simplicidad operativa pero introduce un punto único de fallo; base de datos dedicada por servicio, que maximiza el aislamiento pero incrementa la complejidad operativa; y un modelo híbrido que asigna estrategias diferenciadas según los requisitos de aislamiento de cada servicio \cite{richards2020fundamentals}. La selección de estrategia se justifica en términos de los atributos de calidad definidos en la Matriz ASR.
+
+\subsection{Identificación de Enfoques Arquitectónicos y Documentación de ADRs}
+
+De manera concurrente al diseño de los niveles C4, se identificaron los enfoques arquitectónicos que soportan cada decisión de diseño, siguiendo los Steps~3 y~4 de ATAM \cite{kazman1998_atam}. Cada enfoque identificado se documentó formalmente mediante un Architecture Decision Record (ADR), estructurado en cinco secciones: Título, Contexto, Decisión con alternativas rechazadas, Consecuencias y Estado. Los ADRs se organizaron cronológicamente para preservar la trazabilidad temporal de las decisiones y se agruparon por naturaleza en meta-decisiones de proceso, decisiones de estilo arquitectónico, decisiones de patrón y decisiones de extensibilidad y modularidad. Esta práctica de documentación concurrente al diseño garantiza que cada decisión sea trazable a los requisitos de calidad que la motivan y a los trade-offs que implica.
+
+\subsection{Phase D --- Technology Architecture}
+
+Phase~D selecciona las tecnologías concretas que implementan la arquitectura lógica definida en Phase~C y establece la topología de despliegue del sistema. La selección de tecnologías se fundamenta en atributos de calidad y principios arquitectónicos, no en preferencia o familiaridad. Los criterios de selección incluyen conformidad con estándares abiertos, disponibilidad de múltiples implementaciones interoperables, madurez y soporte comunitario, e independencia de proveedor \cite{TOGAF10}. Cuando una restricción normativa exige una tecnología o estándar específico, este requisito prevalece sobre cualquier otro criterio de selección.
+
+\textbf{Stack Tecnológico.} El stack tecnológico diferencia dos capas: el Technology Reference Map, que prescribe estándares e interfaces por módulo sin comprometer al adoptante con productos específicos, y el stack concreto de la Prueba de Concepto, que instancia el Reference Map con tecnologías versionadas y desplegables en entorno local para validar la arquitectura experimentalmente. Esta separación es deliberada: una CA adoptante que implemente la arquitectura de referencia no está obligada a usar las mismas tecnologías que el prototipo, sino a respetar las interfaces y estándares prescritos.
+
+\textbf{Diagrama de Despliegue C4.} El diagrama de despliegue define la topología de infraestructura sobre la que se ejecutan los contenedores, organizando los nodos en zonas de seguridad fundamentadas en el principio de defensa en profundidad. \cite{brown2022c4} La zonificación distingue entre servicios con exposición pública, servicios internos sin acceso directo desde el exterior, y activos de alta sensibilidad en zona aislada sin conectividad de red hacia el exterior. Este diagrama es el último artefacto del ciclo ADM ejecutado en este proyecto, dado que las Phases~E a H fueron formalmente excluidas del \textit{tailoring} según lo documentado en la Fase~1.
+
+La Tabla~\ref{tab:fase4_es} resume los artefactos que alimentan esta fase y los entregables que produce como insumos de la evaluación ATAM.
+
+\begin{table}[H]
+\centering
+\caption{Entradas y Salidas de la Fase 4}
+\label{tab:fase4_es}
+\begin{tabular}{@{}p{0.45\textwidth}p{0.48\textwidth}@{}}
+\toprule
+\multicolumn{2}{c}{\textbf{Entradas}} \\
+\midrule
+Architecture Vision y SAW (Fase 2) & Criterios de aceptación, alcance y restricciones que el diseño debe satisfacer \\
+Business Capability Map (Fase 2) & Capacidades de negocio a materializar en contenedores \\
+Matriz de Atributos de Calidad --- ASR (Fase 3) & NFRs y QAS medibles que gobiernan cada decisión de diseño \\
+Principios Arquitectónicos (Fase 1) & Reglas de diseño no negociables que arbitran conflictos entre decisiones \\
+\midrule
+\multicolumn{2}{c}{\textbf{Salidas}} \\
+\midrule
+Análisis de Estilos Arquitectónicos & Evaluación de estilos candidatos y justificación del estilo adoptado por módulo \\
+Consolidación de Patrones & Asignación de patrones tácticos por contenedor con criterios de adopción y descarte \cite{buschmann2007posa4} \\
+ADR Log & Registro trazable de cada decisión de diseño con contexto, alternativas y consecuencias \\
+Diagrama de Contenedores (C4 Nivel~2) & Unidades de despliegue independientes, sus responsabilidades e interacciones \\
+Diagramas de Componentes (C4 Nivel~3) & Estructura interna de cada contenedor seleccionado \\
+Modelo Lógico de Datos & Entidades del dominio, sus relaciones y estrategia de persistencia por contenedor \\
+Technology Architecture & Technology Reference Map y PoC Stack con justificación en términos de NFRs y principios \\
+Diagrama de Despliegue (C4 Deployment) & Topología de infraestructura organizada en zonas de seguridad \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+% ======================================================================
+% FASE 5 — EVALUACIÓN ATAM
+% ======================================================================
+
+\section{Fase 5 --- Evaluación ATAM (Steps 5--9)}
+
+\subsection{Propósito de la evaluación profunda}
+
+Una vez producido el diseño arquitectónico completo en la Fase~4, los Steps~5 a~9 del ATAM \cite{kazman1998_atam} se ejecutaron sobre sus artefactos (diagramas C4, ADR Log y Matriz ASR) para evaluar si la arquitectura satisface sus escenarios de calidad priorizados, identificando riesgos, \textit{sensitivity points} y \textit{trade-off points}; la secuencia de pasos se representa en la Figura~\ref{fig:diagrama_atam}. La evaluación garantiza el rigor mediante trazabilidad exhaustiva a las fuentes: normativa ecuatoriana, estándares internacionales y literatura de arquitectura de software.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{figs/metodologia/m_evaluacion.pdf}
+\caption[Diagrama de las actividades de la Evaluación ATAM]{Evaluación sistemática de la arquitectura para identificar riesgos, sensitivity points y trade-offs sobre el diseño completo.}
+\label{fig:diagrama_atam}
+\end{figure}
+
+\subsection{Generate Quality Attribute Utility Tree (Step 5)}
+
+El primer paso construye el árbol de utilidad organizando los escenarios de calidad en una jerarquía de dos niveles: atributo de calidad ISO/IEC~25010:2023 en el primer nivel y refinamiento del escenario en el segundo. A cada escenario se le asigna una calificación doble de importancia para el negocio (H/M/L) y dificultad técnica de implementación (H/M/L), donde la clasificación MoSCoW del NFR asociado opera como proxy de la importancia. Los escenarios con calificación (H,H) se designan como \textit{Hot Spots} y constituyen el foco prioritario de la evaluación en los pasos siguientes.
+
+\subsection{Analyze Architectural Approaches (Step 6)}
+
+Para cada rama del Utility Tree se identifican los enfoques arquitectónicos documentados en el ADR Log que abordan cada escenario, respondiendo tres preguntas en orden: qué enfoque aborda el QAS, cómo lo satisface estructuralmente, y cuál es la fuente arquitectónica de la afirmación. Este paso produce dos salidas diferenciadas. La primera es el mapeo sistemático de enfoques contra escenarios, que establece la cobertura arquitectónica de cada atributo de calidad. La segunda son los \textit{Sensitivity Points}: decisiones estructuralmente críticas donde un cambio pequeño produce un impacto desproporcionado en uno o más atributos de calidad simultáneamente. Los \textit{sensitivity points} se distinguen de los riesgos en que no son decisiones potencialmente malas sino decisiones correctas que deben mantenerse con disciplina sostenida.
+
+\subsection{Brainstorm and Prioritize Scenarios (Step 7)}
+
+A partir del diseño completo y el Utility Tree del Step~5, se generan nuevos escenarios de calidad no contemplados en la especificación inicial de la Matriz ASR. Los escenarios se someten a un filtro metodológico que descarta aquellos cubiertos íntegramente por escenarios existentes, duplicados entre evaluadores o de naturaleza operacional sin impacto arquitectónico. Los escenarios que revelan riesgos o vacíos no documentados se incorporan al análisis. Cada escenario nuevo se prioriza con la misma escala H/M/L del Utility Tree y se evalúa en el Step~8.
+
+\subsection{Evaluate Scenarios (Step 8)}
+
+Cada escenario del Utility Tree ampliado con los resultados del Step~7 se evalúa contra los enfoques arquitectónicos mapeados en el Step~6. La evaluación asigna una calificación en tres categorías: satisface plenamente, satisface con \textit{trade-off} identificado, o no satisface con riesgo documentado incluyendo severidad y mitigación propuesta. Los \textit{trade-off points} confirmados en este paso son decisiones donde un enfoque arquitectónico mejora simultáneamente un atributo de calidad y degrada otro, requiriendo una justificación explícita de la elección.
+
+\subsection{Present Results (Step 9)}
+
+El paso final consolida los productos de los cuatro steps anteriores en un informe estructurado que incluye la matriz de trazabilidad QAS $\rightarrow$ Enfoque $\rightarrow$ Calificación, el catálogo de riesgos con severidad y mitigación, los \textit{sensitivity points} con su mapa de fragilidad, los \textit{trade-off points} confirmados y un plan de acción con recomendaciones priorizadas. Este informe opera como el entregable de cierre de la evaluación y como insumo de retroalimentación hacia el diseño: si algún riesgo resulta no aceptable, la evidencia del Step~9 justifica una revisión de los artefactos de la Fase~4.
+
+La Tabla~\ref{tab:fase5_es} resume los artefactos que alimentan la evaluación ATAM y los entregables que produce; los escenarios calificados con alto riesgo en el Informe ATAM determinan el alcance de la validación experimental de la Fase~6.
+
+\begin{table}[H]
+\centering
+\caption{Entradas y Salidas de la Fase 5}
+\label{tab:fase5_es}
+\begin{tabular}{@{}p{0.45\textwidth}p{0.48\textwidth}@{}}
+\toprule
+\multicolumn{2}{c}{\textbf{Entradas}} \\
+\midrule
+Diagramas C4 Niveles 2 y 3 (Fase 4) & Diseño arquitectónico completo sobre el que se evalúan los escenarios \\
+ADR Log (Fase 4) & Enfoques arquitectónicos documentados que se mapean contra cada QAS \\
+Diagrama de Despliegue y Technology Architecture (Fase 4) & Topología e infraestructura que condiciona los escenarios de disponibilidad y seguridad \\
+Matriz de Atributos de Calidad --- ASR (Fase 3) & Escenarios QAS priorizados que alimentan el Utility Tree \\
+\midrule
+\multicolumn{2}{c}{\textbf{Salidas}} \\
+\midrule
+Quality Attribute Utility Tree & Jerarquía de escenarios organizados por atributo de calidad con calificación H/M/L de importancia y dificultad \\
+Mapeo de Enfoques Arquitectónicos & Trazabilidad QAS $\rightarrow$ decisión arquitectónica $\rightarrow$ fuente de la afirmación \\
+Sensitivity Points & Decisiones estructuralmente críticas donde un cambio pequeño produce impacto desproporcionado en uno o más atributos \\
+Trade-off Points & Tensiones entre atributos de calidad validadas contra el diseño real \\
+Informe ATAM & Consolidación de riesgos, \textit{sensitivity points}, \textit{trade-off points}, fortalezas y plan de acción priorizado \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+% ======================================================================
+% FASE 6 — VALIDACIÓN EXPERIMENTAL PoC
+% ======================================================================
+
+\section{Fase 6 --- Validación Experimental (Proof of Concept)}
+
+\subsection{Propósito y criterios de selección}
+
+El PoC constituye la validación empírica de la arquitectura, complementando la validación analítica del ATAM (Fase~5): mientras el ATAM identifica qué escenarios son más riesgosos mediante análisis estructural, el PoC produce evidencia medible sobre esos escenarios específicos \cite{wieringa2014design}. El alcance del PoC se concentró en los componentes de mayor riesgo técnico, novedad del enfoque y medibilidad objetiva de sus atributos de calidad, conforme al ciclo representado en la Figura~\ref{fig:diagrama_PoC}.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{figs/metodologia/m_PoC.pdf}
+\caption[Diagrama de las actividades del Proof of Concept]{Ciclo de validación empírica de los escenarios de mayor riesgo identificados por el ATAM.}
+\label{fig:diagrama_PoC}
+\end{figure}
+
+\subsection{Especificar PoC}
+
+La especificación del PoC aplica el enfoque Goal-Question-Metric (GQM) \cite{wieringa2014design}, que estructura el diseño experimental en tres niveles jerárquicos: Goal formula el objetivo conceptual con propósito, objeto de estudio, perspectiva, contexto y foco; Question define las preguntas operacionales respondibles con datos; y Metric especifica los datos concretos a recolectar con su unidad de medida, método de recolección y criterio de éxito. La especificación define además las variables independientes (el diseño arquitectónico bajo prueba), las variables dependientes (las métricas) y el entorno experimental reproducible, siendo la reproducibilidad un requisito de validez del experimento \cite{wieringa2014design}.
+
+\subsection{Codificar}
+
+Con la especificación GQM definida, la subfase de codificación materializa en código fuente los componentes del módulo seleccionado para la PoC, respetando las interfaces y restricciones de diseño documentadas en el C4 Nivel~3 sin introducir dependencias adicionales que comprometan los umbrales de acoplamiento definidos en los NFRs. Cada componente implementado debe corresponder biunívocamente a un elemento del diseño arquitectónico, de forma que el C4 Nivel~4 generado en la subfase siguiente sea una derivación directa del código producido, no una documentación independiente.
+
+\subsection{Implementar}
+
+Con los componentes codificados, la subfase de implementación configura el entorno experimental reproducible sobre el que se ejecutarán los escenarios de validación. El entorno incluye la infraestructura de soporte necesaria para que los componentes codificados operen bajo condiciones controladas y observables, con acceso a los sistemas de terceros requeridos por el diseño. La reproducibilidad del entorno es un requisito de validez experimental \cite{wieringa2014design}: un resultado obtenido en un entorno no reproducible no puede considerarse evidencia arquitectónica.
+
+\subsection{Construcción C4 Nivel 4}
+
+El Nivel~4 del modelo C4 se genera desde el código fuente del PoC como documentación \textit{post-hoc}, verificando la correspondencia entre la implementación y el diseño documentado en los Niveles~2 y~3. Este nivel no se prescribe en la arquitectura de referencia sino que se deriva de la implementación concreta del PoC, operando como evidencia de consistencia entre el diseño arquitectónico y el código producido. \cite{brown2022c4}
+
+\subsection{Ejecutar Escenarios de Validación}
+
+Cada escenario especificado en la subfase de especificación se ejecuta sobre el entorno implementado, registrando las métricas definidas en el diseño GQM. La ejecución sigue el protocolo establecido en los casos de prueba: para cada escenario se registra el resultado observado, se compara contra el criterio de éxito del NFR asociado, y se asigna un estado de cierre. Los escenarios cuyo resultado empírico satisface el umbral del NFR se cierran como validados; los que no lo satisfacen se documentan como riesgos arquitectónicos con su evidencia correspondiente.
+
+La Tabla~\ref{tab:fase6_es} resume los artefactos que alimentan la validación experimental y los entregables que produce como cierre empírico del proceso.
+
+\begin{table}[H]
+\centering
+\caption{Entradas y Salidas de la Fase 6}
+\label{tab:fase6_es}
+\begin{tabular}{@{}p{0.45\textwidth}p{0.48\textwidth}@{}}
+\toprule
+\multicolumn{2}{c}{\textbf{Entradas}} \\
+\midrule
+Informe ATAM --- Step~8 (Fase 5) & Escenarios [POC] con calificación (H,H) que requieren validación empírica \\
+Diagramas C4 Niveles 2 y 3 (Fase 4) & Diseño arquitectónico que delimita los componentes a implementar \\
+ADR Log (Fase 4) & Restricciones de implementación que el código debe respetar \\
+Matriz de Atributos de Calidad --- ASR (Fase 3) & Umbrales NFR que operan como criterios de éxito de cada métrica \\
+\midrule
+\multicolumn{2}{c}{\textbf{Salidas}} \\
+\midrule
+Especificación PoC --- GQM & Goals, Questions y Metrics con casos de prueba \\
+PoC ejecutable & Implementación de los componentes bajo validación \\
+Diagrama del Código (C4 Nivel 4) & Documentación desde código generada \textit{post-hoc} como evidencia de consistencia con el diseño \\
+Resultados de métricas & Registro de los resultados obtenidos durante la validación \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+% ======================================================================
+% PROCESOS TRANSVERSALES
+% ======================================================================
+
+\section{Procesos Transversales}
+\label{sec:req_mgmt}
+
+\subsection{Requirements Management}
+
+El Requirements Management es el único proceso del ADM TOGAF \cite{TOGAF10} que no corresponde a una fase secuencial sino que opera de manera continua a lo largo de todo el ciclo, desde la Preliminary Phase hasta Phase~D. Su propósito no es producir requerimientos (eso ocurre en las fases específicas) sino gestionar su evolución: incorporar nuevos requerimientos descubiertos durante el diseño o la evaluación, mantener la trazabilidad entre artefactos, y garantizar la consistencia del cuerpo de requerimientos cuando un cambio en un artefacto se propaga a otros. La trazabilidad se mantiene mediante referencias cruzadas explícitas entre identificadores de artefactos, permitiendo determinar ante cualquier cambio qué otros artefactos deben revisarse. La cadena de trazabilidad que gobierna este proceso es: BD $\rightarrow$ NFR $\rightarrow$ QAS $\rightarrow$ AD $\rightarrow$ TP, donde cada eslabón referencia al anterior mediante identificadores únicos verificables. En esta cadena, AD designa las Architecture Decisions documentadas en el ADR Log durante la Fase~4; los QAS de la Fase~3 se completan con el elemento C4 concreto al formalizarse en el Utility Tree de la Fase~5.
+
+Para controlar la evolución de los artefactos documentales, se adopta el Versionado Semántico (SemVer) como esquema: la versión mayor cambia cuando se introduce un cambio estructural que invalida trazabilidades anteriores; la versión menor cambia cuando se agrega o modifica contenido sin romper trazabilidad; y cada artefacto incluye una tabla de control de versiones que documenta qué cambió, cuándo y por qué \cite{prestonwerner2013semver}.
+
+La Tabla~\ref{tab:req_mgmt_es} resume los artefactos que alimentan este proceso y el único entregable que produce, el cual opera como insumo de todas las fases del ciclo ADM.
+
+\begin{table}[H]
+\centering
+\caption{Entradas y Salidas del Proceso Transversal de Requirements Management}
+\label{tab:req_mgmt_es}
+\begin{tabular}{@{}p{0.45\textwidth}p{0.48\textwidth}@{}}
+\toprule
+\multicolumn{2}{c}{\textbf{Entradas}} \\
+\midrule
+Requerimientos descubiertos en cada fase & Nuevos requerimientos funcionales o de calidad identificados durante el diseño, evaluación o validación \\
+Matriz ASR (Fase 3) & Fuente de QAS y NFRs que el proceso mantiene actualizados ante cambios de diseño \\
+ADR Log (Fase 4) & Decisiones arquitectónicas que pueden generar o modificar requerimientos existentes \\
+Resolución ARCOTEL-2024-0176 & Mandatos regulatorios que pueden introducir nuevos requerimientos en cualquier momento del ciclo \cite{arcotel20240176} \\
+\midrule
+\multicolumn{2}{c}{\textbf{Salida}} \\
+\midrule
+Backlog de Requerimientos & Registro vivo de EPICs e Historias de Usuario con trazabilidad explícita a NFRs, QAS y Principios Arquitectónicos \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+% ======================================================================
+% FASES EXCLUIDAS
+% ======================================================================
+
+\section{Fases Excluidas del TOGAF ADM}
+\label{sec:fases_excluidas}
+
+La exclusión de fases del ADM es una práctica de \textit{tailoring} legítima y documentada en el propio estándar, no una desviación de él \cite{TOGAF10}. En este proyecto se excluyen las fases E (\textit{Opportunities \& Solutions}), F (\textit{Migration Planning}), G (\textit{Implementation Governance}) y H (\textit{Architecture Change Management}), dado que todas ellas presuponen la existencia de una implementación productiva en curso, condición que no aplica a una Arquitectura de Referencia. La Figura~\ref{fig:limites_adm_togaf} delimita visualmente el alcance del ciclo ADM adoptado; las fases resaltadas en azul corresponden a las etapas ejecutadas en este proyecto, mientras que las fases en gris son las excluidas por no aplicar al alcance de una Arquitectura de Referencia.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{figs/metodologia/m_tailoring.pdf}
+\caption[Límites del ADM TOGAF]{Alcance del tailoring ADM aplicado: fases ejecutadas, fases excluidas y métodos de evaluación post-diseño.}
+\label{fig:limites_adm_togaf}
+\end{figure}
+
+La Tabla~\ref{tab:fases_excluidas} detalla, para cada fase excluida, su propósito original dentro del ADM y el criterio específico que justifica su omisión en el contexto de este trabajo.
+
+\begin{table}[H]
+\centering
+\caption{Fases excluidas del TOGAF ADM}
+\label{tab:fases_excluidas}
+\begin{tabular}{@{}p{3.2cm}p{4.4cm}p{4.9cm}@{}}
+\toprule
+\textbf{Fase ADM} & \textbf{Propósito original} & \textbf{Criterio de exclusión} \\
+\midrule
+E: Opportunities \& Solutions & Seleccionar soluciones concretas (COTS, proveedores) para implementación & Una Arquitectura de Referencia prescribe el diseño objetivo; la selección de productos es responsabilidad de cada adoptante. \\
+F: Migration Planning & Planificar migración desde Baseline a Target Architecture & Una RA es un diseño sin baseline específica; la planificación de migración corresponde a cada adoptante. \\
+G: Implementation Governance & Supervisar la implementación para garantizar conformidad & No hay implementación productiva que gobernar; la evaluación se aborda mediante ATAM. \\
+H: Architecture Change Management & Gestionar cambios una vez desplegada en producción & Requiere un sistema en operación; las recomendaciones de evolución se documentan como trabajo futuro. \\
+\bottomrule
+\end{tabular}
+\end{table}
+

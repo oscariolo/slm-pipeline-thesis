@@ -1,0 +1,25 @@
+\chapter*{Abstract}
+\addcontentsline{toc}{chapter}{Abstract}
+
+\begin{spacing}{1.5}
+
+Certificate Authorities regulated under Ecuadorian law operate on PKI infrastructures with structural limitations in rigidity, tight coupling, and low scalability, incompatible with the operational continuity and audited traceability requirements mandated by Resolution ARCOTEL-\allowbreak 2024-\allowbreak 0176. This work proposes a reference architecture designed across four phases: normative requirements analysis, architectural design using the C4 model under TOGAF ADM, implementation of an Immutable Log Service module with Hyperledger Fabric, and evaluation using PoC and ATAM. Analysis of PKI standards and the Ecuadorian regulatory framework yielded eight business drivers decomposed into twenty-four non-functional requirements and twenty-six quality attribute scenarios; the binding constraints (immediate OCSP response and exclusive private key storage in certified HSM hardware) eliminated styles relying on eventual consistency. The resulting architecture adopts a Service-Based style with selective asynchrony and Microkernel extensibility, realized as ten coarse-grained containers backed by thirty-nine architectural decision records. The PoC experiment confirmed that the fire-and-forget pattern does not degrade the main write path, that the \texttt{HashChainEngine} guarantees local log integrity independently of network availability, and that the module enforces data protection without exposing personal information in plaintext, satisfying the data protection law by construction. The ATAM analysis complements these results with quality attribute trade-off evaluation and residual risk identification.
+
+\end{spacing}
+
+\hspace{1.27cm}\textit{Author Keywords:} reference architecture, public key infrastructure, certificate authority, immutable log, Ecuadorian regulatory framework
+
+\vfill % empuja el bloque CC hacia el pie de página
+
+\begin{minipage}[t]{0.5\linewidth}
+  \includegraphics[width=5cm]{figs/logos/image.png}
+\end{minipage}
+\par\vspace{0.25cm}
+\begin{spacing}{0.5}
+\begin{footnotesize}\hyphenpenalty=10000 % sin cortar palabras con guion
+The content of this work corresponds to the right of expression of the authors and does not compromise the institutional thinking of the University of Cuenca, nor does it release its responsibility before third parties. The \linebreak authors assume responsibility for the intellectual property and copyrights.
+\par\vspace{0.6em} % una línea en blanco de separación
+\textbf{Institutional Repository:} \href{https://dspace.ucuenca.edu.ec/}{\textcolor{blue}{\underline{\nolinkurl{https://dspace.ucuenca.edu.ec/}}}}
+\end{footnotesize}
+\end{spacing}
+\vspace{0.45cm}\null % pequeño margen entre el enlace y el pie de página

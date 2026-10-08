@@ -1,0 +1,26 @@
+\chapter*{Resumen}
+\addcontentsline{toc}{chapter}{Resumen}
+\markboth{RESUMEN}{RESUMEN}
+
+\begin{spacing}{1.5}
+
+Las Autoridades de Certificación reguladas bajo el marco legal ecuatoriano operan sobre infraestructuras PKI con limitaciones de rigidez, acoplamiento fuerte y baja escalabilidad, incompatibles con los requisitos de continuidad y trazabilidad auditada que impone la Resolución ARCOTEL-2024-0176. El presente trabajo propone una arquitectura de referencia diseñada en cuatro fases: análisis de requisitos normativos, diseño con el modelo C4 bajo TOGAF ADM, implementación del módulo de auditoría Immutable Log Service con Hyperledger Fabric, y evaluación mediante PoC y ATAM. El análisis de los estándares PKI y del marco regulatorio derivó ocho conductores de negocio descompuestos en veinticuatro requisitos no funcionales y veintiséis escenarios de atributo de calidad; las restricciones determinantes (respuesta OCSP inmediata y claves exclusivamente en HSM certificado) descartaron estilos con consistencia eventual. La arquitectura adopta el estilo Service-Based con asincronía selectiva y extensibilidad Microkernel, materializada en diez contenedores de grano grueso respaldados por treinta y nueve decisiones arquitectónicas. El experimento PoC confirmó que el patrón \textit{fire-and-forget} no degrada la ruta de escritura principal, que el \texttt{HashChainEngine} garantiza la integridad local del log independientemente de la red, y que el módulo protege los datos sin exponer información personal, cumpliendo la LOPDP por construcción. El análisis ATAM complementa estos resultados con la evaluación de compromisos entre atributos de calidad y la identificación de riesgos residuales.
+
+\end{spacing}
+
+\hspace{1.27cm}\textit{Palabras clave del autor:} arquitectura de referencia, infraestructura de clave pública, autoridad de certificación, registro inmutable, marco regulatorio ecuatoriano
+
+\vfill % empuja el bloque CC hacia el pie de página
+
+\begin{minipage}[t]{0.5\linewidth}
+  \includegraphics[width=5cm]{figs/logos/image.png}
+\end{minipage}
+\par\vspace{0.25cm}
+\begin{spacing}{0.5}
+\begin{footnotesize}
+El contenido de esta obra corresponde al derecho de expresión de los autores y no compromete el pensamiento institucional de la Universidad de Cuenca ni desata su responsabilidad frente a terceros. Los autores asumen la responsabilidad por la propiedad intelectual y los derechos de autor.
+\par\vspace{0.6em} % una línea en blanco de separación
+\textbf{Repositorio Institucional:} \href{https://dspace.ucuenca.edu.ec/}{\textcolor{blue}{\underline{\nolinkurl{https://dspace.ucuenca.edu.ec/}}}}
+\end{footnotesize}
+\end{spacing}
+\vspace{0.45cm}\null % pequeño margen entre el enlace y el pie de página

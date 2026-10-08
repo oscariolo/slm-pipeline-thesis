@@ -1,0 +1,3061 @@
+\chapter*{Anexos}\label{cap:anexos}
+\phantomsection
+\addcontentsline{toc}{chapter}{Anexos}
+
+% ======================================================================
+% ANEXO A — CATÁLOGO COMPLETO DE EPICs
+% ======================================================================
+
+\section*{Anexo A — Catálogo Completo de EPICs}\label{anx:backlog_completo}
+\phantomsection
+\addcontentsline{toc}{section}{Anexo A — Catálogo Completo de EPICs}
+
+Este anexo presenta el catálogo completo de los doce EPICs del sistema CA. Los EPICs
+relevantes (01, 05, 06 y 08) se describen en detalle en la Sección~\ref{sec:requisitos};
+a continuación se desarrolla el catálogo completo.
+
+\small
+\begin{longtable}{@{}p{1cm}p{4.5cm}p{6.5cm}p{1.3cm}@{}}
+\caption{Catálogo completo de EPICs}\label{tab:epics_completo}\\
+\toprule
+\textbf{EPIC} & \textbf{Nombre} & \textbf{Referencias normativas} & \textbf{MoSCoW} \\
+\midrule
+\endfirsthead
+\multicolumn{4}{l}{\small\itshape Continuación de la Tabla~\thetable}\\[2pt]
+\toprule
+\textbf{EPIC} & \textbf{Nombre} & \textbf{Referencias normativas} & \textbf{MoSCoW} \\
+\midrule
+\endhead
+\bottomrule
+\endlastfoot
+01 & Ciclo de Vida del Certificado &
+     ARCOTEL Art.~4.12, 4.13, 4.14; Art.~5.1 lit.~l.3 & Must \\
+02 & Identificación y Autenticación de Suscriptores &
+     ARCOTEL Art.~4.1, 4.2, 8; LOPDP Art.~10(d)(e) & Must \\
+03 & Gestión de RA Delegada &
+     ARCOTEL Art.~4.9; Art.~5.1 lit.~l.3 & Should \\
+04 & Motor de Estado de Certificados &
+     ARCOTEL Art.~4.12, 4.17; RFC~6960 & Must \\
+05 & Repositorio y Publicación &
+     ARCOTEL Art.~4.7, 4.20; Art.~5.1 & Must \\
+06 & Gestión de Perfiles de Certificado &
+     ARCOTEL Art.~6; Anexos~1a--4b y 5--8; Disp.~Gral.~1\textordfeminine & Must \\
+07 & Seguridad Técnica y Gestión de Claves CA &
+     ARCOTEL Art.~9; Art.~11 lit.~a--g; Art.~12 & Must \\
+08 & Registro de Auditoría Inmutable &
+     ARCOTEL Art.~4.9, 4.18; LCE Art.~39(c) & Must \\
+09 & Cumplimiento Normativo y Reportes &
+     ARCOTEL Art.~4.9, 4.11; LOPDP Art.~43 & Must \\
+10 & Portal Web de Suscriptores &
+     ARCOTEL Art.~4.8, 4.12, 4.13; Art.~14 lit.~a & Must \\
+11 & Entrega Segura de Credenciales &
+     ARCOTEL Art.~11 lit.~a; Art.~4.6; Art.~18 & Must \\
+12 & Servicio de Sellado de Tiempo (TSA) &
+     ARCOTEL Art.~21--28 & Should \\
+\end{longtable}
+\normalsize
+
+A continuación se desarrolla el alcance funcional del catálogo completo de EPICs.
+
+\paragraph{EPIC-01 — Ciclo de Vida del Certificado.}
+Orquesta todos los estados por los que transita un certificado desde la solicitud hasta su
+expiración o revocación. Su alcance comprende: el \textit{workflow} de aprobación con estados y
+\textit{timeouts} definidos; la notificación al suscriptor post-emisión con registro de
+aceptación y \textit{timestamp}; la renovación con misma clave; el re-\textit{key} con
+nueva clave generada en el HSM; la modificación de datos del suscriptor; la revocación con
+razón codificada e \textit{invalidity date}; la suspensión temporal y reactivación; y el
+fin de suscripción con revocación en cascada.
+
+\paragraph{EPIC-02 — Identificación y Autenticación de Suscriptores.}
+Define las reglas de negocio para validar la identidad de personas naturales y jurídicas
+antes de la emisión del primer certificado y en eventos posteriores que lo requieran.
+Incluye controles de privacidad y protección de datos personales. Dado que el Art.~11
+lit.~a de ARCOTEL-2024-0176 \cite{arcotel20240176} exige la generación del par de claves
+en la CA, la prueba de posesión de clave privada mediante PKCS\#10 no aplica. Su alcance
+comprende: validación de identidad de persona natural mediante documento verificado contra
+fuente oficial; validación de identidad de persona jurídica mediante RUC, representación
+legal y autorización; validación de autoridad para actuar en nombre de organización;
+declaración explícita de campos no verificados en el certificado; re-validación de identidad
+completa para re-\textit{key} post-revocación; autenticación del solicitante para
+solicitudes de revocación; separación entre datos públicos del certificado y datos privados
+de validación de identidad; y registro de consentimiento del suscriptor para uso de datos
+personales.
+
+\paragraph{EPIC-03 — Gestión de RA Delegada.}
+Cubre la integración técnica y operacional con autoridades de registro externas, incluyendo
+el canal de comunicación seguro y los criterios de interoperación que garantizan que el
+proceso de validación de la RA es equivalente al de la CA. Su alcance comprende: criterios
+de interoperación con autoridades de registro delegadas; API de RA como canal único de
+solicitudes externas; autenticación mutua CA-RA mediante certificado de cliente; alcances
+de autorización por RA; trazabilidad de qué RA originó cada solicitud; auditoría de
+operaciones de RA en los logs centrales; alertas proactivas de expiración al titular con al
+menos 30 días de anticipación; y suspensión inmediata mediante revocación de credenciales
+de API.
+
+\paragraph{EPIC-04 — Motor de Estado de Certificados.}
+Constituye el motor criptográfico que genera CRL firmadas y responde consultas OCSP.
+Produce los objetos criptográficos de revocación, mientras que EPIC-05 se encarga de
+publicarlos y alojarlos. Su alcance comprende: generación de CRL firmadas con clave
+delegada con periodicidad diaria; respondedor OCSP con latencia definida por el adoptante
+en su CPS, de acceso libre y gratuito; firma de respuestas OCSP con clave delegada
+separada de la clave de emisión de la CA; codificación de razón (\textit{reason code}) en
+cada entrada de CRL; fecha de invalidez (\textit{invalidity date}) en cada entrada de CRL;
+y alerta interna cuando el tiempo restante hasta \textit{nextUpdate} cae por debajo del
+umbral operacional definido.
+
+\paragraph{EPIC-05 — Repositorio y Publicación.}
+Provee la infraestructura de red que aloja y distribuye los objetos producidos por la CA.
+No genera ningún objeto criptográfico sino que los recibe de los EPICs productores y los
+publica con alta disponibilidad. Una restricción crítica de diseño es que las URLs del
+repositorio se embeben dentro de cada certificado emitido para toda su vida útil; cambiar
+una URL requiere revocar y reemitir todos los certificados que la referencian, por lo que
+deben definirse antes del primer certificado de producción. El alcance comprende: el
+alojamiento de CRL y de certificados de CA raíz y Sub-CA; la publicación de la Declaración
+de Prácticas de Certificación (CPS) y las Políticas de Certificado (CP) en versión pública;
+el control de acceso diferenciado según el tipo de recurso; el \textit{health check} de
+disponibilidad de todos los \textit{endpoints}; y el registro y control de permanencia de
+las URLs durante la vida útil de los certificados que las referencian.
+
+\paragraph{EPIC-06 — Gestión de Perfiles de Certificado.}
+Administra el catálogo de perfiles de certificado de entidad final. Los valores de
+extensiones X.509 v3, algoritmos, períodos de validez y tamaños de clave no son
+discrecionales sino que están prescritos por la normativa ARCOTEL vigente para los cuatro
+perfiles regulados (persona natural, persona jurídica, representante legal y sello
+electrónico). Su alcance comprende: la definición de perfiles por tipo con sus extensiones
+(Key Usage, EKU, Basic Constraints, SAN); la asignación de OID de política bajo árbol del
+número de empresa privada de la IANA (PEN-IANA) por perfil; el versionado de perfiles sin
+afectar certificados en emisión activa bajo la versión anterior; y la validación de cada
+solicitud contra el perfil correspondiente antes de delegar la emisión al motor
+criptográfico.
+
+\paragraph{EPIC-07 — Seguridad Técnica y Gestión de Claves CA.}
+Cubre el ciclo de vida de las claves criptográficas de la CA y la gestión del hardware HSM.
+Este EPIC se ocupa exclusivamente de la clave privada de la CA; la generación y entrega de
+claves de suscriptores está en EPIC-11. Su alcance comprende: integración HSM mediante
+PKCS\#11 de forma que la clave de CA nunca exista en texto claro fuera del HSM; jerarquía
+CA raíz \textit{offline} y Sub-CA \textit{online}; control de quórum para activación de
+clave de CA; y rotación de clave de CA con período de transición donde ambas versiones son
+válidas.
+
+\paragraph{EPIC-08 — Registro de Auditoría Inmutable.}
+Garantiza la infraestructura e invariantes de inmutabilidad del Servicio de Registro
+Inmutable (ILS). No duplica los eventos específicos de otros EPICs sino que centraliza
+y sella los eventos que cada módulo del sistema emite hacia él. El almacenamiento se
+realiza en un sistema físicamente externo al motor CA. Su alcance comprende: recepción de
+eventos de todos los módulos; inmutabilidad estructural del log mediante operaciones
+exclusivamente de escritura; evidencia criptográfica por evento mediante
+\textit{hash-chaining} SHA-256 y firma del HSM; verificabilidad \textit{offline} sin
+acceso a la base de datos activa; exportación de logs para auditor externo sin incluir
+datos personales en texto claro; y alerta ante cualquier intento de modificación o brecha
+de integridad del log.
+
+\paragraph{EPIC-09 — Cumplimiento Normativo y Reportes.}
+Provee las capacidades del sistema para demostrar cumplimiento ante ARCOTEL y generar
+evidencia auditable. Su alcance comprende: generación de reportes operacionales
+trimestrales desagregados por perfil de certificado (volumen de emisión, vigentes,
+revocados, suspendidos); notificación de incidentes a ARCOTEL dentro del plazo legal;
+trazabilidad completa de cada certificado desde la solicitud hasta la revocación o
+expiración; y registro de cambios de configuración con autor y razón.
+
+\paragraph{EPIC-10 — Portal Web de Suscriptores.}
+Provee la interfaz web para que clientes de CA soliciten, gestionen y revoquen sus
+certificados, actuando como autoridad de registro interna. La generación y entrega del
+contenedor criptográfico con la clave y el certificado está completamente delegada a
+EPIC-11. Su alcance comprende: autenticación del solicitante en el portal; formulario de
+solicitud por tipo de certificado; carga de documentación de identidad; seguimiento de
+estado de solicitud; aceptación formal del certificado con \textit{timestamp}; solicitud de
+renovación dentro de la ventana de elegibilidad; solicitud de revocación con autenticación;
+y canal de revocación de emergencia disponible de forma continua.
+
+\paragraph{EPIC-11 — Entrega Segura de Credenciales.}
+Cubre el ciclo completo de generación de clave del suscriptor en HSM, empaquetado en
+contenedor criptográfico y entrega verificable. Este EPIC existe porque la generación de
+clave en la CA crea una ventana de custodia que debe estar completamente controlada y
+auditada para sostener el no repudio. Su alcance comprende: generación de clave del
+suscriptor en HSM post-aprobación del \textit{workflow}; empaquetado del contenedor
+criptográfico (PKCS\#12) con la clave generada y el certificado emitido; comunicación de
+contraseña por canal separado al canal de descarga; enlace de descarga de un solo uso con
+tiempo de vida definido por el adoptante en su CPS; registro de descarga con
+\textit{timestamp}, dirección IP y \textit{hash} del archivo; confirmación explícita de
+recepción por el suscriptor; destrucción de la copia de clave privada del suscriptor en la
+CA tras confirmación de entrega exitosa; e invalidación inmediata del enlace tras descarga
+exitosa.
+
+\paragraph{EPIC-12 — Servicio de Sellado de Tiempo (TSA).}
+Provee el servicio de sellado de tiempo acreditado que emite tokens sobre \textit{hashes}
+de documentos, garantizando integridad, autenticidad y referencia horaria UTC verificable
+por terceros. Su alcance comprende: recepción del \textit{hash} del documento, sellado
+criptográfico y emisión del token de sello; registro de cada sello emitido con fecha y hora
+en UTC; sincronización horaria mínimo diaria mediante GPS, NTP o fuente equivalente con
+margen máximo de un segundo respecto a UTC; disponibilidad permanente con mecanismos de
+sellado automáticos sin posibilidad de manipulación; clave privada de la TSA almacenada en
+HSM; publicación de políticas y prácticas del servicio TSA; y registros detallados y
+auditables accesibles para ARCOTEL en sistema cifrado.
+
+% ======================================================================
+% ANEXO B — BUSINESS DRIVERS
+% ======================================================================
+
+\cleardoublepage
+\section*{Anexo B --- Business Drivers}\label{anx:business_drivers}
+\phantomsection
+\addcontentsline{toc}{section}{Anexo B --- Business Drivers}
+
+Los ocho business drivers identificados capturan las motivaciones estratégicas, regulatorias
+y operacionales que condicionan las decisiones arquitectónicas de la CA. Cada driver se
+clasifica por tipo (regulatorio, funcional u operacional) y se vincula a su fuente normativa
+o de negocio. En conjunto, constituyen el punto de partida de la cadena de trazabilidad que
+conecta motivaciones de negocio con NFRs, QAS y EPICs, documentada en el Anexo~E.
+
+\small
+\begin{longtable}{@{}p{0.8cm}p{5.4cm}p{2.1cm}p{3.9cm}@{}}
+\caption{Business Drivers de la arquitectura de referencia}\label{tab:business_drivers}\\
+\toprule
+\textbf{BD} & \textbf{Driver} & \textbf{Tipo} & \textbf{Fuente normativa} \\
+\midrule
+\endfirsthead
+\multicolumn{4}{l}{\small\itshape Continuación de la Tabla~\thetable}\\[2pt]
+\toprule
+\textbf{BD} & \textbf{Driver} & \textbf{Tipo} & \textbf{Fuente normativa} \\
+\midrule
+\endhead
+\bottomrule
+\endlastfoot
+BD-01 & Garantizar continuidad operativa sin interrupciones que comprometan la validez legal
+        de firmas y sellos emitidos &
+        Regulatorio / Operativo &
+        LCE Art.~30(b)(c) · ARCOTEL Art.~4.7, 4.13 \\
+\midrule
+BD-02 & Proteger las claves privadas de la jerarquía CA garantizando que ninguna clave
+        exista en claro fuera de hardware criptográfico certificado &
+        Seguridad &
+        LCE Art.~13 · FIPS~140-2 · ARCOTEL Art.~9, 11, 13 \\
+\midrule
+BD-03 & Proveer respuesta en tiempo real al estado de cualquier certificado emitido,
+        de forma libre y gratuita &
+        Funcional / Rendimiento &
+        Reglamento LCE Art.~12 · RFC~6960 · ARCOTEL Art.~4.12, 4.17 \\
+\midrule
+BD-04 & Garantizar trazabilidad completa e inmutable con garantías criptográficas
+        verificables por terceros sin depender del operador &
+        Regulatorio / Legal &
+        LCE Art.~31, 39(c) · ARCOTEL Art.~4.9, 4.18, 14.l · LOPDP Art.~43 \\
+\midrule
+BD-05 & Permitir la incorporación de nuevos perfiles de certificado sin reescribir el motor CA &
+        Técnico / Estratégico &
+        Objetivo de investigación \\
+\midrule
+BD-06 & Cumplir con los perfiles X.509 y la normativa ARCOTEL vigente para que los
+        certificados sean reconocidos en el ecosistema digital ecuatoriano &
+        Regulatorio / Conformidad &
+        ARCOTEL Art.~6, 7, 8, Anexos~1a--4b · CA/B Forum BR \\
+\midrule
+BD-07 & Garantizar protección de datos personales desde el diseño estructural,
+        no como capa adicional &
+        Legal / Privacidad &
+        LOPDP Art.~10(e)(f) · ARCOTEL Art.~4.2 \\
+\midrule
+BD-08 & Responder ante incidentes de seguridad dentro de los plazos legales diferenciados
+        por regulador (ARCOTEL $\leq$\,2 días; autoridad LOPDP $\leq$\,5 días) &
+        Regulatorio / Operativo &
+        ARCOTEL Art.~4.11 · LOPDP Art.~43 \\
+\end{longtable}
+\normalsize
+
+% ======================================================================
+% ANEXO C — CATÁLOGO COMPLETO DE NFRs
+% ======================================================================
+
+\cleardoublepage
+\section*{Anexo C — Catálogo Completo de NFRs}\label{anx:nfr_completo}
+\phantomsection
+\addcontentsline{toc}{section}{Anexo C — Catálogo Completo de NFRs}
+
+Este anexo presenta el catálogo completo de los veinticinco requisitos no funcionales (NFRs)
+del sistema CA. Cada NFR está vinculado a una sub-característica de la norma ISO/IEC~25010:2023
+y cuenta con un valor objetivo medible y una prioridad MoSCoW. Los doce NFRs más
+relevantes para el diseño se presentan en la Sección~\ref{sec:requisitos} del cuerpo
+principal; este catálogo incluye la totalidad de los requisitos, incluyendo los de prioridad
+SHOULD y COULD que orientan decisiones de diseño secundarias.
+
+\small
+\begin{longtable}{@{}p{1cm}p{3.8cm}p{3cm}p{3.5cm}p{1.2cm}@{}}
+\caption{Catálogo completo de NFRs}\label{tab:nfr_apendice}\\
+\toprule
+\textbf{ID} & \textbf{Nombre} & \textbf{Sub-caract. ISO~25010} & \textbf{Valor objetivo} &
+\textbf{MoSCoW} \\
+\midrule
+\endfirsthead
+\multicolumn{5}{l}{\small\itshape Continuación de la Tabla~\thetable}\\[2pt]
+\toprule
+\textbf{ID} & \textbf{Nombre} & \textbf{Sub-caract. ISO~25010} & \textbf{Valor objetivo} &
+\textbf{MoSCoW} \\
+\midrule
+\endhead
+\bottomrule
+\endlastfoot
+NFR-01 & Protección de claves privadas en HSM &
+         Confidencialidad · Resistencia &
+         Toda operación criptográfica vía interfaz estándar del HSM; ninguna clave en
+         texto claro & Must \\
+\midrule
+NFR-02 & Control de acceso con mínimo privilegio &
+         Responsabilidad · Autenticidad &
+         Cada rol con acceso mínimo necesario; operaciones de alto impacto con
+         autorización de más de un actor & Must \\
+\midrule
+NFR-03 & Comunicaciones inter-servicio mediante mTLS &
+         Confidencialidad · Integridad &
+         Ningún canal HTTP plano entre contenedores en arquitectura objetivo;
+         cumple/no cumple & Must \\
+\midrule
+NFR-04 & Entrega y destrucción segura de credenciales del suscriptor &
+         Confidencialidad · No repudio &
+         Las tres condiciones deben cumplirse: generación post-aprobación, enlace de un
+         solo uso, destrucción tras confirmación & Must \\
+\midrule
+NFR-05 & Clave delegada separada para OCSP Responder &
+         Autenticidad · Integridad &
+         Clave de OCSP distinta a clave de emisión; extensión \texttt{id-kp-OCSPSigning}
+         y \texttt{ocspNoCheck} presentes & Must \\
+\midrule
+NFR-06 & Minimización de datos personales en el ILS &
+         Confidencialidad &
+         El ILS almacena únicamente \texttt{payload\_hash}; ningún dato personal en texto
+         claro & Must \\
+\midrule
+NFR-07 & Inmutabilidad y no repudio del ILS &
+         Integridad · No repudio · Responsabilidad &
+         100\% de eventos críticos registrados; cadena criptográfica íntegra; sin
+         \texttt{UPDATE}/\texttt{DELETE} & Must \\
+\midrule
+NFR-08 & Reportes de cumplimiento y trazabilidad del ciclo de vida &
+         Responsabilidad &
+         Reporte completo para cualquier período, cubriendo los cuatro perfiles regulados
+         con trazabilidad por certificado & Should \\
+\midrule
+NFR-09 & Registro de cambios de configuración &
+         Responsabilidad &
+         Todo cambio genera evento en el ILS con autor, razón y \textit{timestamp} & Must \\
+\midrule
+NFR-10 & Disponibilidad del servicio de certificación &
+         Disponibilidad · Tolerancia a fallos &
+         Arquitectura sin punto único de fallo estructural; SLA declarado por el
+         adoptante en su CPS & Must \\
+\midrule
+NFR-11 & Recuperación ante falla del HSM primario &
+         Recuperabilidad · Tolerancia a fallos · Integración segura &
+         RTO y RPO definidos por el adoptante en su CPS y plan de continuidad;
+         procedimiento probado con la periodicidad declarada & Must \\
+\midrule
+NFR-12 & Continuidad de flujos críticos &
+         Tolerancia a fallos &
+         Los flujos de emisión, revocación y OCSP no dependen de intermediario
+         asíncrono & Must \\
+\midrule
+NFR-13 & Monitoreo de CRL y salud del repositorio &
+         Disponibilidad &
+         \textit{Health check} operativo en todos los \textit{endpoints}; alerta de
+         \textit{nextUpdate} configurable por el adoptante & Must \\
+\midrule
+NFR-14 & Latencia de emisión de certificados &
+         Comportamiento temporal &
+         Motor core sin dependencias externas de identidad en ruta crítica; umbral
+         definido por el adoptante en su CPS & Must \\
+\midrule
+NFR-15 & Latencia del respondedor OCSP &
+         Comportamiento temporal · Utilización de recursos · Capacidad &
+         Umbral de latencia declarado por adoptante en CPS; arquitectura provee caché
+         de respuestas pre-firmadas & Must \\
+\midrule
+NFR-16 & Validación dual paralela para perfil Sello Electrónico &
+         Comportamiento temporal · Corrección funcional &
+         Las dos consultas externas (SRI y Registro Civil) se inician de forma
+         concurrente; verificable por trazas & Must \\
+\midrule
+NFR-17 & Bajo acoplamiento entre módulos &
+         Modularidad · Analizabilidad &
+         Ce promedio $\leq$ 3; ningún módulo con más de 5 dependencias directas en tiempo
+         de compilación & Must \\
+\midrule
+NFR-18 & Incorporación de nuevos perfiles sin rediseño del motor &
+         Cap.~de ser modificado · Adaptabilidad &
+         Perfil nuevo mediante plantilla de configuración sin modificar código del motor &
+         Should \\
+\midrule
+NFR-19 & Desacoplamiento de flujos secundarios &
+         Modularidad &
+         Ningún flujo crítico espera confirmación de procesamiento de flujo secundario;
+         cumple/no cumple & Must \\
+\midrule
+NFR-20 & Aislamiento de esquemas de datos por servicio &
+         Modularidad &
+         Ningún servicio tiene credenciales de acceso al esquema de otro servicio;
+         cumple/no cumple & Must \\
+\midrule
+NFR-21 & Corrección e interoperabilidad de perfiles X.509 &
+         Corrección funcional · Interoperabilidad &
+         100\% de certificados emitidos superan validación con herramienta estándar X.509 &
+         Must \\
+\midrule
+NFR-22 & OCSP de acceso libre y gratuito &
+         Interoperabilidad · Pertinencia funcional &
+         OCSPRequest sin credenciales recibe OCSPResponse válida y firmada & Must \\
+\midrule
+NFR-25 & Consulta pública de estado de certificado por número de serie &
+         Pertinencia funcional · Disponibilidad &
+         Endpoint público sin autenticación retorna estado, fechas de emisión, caducidad y
+         vigencia; campos de revocación y suspensión presentes cuando el estado lo requiere &
+         Must \\
+\midrule
+NFR-23 & Gestión progresiva de URLs del repositorio &
+         Disponibilidad · Cap.~de ser modificado &
+         El sistema registra qué URL está embebida en cada certificado y calcula su
+         período de operación obligatoria & Must \\
+\midrule
+NFR-24 & Integración con HSM mediante interfaz estándar &
+         Adaptabilidad · Reusabilidad &
+         El motor CA interactúa con el HSM únicamente a través de una interfaz de
+         abstracción, no con la API propietaria directamente & Should \\
+\end{longtable}
+
+% ======================================================================
+% ANEXO D — CATÁLOGO COMPLETO DE QAS
+% ======================================================================
+
+\cleardoublepage
+\section*{Anexo D — Catálogo Completo de QAS}\label{anx:qas_completo}
+\phantomsection
+\addcontentsline{toc}{section}{Anexo D — Catálogo Completo de QAS}
+
+Este anexo recoge el catálogo completo de los veintiséis escenarios de atributo de
+calidad (QAS) derivados de los NFRs. Cada escenario sigue el formato ATAM de seis partes:
+fuente del estímulo, estímulo, artefacto afectado, entorno, respuesta esperada y medida
+cuantificable. Los once QAS más directamente vinculados al diseño arquitectónico se
+presentan en la Sección~\ref{sec:requisitos}; este catálogo registra la totalidad de los
+escenarios, incluyendo aquellos cuya medida requiere datos de ejecución real y que por ello
+quedan fuera del alcance verificable de la arquitectura de referencia.
+
+\small
+\begin{longtable}{@{}p{0.9cm}p{1.5cm}p{3.2cm}p{2.5cm}p{4.6cm}@{}}
+\caption{Catálogo completo de QAS}\label{tab:qas_apendice}\\
+\toprule
+\textbf{ID} & \textbf{NFR(s)} & \textbf{Estímulo} & \textbf{Artefacto} & \textbf{Medida de respuesta} \\
+\midrule
+\endfirsthead
+\multicolumn{5}{l}{\small\itshape Continuación de la Tabla~\thetable}\\[2pt]
+\toprule
+\textbf{ID} & \textbf{NFR(s)} & \textbf{Estímulo} & \textbf{Artefacto} & \textbf{Medida de respuesta} \\
+\midrule
+\endhead
+\bottomrule
+\endlastfoot
+QAS-01 & NFR-03 &
+         Un revisor examina los arcos de comunicación entre contenedores internos en el
+         diagrama C4 Nivel~2 para verificar el protocolo declarado &
+         Arcos inter-contenedor del diagrama C4 Nivel~2 &
+         Arcos inter-contenedor cuya etiqueta de protocolo difiere de \textit{mTLS} = 0 \\
+\midrule
+QAS-02 & NFR-05 &
+         Un revisor verifica que la clave del OCSP Responder difiere de la clave de emisión
+         y que el perfil del certificado declara las extensiones requeridas &
+         Diagrama C4 Nivel~2 y catálogo de perfiles &
+         (1) El identificador de clave del arco OCSP hacia el HSM difiere del identificador
+         del arco de emisión hacia el HSM.
+         (2) Las extensiones \texttt{id-kp-OCSPSigning} y \texttt{ocspNoCheck} están
+         presentes en el perfil del OCSP Responder \\
+\midrule
+QAS-03 & NFR-01 &
+         Un auditor verifica que ningún contenedor ejecuta operaciones criptográficas sin
+         un arco declarado hacia el HSM &
+         Diagrama C4 Nivel~2 y arcos orientados al HSM &
+         (1) Contenedores que requieren firma y carecen de arco hacia el HSM = 0.
+         (2) Arcos que indican transporte de clave privada entre contenedores = 0 \\
+\midrule
+QAS-04 & NFR-04 &
+         Un revisor inspecciona el diagrama de secuencia del flujo de entrega de
+         credenciales para verificar el orden lógico de los eventos &
+         Diagrama C4 Nivel~3 del flujo de entrega de credenciales &
+         (1) En todos los caminos, \texttt{key\_generated\_in\_HSM} aparece después de
+         \texttt{workflow\_approved}: cumple / no cumple.
+         (2) En todos los caminos, \texttt{link\_invalidated} sigue a
+         \texttt{subscriber\_downloads}: cumple / no cumple.
+         (3) Caminos en los que \texttt{key\_destroyed\_in\_HSM} no constituye el evento
+         final = 0 \\
+\midrule
+QAS-05 & NFR-07 NFR-09 &
+         Un inspector de seguridad evalúa la ausencia de operaciones de modificación en el
+         ILS y la verificabilidad de la cadena criptográfica sin acceso al servidor activo &
+         Especificación de la interfaz del ILS y esquema del registro de auditoría &
+         (A) Operaciones \texttt{UPDATE}, \texttt{DELETE}, \texttt{PATCH} o \texttt{TRUNCATE}
+         declaradas en el contrato del ILS = 0.
+         (B) La cadena criptográfica es verificable \textit{offline} mediante la clave pública
+         del firmante: cumple / no cumple.
+         (C) Los reportes permiten trazabilidad completa desde la solicitud hasta la
+         revocación: cumple / no cumple \\
+\midrule
+QAS-06 & NFR-06 &
+         Un inspector de protección de datos audita los campos almacenados por el ILS
+         vinculados a titulares de certificados &
+         Esquema del registro inmutable &
+         Campos con datos personales identificables en texto claro presentes en el
+         esquema del ILS = 0 \\
+\midrule
+QAS-07 & NFR-17 &
+         Un evaluador construye la matriz de dependencias a partir del diagrama
+         C4 Nivel~2 &
+         Diagrama C4 Nivel~2 &
+         (1) Ce promedio $\leq$ 3.
+         (2) Ningún contenedor presenta más de 5 arcos eferentes directos.
+         (3) Arcos directos entre un servicio y la base de datos de otro servicio = 0 \\
+\midrule
+QAS-08 & NFR-20 &
+         Un revisor verifica que cada base de datos está conectada directamente a un único
+         servicio propietario &
+         Arcos entre contenedores de servicio y bases de datos en el diagrama C4
+         Nivel~2 y Nivel~3 &
+         Contenedores de base de datos con más de un servicio propietario conectado
+         directamente = 0 \\
+\midrule
+QAS-09 & NFR-12 &
+         Un revisor arquitectónico traza los flujos de emisión, revocación y OCSP en el
+         modelo C4 y examina la semántica de los arcos orientados a la mensajería
+         asíncrona &
+         Diagrama C4 Nivel~2 &
+         (A) Arcos síncronos entre componentes críticos y mensajería asíncrona = 0.
+         (B) Arcos de retorno desde la mensajería hacia componentes críticos = 0 \\
+\midrule
+QAS-10 & NFR-12 NFR-17 &
+         Un revisor verifica que el motor de emisión y el componente de revocación y
+         generación de CRL no comparten dependencias de diseño &
+         Diagrama C4 Nivel~2 &
+         (1) Arcos de dependencia directa entre el componente de emisión y el de
+         revocación/CRL = 0.
+         (2) El componente de revocación no figura entre las dependencias eferentes
+         del componente de emisión \\
+\midrule
+QAS-11 & NFR-10 NFR-12 &
+         Un revisor arquitectónico evalúa la capacidad de los componentes de emisión y OCSP
+         para ejecutarse como instancias múltiples sin coordinación de estado en memoria
+         compartida &
+         Diseño interno de los componentes de emisión y OCSP &
+         (1) El diseño del componente de emisión no declara estado de sesión en memoria
+         compartida entre instancias.
+         (2) El diseño del componente OCSP no declara estado de sesión en memoria
+         compartida entre instancias \\
+\midrule
+QAS-12 & NFR-18 &
+         Un administrador incorpora un nuevo perfil al catálogo mediante configuración sin
+         introducir modificaciones en el código del motor CA &
+         Componente de emisión y catálogo de perfiles &
+         (1) Contenedores cuyo diseño requiere modificación para incorporar el perfil = 0.
+         (2) Perfiles definidos como constantes en el diseño del motor de emisión = 0 \\
+\midrule
+QAS-13 & NFR-18 &
+         Un adoptante requiere sustituir los módulos de integración (HSM, ILS o mensajería
+         asíncrona) por implementaciones propias sin modificar el motor CA &
+         Interfaces de abstracción declaradas en el diagrama C4 Nivel~3 &
+         (A) Dependencias del motor con implementaciones concretas de perfiles en
+         C4 Nivel~3 = 0.
+         (B) Contenedores sin interfaz sustituible declarada para sus dependencias
+         externas = 0 \\
+\midrule
+QAS-14 & NFR-18 &
+         Necesidad de incorporar una nueva CA Subordinada a la jerarquía existente &
+         C4 Nivel~2 — componente de emisión, componente de catálogo de perfiles,
+         componente de integración HSM &
+         (1) Número de cambios en el motor de emisión para incorporar una Sub-CA = 0 —
+         verificable por independencia del motor respecto a los perfiles en el C4.
+         (2) El perfil de Sub-CA se registra bajo el mismo contrato de perfil que
+         cualquier otro perfil — verificable en el diseño del catálogo \\
+\midrule
+QAS-15 & NFR-24 &
+         El algoritmo activo es declarado insuficiente — incluyendo el escenario de
+         migración post-cuántica &
+         C4 Nivel~3 — componente de integración HSM: mecanismo de estrategia de firma &
+         (1) Número de referencias al nombre del algoritmo concreto fuera del componente
+         HSM en el C4 Nivel~3 de emisión, OCSP y revocación = 0.
+         (2) El nombre del algoritmo está parametrizado en la estrategia de firma y no
+         aparece como constante en ningún otro componente — verificable en el diseño
+         del componente HSM \\
+\midrule
+QAS-16 & NFR-24 &
+         Necesidad de migrar a hardware HSM de fabricante distinto sin modificar los
+         componentes de emisión, OCSP ni revocación &
+         C4 Nivel~3 — componente de integración HSM: adaptador de protocolo estándar,
+         interfaz de abstracción del HSM &
+         (1) Número de referencias al SDK del proveedor HSM fuera del componente HSM
+         en el C4 Nivel~3 = 0.
+         (2) Número de operaciones expuestas por la interfaz de abstracción del HSM = 5 —
+         verificable en la definición de la interfaz.
+         (3) Número de arcos directos entre los componentes de emisión, OCSP o
+         revocación y el HSM físico que no pasan por el componente de integración
+         HSM = 0 \\
+\midrule
+QAS-17 & NFR-24 &
+         Necesidad de verificar que la implementación del contrato de integración HSM es
+         conforme con la interfaz de la arquitectura de referencia &
+         Diseño de la interfaz de abstracción del HSM — definición del contrato de
+         integración &
+         (1) La interfaz de abstracción está definida de forma independiente de cualquier
+         implementación de hardware — verificable en el diseño de la interfaz.
+         (2) El contrato de la interfaz de abstracción es suficiente para verificar el
+         comportamiento del componente HSM sin hardware real — verificable por
+         construcción de la interfaz abstracta \\
+\midrule
+QAS-18 & NFR-16 &
+         Verificación de que la consulta al SRI (RUC) y la consulta al Registro Civil
+         (cédula del signatario) se ejecutan de forma concurrente en el diseño &
+         C4 Nivel~2 — componente de integración con servicios externos de identidad,
+         diseño del mecanismo de orquestación de consultas &
+         (1) El diseño del componente de identidad muestra las dos consultas externas como
+         ramas paralelas sin dependencia secuencial — verificable en el diagrama de
+         orquestación.
+         (2) El mecanismo de protección ante fallos está declarado de forma independiente
+         para cada servicio externo — verificable en el diseño \\
+\midrule
+QAS-19 & NFR-21 &
+         Verificación de que el diseño del catálogo garantiza la conformidad de los
+         certificados con RFC 5280 y los Anexos ARCOTEL antes de delegar la firma al
+         motor de emisión &
+         C4 Nivel~2/3 — catálogo de perfiles: diseño del mecanismo de validación contra
+         schema X.509, diseño del flujo entre catálogo y emisión &
+         (1) El flujo de diseño catálogo~$\rightarrow$~emisión no tiene ningún camino donde
+         el motor reciba solicitud de firma sin validación previa del catálogo —
+         verificable en el diagrama de flujo de diseño.
+         (2) Los campos obligatorios de cada perfil regulado (DN, extensiones, OIDs) están
+         declarados en el schema del perfil en el catálogo — verificable en el catálogo
+         de perfiles \\
+\midrule
+QAS-20 & NFR-02 &
+         Intento de ejecutar cualquier operación privilegiada sobre la clave raíz con
+         credenciales de un único actor, sin autorización múltiple &
+         Diseño del controlador de acceso al HSM — mecanismo de autorización múltiple &
+         (1) Número de operaciones privilegiadas ejecutables sin autorización múltiple = 0 —
+         verificable en el diseño del controlador de acceso.
+         (2) Registro en el ILS generado ante cada intento fallido — verificable en el
+         flujo de diseño.
+         (3) Cuenta bloqueada en el primer intento — verificable en diseño \\
+\midrule
+QAS-21 & NFR-13 &
+         Verificación de que todos los endpoints del repositorio exponen mecanismo de
+         health check y que existe mecanismo de alerta de \texttt{nextUpdate} &
+         Diseño del contrato de interfaz del repositorio — endpoints declarados &
+         (1) Número de endpoints del repositorio sin health check declarado en el contrato
+         de interfaz = 0.
+         (2) Mecanismo de alerta de \texttt{nextUpdate} declarado en el diseño —
+         cumple / no cumple \\
+\midrule
+QAS-22 & NFR-17 &
+         Verificación de que las responsabilidades de construir la CRL, firmarla y
+         publicarla están segregadas en componentes independientes dentro de M-03 &
+         C4 Nivel~3 — M-03 CRL/Revocation Service: componentes internos de generación
+         de CRL &
+         (1) Número de componentes en M-03 que concentran más de una de las tres
+         responsabilidades (construir, firmar, publicar) = 0.
+         (2) C-85 CrlScheduler reutiliza C-86 CrlBuilder para ambos tipos de CRL —
+         verificable en el diagrama C4 N3.
+         (3) C-89 OcspCacheInvalidator es invocado por C-82 antes del COMMIT —
+         verificable en el flujo de secuencia \\
+\midrule
+QAS-23 & NFR-23 &
+         Verificación de que el diseño del repositorio (M-07) garantiza que una URL activa
+         no puede ser retirada mientras existan certificados vigentes que la referencien &
+         C4 Nivel~2/3 — M-07 Repository Service: diseño del mecanismo de
+         gestión de URLs &
+         (1) El diseño de M-07 declara un registro de URLs activas y los certificados que
+         las referencian — verificable en el modelo de datos.
+         (2) El diseño impide retirar una URL con certificados vigentes sin revocar los
+         certificados afectados — verificable en el flujo de diseño.
+         (3) Las URLs del repositorio se definen antes de emitir el primer certificado de
+         producción — el adoptante documenta la permanencia en su CPS \\
+\midrule
+QAS-24 & NFR-02 &
+         Verificación de que el frontend SPA (M-09) no contiene lógica de autorización ni
+         RBAC — toda decisión de acceso se delega al backend (M-06) &
+         C4 Nivel~2 — arcos entre M-09 (SPA) y M-06 (Backend API); diseño de la capa
+         de autorización en M-06 &
+         (1) M-09 no contiene lógica de autorización — toda operación requiere token
+         validado por M-06.
+         (2) El RBAC se aplica exclusivamente en M-06 mediante AuthorizationInterceptor —
+         verificable en el diseño C4 N3 de M-06.
+         (3) Ningún endpoint de M-06 procesa requests sin validación de token —
+         verificable en el contrato de API \\
+\midrule
+QAS-25 & NFR-19 &
+         Verificación de que la interfaz IMessageBroker (ADR-31) desacopla completamente
+         a los productores de la tecnología concreta de broker &
+         C4 Nivel~2/3 — M-10 Message Broker Service: diseño de la interfaz IMessageBroker
+         y los adaptadores (C-65a/b/c) &
+         (1) Número de productores que importan clases concretas de broker
+         (Kafka, RabbitMQ, etc.) = 0 — verificable en el análisis de dependencias del
+         C4 N3.
+         (2) Número de archivos a modificar para cambiar la tecnología de broker = 1
+         (configuración de M-10).
+         (3) El contrato IMessageBroker está definido como interfaz abstracta independiente
+         de cualquier implementación — verificable en el diseño \\
+\midrule
+QAS-26 & NFR-25 &
+         Verificación de que el diseño del endpoint de M-07 expone todos los campos
+         exigidos por ARCOTEL Art.~4.7 sin requerir autenticación del consultante &
+         C4 Nivel~2/3 — repositorio público de confianza: diseño del endpoint de consulta
+         pública por número de serie, diseño del componente de publicación de metadatos
+         en el pipeline de emisión &
+         (1) El contrato del endpoint de M-07 declara los campos estado, fecha de emisión,
+         fecha de caducidad y tiempo de vigencia como presentes en toda respuesta —
+         verificable en el diseño del contrato de interfaz.
+         (2) El contrato declara fecha de revocación y motivo presentes cuando el estado
+         es revocado — verificable en el diseño.
+         (3) El contrato declara fecha de suspensión presente cuando el estado es
+         suspendido — verificable en el diseño.
+         (4) El endpoint no declara ningún mecanismo de autenticación del cliente —
+         verificable en el contrato de interfaz.
+         (5) El flujo de diseño de C-11 muestra el registro de metadatos en M-07 como
+         paso del pipeline de emisión sin camino alternativo que lo omita — verificable
+         en el C4 Nivel~3 de M-01 \\
+\end{longtable}
+
+% ======================================================================
+% ANEXO E — MATRIZ DE TRAZABILIDAD BD→NFR→QAS
+% ======================================================================
+
+\cleardoublepage
+\section*{Anexo E — Matriz de trazabilidad BD~$\rightarrow$~NFR~$\rightarrow$~QAS}\label{anx:trazabilidad}
+\phantomsection
+\addcontentsline{toc}{section}{Anexo E — Matriz de trazabilidad BD→NFR→QAS}
+
+Esta matriz vincula cada business driver con los NFRs que operacionalizan su exigencia y con
+los QAS que los hacen verificables en términos de atributos de calidad medibles. La
+trazabilidad garantiza que ningún requisito de calidad quede huérfano de motivación de
+negocio y que ningún driver quede sin reflejo en el diseño. La columna EPIC(s) cierra la
+cadena indicando qué elementos del backlog funcional satisfacen el driver correspondiente,
+conectando así la motivación estratégica con el diseño arquitectónico.
+
+\small
+\begin{longtable}{@{}p{0.9cm}p{4.6cm}p{3cm}p{2.4cm}p{1.4cm}@{}}
+\caption{Matriz de trazabilidad de requisitos}\label{tab:trazabilidad_req}\\
+\toprule
+\textbf{BD} & \textbf{Driver} & \textbf{NFRs} & \textbf{QAS} & \textbf{EPIC(s)} \\
+\midrule
+\endfirsthead
+\multicolumn{5}{l}{\small\itshape Continuación de la Tabla~\thetable}\\[2pt]
+\toprule
+\textbf{BD} & \textbf{Driver} & \textbf{NFRs} & \textbf{QAS} & \textbf{EPIC(s)} \\
+\midrule
+\endhead
+\bottomrule
+\endlastfoot
+BD-01 & Continuidad operativa del servicio de certificación &
+        NFR-10, NFR-12 & QAS-09, QAS-11 & 01, 05 \\
+\midrule
+BD-03 & Respuesta en tiempo real al estado del certificado &
+        NFR-13, NFR-22, NFR-25 & QAS-11 & 05 \\
+\midrule
+BD-04 & Trazabilidad inmutable verificable por terceros &
+        NFR-06, NFR-07, NFR-09 & QAS-05, QAS-06 & 08 \\
+\midrule
+BD-05 & Incorporar nuevos perfiles sin reescribir el motor &
+        NFR-18 & QAS-12, QAS-13 & 06 \\
+\midrule
+BD-06 & Cumplimiento de perfiles X.509 e interoperabilidad &
+        NFR-14, NFR-21, NFR-23 & QAS-09 & 01, 05, 06 \\
+\end{longtable}
+\normalsize
+
+
+
+
+% ======================================================================
+% ANEXO F — ARTEFACTOS TÁCTICOS: PATRONES Y TECHNOLOGY REFERENCE MAP
+% ======================================================================
+
+\cleardoublepage
+\section*{Anexo F --- Artefactos Tácticos: Patrones por Contenedor y Technology Reference Map}\label{anx:tacticos_artefacts}
+\phantomsection
+\addcontentsline{toc}{section}{Anexo F --- Artefactos Tácticos: Patrones por Contenedor y Technology Reference Map}
+
+Este anexo documenta la asignación de patrones tácticos a cada contenedor de la arquitectura
+de referencia y el Technology Reference Map que prescribe los estándares e interfaces que
+toda instanciación debe respetar.
+
+\subsection*{Consolidación de Patrones Tácticos por Contenedor}
+
+A partir del estilo de microservicios adoptado, se asignaron patrones tácticos a cada
+contenedor en función de los NFRs que debe satisfacer. La selección de cada patrón responde
+a uno o más atributos de calidad de la Matriz ASR y se justifica frente a la alternativa
+descartada que correspondía al baseline monolítico.
+
+\footnotesize
+\begin{longtable}{@{}p{2.1cm}p{3.2cm}p{1.9cm}p{4.0cm}@{}}
+\caption{Patrones tácticos asignados por contenedor}\label{tab:patrones}\\
+\toprule
+\textbf{Contenedor} & \textbf{Patrón táctico} & \textbf{NFR satisfecho} & \textbf{Alternativa descartada} \\
+\midrule
+\endfirsthead
+\multicolumn{4}{l}{\small\itshape Continuación de la Tabla~\thetable}\\[2pt]
+\toprule
+\textbf{Contenedor} & \textbf{Patrón táctico} & \textbf{NFR satisfecho} & \textbf{Alternativa descartada} \\
+\midrule
+\endhead
+\bottomrule
+\endlastfoot
+M-01 CA Core Service &
+  Workflow / Process manager · Separación comando-consulta &
+  NFR-10 · NFR-12 &
+  Motor de emisión monolítico con lógica de revocación embebida \\
+\midrule
+M-02 Validation Service &
+  Cache-aside · Respuesta pre-firmada &
+  NFR-13 · NFR-22 &
+  Firma de respuesta OCSP en tiempo real sin caché \\
+\midrule
+M-03 CRL / Revocation Service &
+  Publish-subscribe · Invalidación activa de caché &
+  NFR-06 · NFR-07 &
+  CRL almacenada en BD compartida con motor de emisión \\
+\midrule
+M-04 HSM Integration Service &
+  Adapter / Fachada · Capa anti-corrupción &
+  NFR-15 · NFR-16 &
+  Llamada directa al HSM desde el motor de emisión \\
+\midrule
+M-05 ILS &
+  Append-only log · Hash chaining · Event sourcing &
+  NFR-07 · NFR-09 &
+  Auditoría embebida en la BD operativa del motor CA \\
+\midrule
+M-06 RA Service &
+  Pipeline de validación · Saga / Orquestación &
+  NFR-05 · NFR-18 &
+  Validación de identidad interna al motor de emisión \\
+\midrule
+M-07 Repository Service &
+  Publicación estática · Caché de distribución &
+  NFR-12 · NFR-23 &
+  Repositorio acoplado directamente al core de emisión \\
+\midrule
+M-08 External Adapter Gateway &
+  Anti-corruption layer · Circuit breaker &
+  NFR-19 &
+  Llamadas directas desde M-06 a APIs externas heterogéneas \\
+\midrule
+M-09 RA Portal &
+  Backend for Frontend (BFF) &
+  NFR-05 · NFR-20 &
+  Portal único con llamadas directas a todos los servicios internos \\
+\midrule
+M-10 Message Broker &
+  Pub/Sub · \texttt{IMessageBroker} &
+  NFR-14 · NFR-21 &
+  Llamadas síncronas directas para notificaciones y eventos de auditoría \\
+\end{longtable}
+\normalsize
+
+\subsection*{Technology Reference Map}
+
+El Technology Reference Map prescribe los estándares e interfaces que toda instanciación de
+esta arquitectura debe respetar, sin comprometer al adoptante con productos o proveedores
+específicos. La distinción entre estándar prescrito y producto de referencia es deliberada:
+el estándar es invariante (PA-01 y PA-06), mientras que el producto que lo implementa es
+una decisión operacional del adoptante. El stack concreto utilizado en el PoC es una
+instanciación válida de este mapa, no la única posible.
+
+\footnotesize
+\begin{longtable}{@{}p{2.4cm}p{3.6cm}p{3.1cm}p{2.7cm}@{}}
+\caption{Technology Reference Map}\label{tab:tech_map}\\
+\toprule
+\textbf{Módulo} & \textbf{Estándar / protocolo prescrito} & \textbf{Implementación de referencia (PoC)} & \textbf{Restricción normativa} \\
+\midrule
+\endfirsthead
+\multicolumn{4}{l}{\small\itshape Continuación de la Tabla~\thetable}\\[2pt]
+\toprule
+\textbf{Módulo} & \textbf{Estándar / protocolo prescrito} & \textbf{Implementación de referencia (PoC)} & \textbf{Restricción normativa} \\
+\midrule
+\endhead
+\bottomrule
+\endlastfoot
+M-01 CA Core Service &
+  X.509 v3 · RFC~5280 &
+  Fabric CA 1.5.17 &
+  ARCOTEL Art.~6, 13, 23 \\
+\midrule
+M-02 Validation Service &
+  RFC~6960 (OCSP) · CRL Distribution Point RFC~5280 &
+  Implementación sobre motor PKI estándar &
+  ARCOTEL Art.~4.12, 4.17 \\
+\midrule
+M-03 CRL / Revocation &
+  RFC~5280 CRL v2 · Reason codes X.509 &
+  Integrado con M-01 en PoC &
+  ARCOTEL Art.~4.12, 4.17 \\
+\midrule
+M-04 HSM Integration &
+  PKCS\#11 v3.0 &
+  SoftHSM (PoC) · nCipher / Thales / Utimaco en producción &
+  ARCOTEL Art.~9 · FIPS 140-2 L3 \\
+\midrule
+M-05 ILS &
+  SHA-256 (hash chaining) · RFC~3161 (sellos TSA) &
+  PostgreSQL 16 + Hyperledger Fabric 2.5.15 &
+  LCE Art.~39(c) · ARCOTEL Art.~4.9 \\
+\midrule
+M-06 RA Service &
+  REST/HTTPS · mTLS · TLS~1.3 &
+  Node.js 20 &
+  ARCOTEL Art.~4.2 · LOPDP Art.~10 \\
+\midrule
+M-07 Repository Service &
+  LDAP v3 · HTTP/HTTPS · CDP/AIA RFC~5280 &
+  OpenLDAP / cualquier servidor LDAP compatible &
+  ARCOTEL Art.~4.7, 4.20 \\
+\midrule
+M-08 External Adapter &
+  REST/HTTPS · mTLS · OpenAPI~3.0 &
+  Implementación por adaptador específico &
+  LOPDP Art.~10 \\
+\midrule
+M-10 Message Broker &
+  AMQP~1.0 / Apache Kafka API &
+  Confluent Kafka 7.7.1 &
+  --- \\
+\midrule
+Inter-servicio (todos) &
+  REST/HTTPS · mTLS · TLS~1.3 mínimo &
+  Certificados emitidos por la propia CA &
+  ARCOTEL Art.~9 · PA-04 \\
+\end{longtable}
+\normalsize
+
+% ======================================================================
+% ANEXO G — REGISTRO DE DECISIONES ARQUITECTÓNICAS (ADR Log)
+% ======================================================================
+
+\cleardoublepage
+\section*{Anexo G — Registro de Decisiones Arquitectónicas}\label{anx:adrs}
+\phantomsection
+\addcontentsline{toc}{section}{Anexo G — Registro de Decisiones Arquitectónicas (ADR Log)}
+
+Este registro documenta las 39 decisiones arquitectónicas del sistema CA, organizadas en
+seis grupos temáticos: meta-decisiones de proceso (A), estilos arquitectónicos (B),
+patrones arquitectónicos (C), extensibilidad y modularidad (D), Technology Architecture (E)
+y decisiones tácticas (F). Las fichas completas de los grupos B--F se presentan a
+continuación del resumen general.
+
+% ------------------------------------------------------------------
+\subsubsection*{Tabla Resumen General}
+% ------------------------------------------------------------------
+
+\footnotesize
+\begin{longtable}{@{}p{1.5cm}p{7.5cm}p{3.2cm}p{0.7cm}@{}}
+\caption{Resumen general del ADR Log (39 decisiones)}\label{tab:adr_resumen_general}\\
+\toprule
+\textbf{ADR} & \textbf{Título} & \textbf{Estado} & \textbf{G.} \\
+\midrule
+\endfirsthead
+\multicolumn{4}{l}{\footnotesize\itshape Continuación de la Tabla~\thetable}\\[2pt]
+\toprule
+\textbf{ADR} & \textbf{Título} & \textbf{Estado} & \textbf{G.} \\
+\midrule
+\endhead
+\bottomrule
+\endlastfoot
+ADR-01 & Modelo C4 como notación de documentación & ACEPTADO & A \\
+ADR-02 & TOGAF ADM como metodología de proceso & ACEPTADO & A \\
+ADR-03 & Hyperledger Fabric para módulo de auditoría (PoC) & ACEPTADO & A \\
+ADR-04 & HSM FIPS 140-2 Nivel 3 obligatorio & ACEPTADO (mod.\ v2.1) & A \\
+ADR-05 & ATAM como método de validación arquitectónica & ACEPTADO & A \\
+ADR-06 & EA-10: Arquitectura compuesta Service-Based como estilo base & ACEPTADO & B \\
+ADR-07 & RA Portal + Backend API como unidades de despliegue separadas & ACEPTADO (mod.\ v1.3) & B \\
+ADR-08 & Microkernel para extensibilidad de perfiles ARCOTEL & ACEPTADO & C \\
+ADR-09 & Modelo de aislamiento del HSM (6 capas) & ACEPTADO & C \\
+ADR-10 & Command + Command Processor como unidad auditable & ACEPTADO & C \\
+ADR-11 & Memento como mecanismo base del ILS & ACEPTADO & C \\
+ADR-12 & Half-Sync/Half-Async para Validation Service (OCSP) & ACEPTADO & C \\
+ADR-13 & Scoped Locking para sesiones PKCS\#11 & ACEPTADO & C \\
+ADR-14 & Immutable Value para artefactos firmados & ACEPTADO & C \\
+ADR-15 & Facade PKCS\#11 --- 5 operaciones expuestas & ACEPTADO & C \\
+ADR-16 & Chain of Responsibility para pipeline de validación CSR & ACEPTADO & C \\
+ADR-17 & Interceptor como mecanismo transversal de auditoría & ACEPTADO & C \\
+ADR-18 & Strategy para algoritmos criptográficos & ACEPTADO & C \\
+ADR-19 & Firewall Proxy en RA Service (BFF) y Validation Service (OCSP) & ACEPTADO & C \\
+ADR-20 & Authorization RBAC conforme ARCOTEL-2024-0176 & ACEPTADO & C \\
+ADR-21 & Objects for States para ciclo de vida X.509 & ACEPTADO & C \\
+ADR-22 & Lifecycle Callbacks con zeroize FIPS 140-2 en HSM Integration Service & ACEPTADO & C \\
+ADR-23 & External Adapter Gateway (Anti-Corruption Layer) & ACEPTADO & D \\
+ADR-24 & Circuit Breaker en RA Service (BFF) para llamadas a External Adapter Gateway & ACEPTADO & D \\
+ADR-25 & Plugin Registry para adaptadores de External Adapter Gateway & ACEPTADO & D \\
+ADR-26 & Node.js 20 LTS como runtime de la PoC con métrica Ce adaptada & ACEPTADO & D \\
+ADR-27 & Message Broker Service con IMessageBroker como canal principal & ACEPTADO (mod.\ v3.0) & D \\
+ADR-28 & Flujo de emisión con token de un solo uso y contraseña del suscriptor & ACEPTADO & D \\
+ADR-29 & Hyperledger Fabric 2.5 como implementación de \texttt{IAuditLogger} en la PoC & ACEPTADO & D \\
+ADR-30 & Data Mapper como patrón transversal de infraestructura de persistencia & ACEPTADO & D \\
+ADR-31 & Criterio Formal Sync vs Async --- Comunicación Asíncrona Preferente & ACEPTADO & D \\
+ADR-32 & Publicación Directa IMessageBroker.publish() Post-Commit & ACEPTADO & D \\
+ADR-33 & Ce (Acoplamiento Eferente) como Métrica C4 N2 & ACEPTADO & D \\
+ADR-34 & Simulación Python de funciones HSM para la PoC & ACEPTADO & E \\
+ADR-35 & Apache Kafka como broker de soporte técnico para la PoC & ACEPTADO & E \\
+ADR-36 & Docker Compose como tailoring del despliegue Kubernetes para entorno académico & ACEPTADO & E \\
+ADR-37 & Retry policy y dead-letter threshold en Message Broker Service & ACEPTADO & E/F \\
+ADR-38 & Formato de serialización entre contenedores & ACEPTADO & E/F \\
+ADR-39 & Cache TTL y política de invalidación OCSP en Validation Service (OCSP) & ACEPTADO & F \\
+\end{longtable}
+\normalsize
+
+% ------------------------------------------------------------------
+\subsubsection*{Grupo A --- Meta-decisiones}
+% ------------------------------------------------------------------
+
+Las decisiones del Grupo A se toman antes de cualquier análisis técnico. No derivan de
+trade-offs de diseño sino de restricciones de proceso, metodología y mandatos regulatorios;
+no tienen alternativas rechazadas en sentido técnico.
+
+\footnotesize
+\begin{longtable}{@{}p{2.0cm}p{4.2cm}p{3.5cm}p{3.0cm}@{}}
+\caption{Grupo A --- Meta-decisiones (ADR-01 a ADR-05)}\label{tab:adr_grupo_a}\\
+\toprule
+\textbf{ADR} & \textbf{Decisión} & \textbf{Contexto} & \textbf{Consecuencias} \\
+\midrule
+\endfirsthead
+\multicolumn{4}{l}{\footnotesize\itshape Continuación de la Tabla~\thetable}\\[2pt]
+\toprule
+\textbf{ADR} & \textbf{Decisión} & \textbf{Contexto} & \textbf{Consecuencias} \\
+\midrule
+\endhead
+\bottomrule
+\endlastfoot
+ADR-01 &
+  Adoptar el Modelo C4 (Simon Brown) como notación de documentación arquitectónica &
+  Meta-decisión de documentación. Debe definirse antes de producir cualquier diagrama. &
+  Todos los diagramas del proyecto usan C4 Niveles 1--3. Ningún diagrama UML puede
+  reemplazarlos sin revisión de este ADR. \\
+\midrule
+ADR-02 &
+  Adoptar TOGAF ADM (Preliminary $\rightarrow$ Phase D) como metodología de proceso &
+  Meta-decisión de proceso. El tailoring (exclusión de Phases E--H) está documentado en
+  el artefacto TOGAF Preliminary Phase. &
+  Todos los artefactos se enmarcan en fases ADM. Las decisiones de diseño son ADRs,
+  no elementos de backlog genérico. \\
+\midrule
+ADR-03 &
+  Adoptar Hyperledger Fabric para el prototipo del módulo de auditoría (PoC) &
+  Obligatorio por la propuesta de tesis aprobada. El PoC y la RA son artefactos distintos. &
+  El PoC valida la trazabilidad criptográfica del log; la RA define la interfaz abstracta
+  \texttt{IAuditLogger} intercambiable. \\
+\midrule
+ADR-04 (mod.\ v2.1) &
+  HSM con certificación FIPS 140-2 Nivel 3 como único proveedor de operaciones
+  criptográficas --- v2.1: alcance extendido a generación del par del suscriptor &
+  ARCOTEL-2024-0176 Art.~9 (claves CA) y Art.~11a (par del suscriptor generado por la CA).
+  Constraint regulatorio no negociable. &
+  HSM Integration Service gestiona claves CA (quórum 3-of-5) y par del suscriptor por
+  emisión. \\
+\midrule
+ADR-05 &
+  Adoptar ATAM (Kazman et al., SEI/CMU) como método de validación arquitectónica &
+  Meta-decisión de validación. La Matriz ASR y los escenarios QAS están diseñados para ser
+  evaluados con ATAM. &
+  Los trade-offs identificados en el análisis de estilos y patrones son insumos directos
+  del ejercicio ATAM de la Fase IV. \\
+\end{longtable}
+\normalsize
+
+% ------------------------------------------------------------------
+\subsubsection*{Grupo B --- Estilos Arquitectónicos}
+% ------------------------------------------------------------------
+
+Derivan del análisis comparativo de estilos. Fuente: Richards, M.\ \& Ford, N.\ (2020).
+\textit{Fundamentals of Software Architecture}. O'Reilly.
+
+\footnotesize
+\begin{longtable}{@{}p{1.8cm}p{3.5cm}p{2.5cm}p{2.5cm}p{2.4cm}@{}}
+\caption{Grupo B --- Estilos Arquitectónicos (ADR-06 a ADR-07)}\label{tab:adr_grupo_b}\\
+\toprule
+\textbf{ADR} & \textbf{Decisión} & \textbf{Alt.\ rechazada} & \textbf{Criterio} & \textbf{Consecuencias} \\
+\midrule
+\endfirsthead
+\multicolumn{5}{l}{\footnotesize\itshape Continuación de la Tabla~\thetable}\\[2pt]
+\toprule
+\textbf{ADR} & \textbf{Decisión} & \textbf{Alt.\ rechazada} & \textbf{Criterio} & \textbf{Consecuencias} \\
+\midrule
+\endhead
+\bottomrule
+\endlastfoot
+ADR-06 &
+  EA-10: Arquitectura compuesta Service-Based con elementos de EA-06 (async) y
+  separación SPA de EA-09 &
+  EA-09 Microservices puro &
+  CR-06: complejidad operacional incompatible con CAs ecuatorianas &
+  10 contenedores. BD compartida. Comunicación asíncrona via Message Broker Service. \\
+\midrule
+ADR-07 (mod.\ v1.3) &
+  RA Portal + Backend API como unidades de despliegue separadas &
+  Portal monolítico SSR &
+  CR-10: RBAC estricto requiere validación en backend independiente del frontend &
+  RA Service (BFF) = Backend API. RA Portal = SPA. RA Portal Ce = 1. \\
+\end{longtable}
+\normalsize
+
+\medskip\noindent\textbf{ADR-06 --- EA-10: Arquitectura Compuesta Basada en Service-Based}
+
+\noindent\textbf{Criterios decisivos:} CR-06, CR-07, CR-03.
+
+\noindent\textbf{Contexto:} el análisis comparativo de 9 estilos (EA-01 a EA-09) identificó
+que ninguno puro satisface todos los criterios ASR. EA-05 (Service-Based) fue el único con
+cero rechazos en criterios de peso alto, pero presentó riesgos en CR-09 (back-pressure) y
+CR-10 (separación frontend/backend). Richards \& Ford (2020, Cap.~18) validan la
+hibridización: el output del proceso de elección es la topología resultante, no un estilo
+único.
+
+\noindent\textbf{Decisión:} adoptar EA-10 como arquitectura compuesta derivada de EA-05 con
+dos incorporaciones puntuales: de EA-06 (Event-Driven) la cola asíncrona para flujos
+secundarios; de EA-09 (Microservices) la separación estricta frontend/backend en el Portal.
+Cada incorporación (1) resuelve una deficiencia identificada, (2) no introduce las
+limitaciones que causaron el rechazo del estilo fuente, (3) se aplica de forma acotada.
+
+\noindent\textbf{Alternativas rechazadas:}
+\footnotesize
+\begin{longtable}{@{}p{4.0cm}p{8.5cm}@{}}
+\toprule\textbf{Alternativa} & \textbf{Razón} \\\midrule
+\endhead
+\bottomrule
+\endlastfoot
+EA-09 Microservices puro &
+  CR-06: requiere madurez en CI/CD, service mesh y observabilidad distribuida ---
+  incompatible con CAs ecuatorianas medianas \\
+EA-06 Event-Driven completo &
+  CR-07: asincronía en flujos de emisión/revocación viola ARCOTEL Art.~4.12 \\
+EA-05 Service-Based puro &
+  CR-09/CR-10: back-pressure y separación frontend/backend resolubles solo con
+  incorporaciones acotadas \\
+\end{longtable}
+\normalsize
+
+\noindent\textbf{Consecuencias:} 10 contenedores. Comunicación asíncrona via Message Broker
+Service es canal principal; llamadas síncronas son excepción justificada (HSM, ACID,
+queries). BD compartida (CA Shared Database) con schemas separados --- PA-02.
+
+\medskip\noindent\textbf{ADR-07 --- RA Portal + Backend API como Unidades de Despliegue Separadas}
+
+\noindent\textbf{Criterio:} CR-10.
+
+\noindent\textbf{Contexto:} ADR-07 original definía el portal como una unidad de despliegue
+única con renderizado server-side (SSR). Al incorporar los requisitos de RBAC conforme
+ARCOTEL-2024-0176, se identificó que la validación de permisos no puede ser confiable si
+frontend y backend comparten el mismo proceso: una vulnerabilidad en la capa de presentación
+podría eludir los controles de acceso del dominio.
+
+\noindent\textbf{Decisión:} dividir el portal en dos contenedores con ciclos de vida
+independientes. RA Service (BFF --- Backend For Frontend) conserva el ID original y
+concentra la lógica de negocio y validación RBAC. RA Portal (SPA --- Single Page
+Application) es el nuevo contenedor responsable exclusivamente de la interfaz de usuario.
+
+\noindent\textbf{Alternativas rechazadas:}
+\footnotesize
+\begin{longtable}{@{}p{4.0cm}p{8.5cm}@{}}
+\toprule\textbf{Alternativa} & \textbf{Razón} \\\midrule
+\endhead
+\bottomrule
+\endlastfoot
+Portal monolítico SSR &
+  CR-10: validación RBAC no puede garantizarse si frontend y backend son el mismo proceso \\
+Microservicio por cada operación del portal &
+  CR-06: complejidad operacional innecesaria para el alcance del portal \\
+\end{longtable}
+\normalsize
+
+\noindent\textbf{Consecuencias:} RA Service (BFF) Ce = 4 (CA Core Service, CRL Service,
+Repository Service, External Adapter Gateway). RA Portal Ce = 1 (solo RA Service). RA Portal
+no tiene base de datos propia --- es stateless desde la perspectiva de persistencia.
+
+\medskip\noindent\textbf{ADR-04 --- HSM FIPS 140-2 Nivel 3 (modificado v2.1)}
+
+\noindent\textbf{Origen:} ARCOTEL-2024-0176 Art.~11a.
+
+\noindent\textbf{Contexto:} ADR-04 v1.0 acotaba el alcance de HSM Integration Service a las
+claves de infraestructura CA. El pipeline de CA Core Service asumía que el CSR (Certificate
+Signing Request) llegaba como input externo desde RA Service (BFF), implicando que el par de
+claves fue generado fuera del control de la CA. ARCOTEL Art.~11a establece que el par debe
+ser generado \textbf{únicamente por la Entidad de Certificación}, con control total sobre ese
+proceso.
+
+\noindent\textbf{Decisión:} HSM Integration Service gestiona dos categorías de operaciones
+criptográficas. \textbf{Categoría 1 --- Claves de infraestructura CA} (sin cambio respecto a
+v1.0): Root CA, Sub-CA, OCSP Responder; quórum 3-of-5 de Crypto Officers.
+\textbf{Categoría 2 --- Par de claves del suscriptor} (nueva en v2.1): \texttt{C\_GenerateKeyPair}
+crea el par antes de construir el CSR; \texttt{C\_Sign} firma el TBSCertificate con la clave
+privada de la CA. Tras la entrega del PKCS\#12 al suscriptor, la clave privada del suscriptor
+se destruye del HSM certificadamente (\texttt{C\_DestroyObject}). Para perfiles de
+extensibilidad \texttt{[EXT]}, el CSR externo sigue siendo aceptado como flujo secundario.
+
+\noindent\textbf{Alternativas rechazadas:}
+\footnotesize
+\begin{longtable}{@{}p{4.0cm}p{8.5cm}@{}}
+\toprule\textbf{Alternativa} & \textbf{Razón} \\\midrule
+\endhead
+\bottomrule
+\endlastfoot
+Mantener CSR externo como flujo principal &
+  ARCOTEL Art.~11a asigna la responsabilidad de generación a la CA, no al suscriptor \\
+Generar el par en software dentro de CA Core Service &
+  Viola ADR-04 v1.0: toda operación criptográfica debe ocurrir dentro del HSM FIPS 140-2 L3 \\
+Generación mediante Web Crypto API en RA Portal &
+  La clave queda en el almacén del navegador sin certificación de hardware --- no cumple
+  FIPS ni Art.~11a \\
+\end{longtable}
+\normalsize
+
+\noindent\textbf{Consecuencias:} CA Core Service adquiere dos interacciones adicionales con
+HSM Integration Service. Latencia de emisión en perfiles \texttt{[REG]} aumenta
+$\sim$200\,ms por \texttt{C\_GenerateKeyPair} (total $\sim$700\,ms p95, dentro de NFR-05
+$\leq$5\,s). Immutable Log Service recibe tres eventos nuevos: generación, exportación
+cifrada y destrucción de la clave del suscriptor.
+
+% ------------------------------------------------------------------
+\subsubsection*{Grupo C --- Patrones Arquitectónicos}
+% ------------------------------------------------------------------
+
+Derivan del análisis de patrones POSA4. Fuente: Buschmann, F., Henney, K.\ \& Schmidt, D.C.\
+(2007). \textit{POSA Vol.~4}. Wiley.
+
+\footnotesize
+\begin{longtable}{@{}p{1.4cm}p{4.2cm}p{2.8cm}p{2.2cm}p{1.5cm}@{}}
+\caption{Grupo C --- Patrones Arquitectónicos (ADR-08 a ADR-22)}\label{tab:adr_grupo_c}\\
+\toprule
+\textbf{ADR} & \textbf{Decisión} & \textbf{Módulo} & \textbf{Patrón POSA4} & \textbf{PC} \\
+\midrule
+\endfirsthead
+\multicolumn{5}{l}{\footnotesize\itshape Continuación de la Tabla~\thetable}\\[2pt]
+\toprule
+\textbf{ADR} & \textbf{Decisión} & \textbf{Módulo} & \textbf{Patrón POSA4} & \textbf{PC} \\
+\midrule
+\endhead
+\bottomrule
+\endlastfoot
+ADR-08 & Microkernel para extensibilidad de perfiles ARCOTEL &
+  Repository Service & Microkernel (Cap.~9) & PC-06 \\
+ADR-09 & Modelo de aislamiento del HSM (6 capas) &
+  HSM Integration Service & Monitor Object + Scoped Locking & PC-04 \\
+ADR-10 & Command + Command Processor como unidad auditable &
+  CA Core Service, CRL Service, RA Service (BFF) & Command (Cap.~17) + Command Processor (Cap.~14) & PC-03 \\
+ADR-11 & Memento como mecanismo base del ILS &
+  Immutable Log Service (ILS) & Memento (Cap.~17) & PC-03 \\
+ADR-12 & Half-Sync/Half-Async para Validation Service (OCSP) &
+  Validation Service (OCSP) & Half-Sync/Half-Async (Cap.~14) & PC-03 \\
+ADR-13 & Scoped Locking para sesiones PKCS\#11 &
+  HSM Integration Service & Scoped Locking (Cap.~16) & PC-04 \\
+ADR-14 & Immutable Value para artefactos firmados &
+  CA Core Service, ILS & Immutable Value (Cap.~17) & PC-01 \\
+ADR-15 & Facade PKCS\#11 --- 5 operaciones expuestas &
+  HSM Integration Service & Wrapper Facade (Cap.~12) & PC-04 \\
+ADR-16 & Chain of Responsibility para pipeline de validación CSR &
+  CA Core Service & Pipes \& Filters (Cap.~9) & PC-06 \\
+ADR-17 & Interceptor como mecanismo transversal de auditoría &
+  CA Core Service a Repository Service & Interceptor (Cap.~18) & PC-03, PC-01 \\
+ADR-18 & Strategy para algoritmos criptográficos &
+  HSM Integration Service & Strategy (Cap.~18) & PC-06 \\
+ADR-19 & Firewall Proxy en RA Service (BFF) y Validation Service (OCSP) &
+  RA Service (BFF), Validation Service (OCSP) & Firewall Proxy (Cap.~12) & PC-05 \\
+ADR-20 & Authorization RBAC conforme ARCOTEL-2024-0176 &
+  RA Service (BFF) & Authorization (Cap.~18) & PC-05 \\
+ADR-21 & Objects for States para ciclo de vida X.509 &
+  CA Core Service, CRL Service & Objects for States (Cap.~19) & PC-02 \\
+ADR-22 & Lifecycle Callbacks con zeroize FIPS 140-2 &
+  HSM Integration Service & Lifecycle Callback (Cap.~20) & PC-04 \\
+\end{longtable}
+\normalsize
+
+\medskip\noindent\textbf{ADR-08 --- Microkernel para Certificate Profile Engine (Repository Service)}
+
+\noindent\textbf{Criterio decisivo:} PC-06 (extensibilidad por configuración sin rediseño del motor).
+
+\noindent\textbf{Contexto:} Repository Service debe soportar todos los perfiles de certificado
+definidos en ARCOTEL-2024-0176 (DSCF Persona Natural, DSCF Persona Jurídica, Sello
+Electrónico, Certificado de Componente, Certificado Raíz) más perfiles de extensibilidad
+(TLS, mTLS). La normativa ecuatoriana puede añadir nuevos perfiles en resoluciones futuras.
+Sin una arquitectura explícita de extensión, cada nuevo perfil requiere modificar CA Core
+Service.
+
+\noindent\textbf{Decisión:} implementar Repository Service con el patrón Microkernel: un
+\textbf{core} mínimo implementa la lógica de emisión invariante (firma DER, generación de
+número de serie, validación de cadena X.509), mientras \textbf{plugins} implementan los
+perfiles ARCOTEL como unidades desplegables independientes. El Component Configurator carga y
+descarga plugins en tiempo de ejecución sin reiniciar CA Core Service.
+
+\noindent\textbf{Alternativas rechazadas:}
+\footnotesize
+\begin{longtable}{@{}p{4.0cm}p{8.5cm}@{}}
+\toprule\textbf{Alternativa} & \textbf{Razón} \\\midrule
+\endhead
+\bottomrule
+\endlastfoot
+Perfiles como condicionales en CA Core Service &
+  PC-06: cada nuevo perfil ARCOTEL requiere modificar y redesplegar CA Core Service \\
+Herencia de clases por perfil &
+  PC-06: la jerarquía crece linealmente --- violación del principio abierto/cerrado \\
+\end{longtable}
+\normalsize
+
+\noindent\textbf{Consecuencias:} NFR-10 cumplido --- nuevo perfil = nuevo plugin, sin cambios
+en CA Core Service. Los plugins no se comunican entre sí directamente. Repository Service
+Ce = 0.
+
+\medskip\noindent\textbf{ADR-10 --- Command + Command Processor como Unidad Auditable}
+
+\noindent\textbf{Criterio decisivo:} PC-03 (trazabilidad completa de operaciones).
+
+\noindent\textbf{Contexto:} cada operación de emisión, revocación o suspensión debe ser
+atómica, auditable y reiniciable desde un estado conocido. Sin un objeto Command que
+encapsule la intención, el audit trail no tiene un punto de captura del estado pre-operación.
+El Command Processor garantiza que si la operación falla, el Memento no se persiste y el
+estado del sistema no queda en un punto intermedio.
+
+\noindent\textbf{Decisión:} adoptar Command (POSA4 Cap.~17) + Command Processor (POSA4
+Cap.~14) como la unidad mínima de operación en CA Core Service, CRL Service y RA Service
+(BFF). Cada operación mutadora se encapsula en un objeto Command inmutable. El Command
+Processor toma el Memento pre-ejecución, ejecuta el Command, toma el Memento post-ejecución
+y persiste ambos en Immutable Log Service (ILS) si la operación fue exitosa.
+
+\noindent\textbf{Alternativas rechazadas:}
+\footnotesize
+\begin{longtable}{@{}p{4.0cm}p{8.5cm}@{}}
+\toprule\textbf{Alternativa} & \textbf{Razón} \\\midrule
+\endhead
+\bottomrule
+\endlastfoot
+Llamadas directas de servicio sin Command &
+  PC-03: no hay punto de captura del estado --- el audit trail solo registra el resultado,
+  no el estado previo \\
+Event Sourcing como mecanismo primario &
+  PC-07: reconstrucción del estado desde eventos introduce latencia de replay incompatible
+  con NFR-05 ($\leq$5\,s) \\
+\end{longtable}
+\normalsize
+
+\noindent\textbf{Consecuencias:} el Command es el único objeto que cruza la frontera entre
+la capa de interfaz y la capa de dominio en CA Core Service, CRL Service y RA Service (BFF).
+Relación con ADR-11: el Command Processor invoca al Originator para que genere su Memento.
+Son patrones inseparables en esta arquitectura.
+
+\medskip\noindent\textbf{ADR-11 --- Memento como Mecanismo Base del Audit Trail Inmutable}
+
+\noindent\textbf{Criterio decisivo:} PC-03 (trazabilidad completa de operaciones criptográficas).
+
+\noindent\textbf{Contexto:} ARCOTEL Art.~4.12 exige un audit trail completo de cada
+operación de certificación. El requerimiento no es solo registrar qué ocurrió, sino el
+estado completo del certificado en el momento exacto del evento. Sin Memento, Immutable Log
+Service (ILS) requeriría acceso a los internos de los objetos de dominio de CA Core Service
+y CRL Service, violando PC-01 (encapsulación).
+
+\noindent\textbf{Decisión:} cada evento del ciclo de vida (emisión, suspensión, revocación,
+expiración) genera un \textbf{Memento} --- snapshot del estado completo creado por el propio
+objeto. El Memento es entregado al Command Processor (ADR-10) que lo persiste antes y después
+de la operación (estado pre/post). La entrada del ILS es
+\texttt{\{timestamp, operatorId, eventType, preMementoHash, postMementoHash, operationSignature\}},
+encadenada con hash SHA-256 sobre la entrada anterior.
+
+\noindent\textbf{Alternativas rechazadas:}
+\footnotesize
+\begin{longtable}{@{}p{4.0cm}p{8.5cm}@{}}
+\toprule\textbf{Alternativa} & \textbf{Razón} \\\midrule
+\endhead
+\bottomrule
+\endlastfoot
+Logging ad-hoc por módulo &
+  PC-01: código de auditoría disperso --- cambio de formato requiere modificar 4 módulos \\
+Interceptor únicamente &
+  PC-03: Interceptor captura la invocación pero no el estado interno completo ---
+  el Memento complementa al Interceptor (ADR-17) \\
+Event Sourcing &
+  PC-07: reconstrucción del estado introduce complejidad operacional excesiva \\
+\end{longtable}
+\normalsize
+
+\noindent\textbf{Consecuencias:} Immutable Log Service (ILS) no tiene dependencias en la
+capa de dominio de CA Core Service o CRL Service --- solo recibe Mementos opacos. El Memento
+no incluye material de clave privada. Relación con ADR-10: son inseparables.
+
+\medskip\noindent\textbf{ADR-17 --- Interceptor como Mecanismo Transversal de Auditoría}
+
+\noindent\textbf{Criterio:} PC-03 (trazabilidad), PC-01 (cohesión --- sin código de
+auditoría en lógica de dominio).
+
+\noindent\textbf{Contexto:} la arquitectura CA tiene cuatro concerns transversales: auditoría
+(registrar cada operación en ILS), autorización (verificar RBAC), mTLS (verificar certificado
+del módulo invocador en HSM Integration Service) y latencia (medir tiempo por operación). Sin
+Interceptor, cada módulo contiene código de logging y verificación acoplado con su lógica de
+dominio.
+
+\noindent\textbf{Decisión:} adoptar Interceptor (POSA4 Cap.~18) como mecanismo de framework
+que aplica estos concerns de forma declarativa. AOP (Aspect-Oriented Programming) es la
+opción recomendada (implementación de referencia: Spring AOP, AspectJ). El orden de ejecución
+es: \texttt{AuthorizationInterceptor} $\rightarrow$ \texttt{AuditInterceptor} $\rightarrow$
+\texttt{LatencyInterceptor}.
+
+\noindent\textbf{Alternativas rechazadas:}
+\footnotesize
+\begin{longtable}{@{}p{4.0cm}p{8.5cm}@{}}
+\toprule\textbf{Alternativa} & \textbf{Razón} \\\midrule
+\endhead
+\bottomrule
+\endlastfoot
+Decorator manual por componente &
+  PC-01: código de auditoría acoplado al componente --- cambio de formato requiere
+  modificar cada componente \\
+Logging en capa de persistencia &
+  PC-03: captura solo operaciones de datos, no invocaciones de dominio \\
+\end{longtable}
+\normalsize
+
+\noindent\textbf{Consecuencias:} ningún módulo de dominio contiene código de logging,
+autorización ni medición de latencia --- cualquier código de este tipo es un defecto
+arquitectónico que viola este ADR. Trade-off: $\sim$1--5\,ms de overhead por operación.
+Relación con ADR-20: el \texttt{AuthorizationInterceptor} es la implementación del patrón
+Authorization como concern transversal.
+
+% ------------------------------------------------------------------
+\subsubsection*{Grupo D --- Extensibilidad y Modularidad}
+% ------------------------------------------------------------------
+
+\footnotesize
+\begin{longtable}{@{}p{1.4cm}p{4.0cm}p{2.8cm}p{2.2cm}p{1.7cm}@{}}
+\caption{Grupo D --- Extensibilidad y Modularidad (ADR-23 a ADR-33)}\label{tab:adr_grupo_d}\\
+\toprule
+\textbf{ADR} & \textbf{Decisión} & \textbf{Módulo} & \textbf{Patrón} & \textbf{Criterio} \\
+\midrule
+\endfirsthead
+\multicolumn{5}{l}{\footnotesize\itshape Continuación de la Tabla~\thetable}\\[2pt]
+\toprule
+\textbf{ADR} & \textbf{Decisión} & \textbf{Módulo} & \textbf{Patrón} & \textbf{Criterio} \\
+\midrule
+\endhead
+\bottomrule
+\endlastfoot
+ADR-23 & External Adapter Gateway (Anti-Corruption Layer) &
+  External Adapter Gateway & Facade + Plugin Registry + Circuit Breaker & PA-02, PA-07 \\
+ADR-24 & Circuit Breaker en RA Service (BFF) para llamadas a External Adapter Gateway &
+  RA Service (BFF) & Circuit Breaker (Resilience4j) & NFR-05, QAS-11 \\
+ADR-25 & Plugin Registry para adaptadores de External Adapter Gateway &
+  External Adapter Gateway & Plugin Registry (Cap.~9) & PA-07 \\
+ADR-26 & Node.js 20 LTS como runtime de la PoC con métrica Ce adaptada &
+  ILS, Message Broker Service & --- & NFR-09, PA-06 \\
+ADR-27 & Message Broker Service con IMessageBroker como canal principal &
+  Message Broker Service & Wrapper Facade + Object Adapter + Strategy & PA-02, PA-07 \\
+ADR-28 & Flujo de emisión con token de un solo uso y contraseña del suscriptor &
+  RA Service (BFF), CA Core Service & Token + Command (ADR-10) & PA-02, ARCOTEL Art.~8 \\
+ADR-29 & Hyperledger Fabric 2.5 como implementación de \texttt{IAuditLogger} &
+  Immutable Log Service (ILS) & --- & ADR-03, ADR-11, NFR-07 \\
+ADR-30 & Data Mapper como patrón transversal de infraestructura de persistencia &
+  CA Core, OCSP, CRL, HSM, ILS & Data Mapper (Cap.~22) & PA-02, NFR-09 \\
+ADR-31 & Criterio Formal Sync vs Async --- Comunicación Asíncrona Preferente &
+  Transversal & --- & PA-01, PA-02, PA-07 \\
+ADR-32 & Publicación Directa IMessageBroker.publish() Post-Commit &
+  CA Core, CRL, RA Service, HSM & --- & PA-02, PA-07 \\
+ADR-33 & Ce (Acoplamiento Eferente) como Métrica C4 N2 &
+  Transversal & --- & PA-02 \\
+\end{longtable}
+\normalsize
+
+\medskip\noindent\textbf{ADR-23 --- External Adapter Gateway (Anti-Corruption Layer)}
+
+\noindent\textbf{Criterio:} PA-02, PA-07, PA-08 (privacidad LOPDP).
+
+\noindent\textbf{Contexto:} RA Service (BFF) es el contenedor responsable de la revisión de
+solicitudes. Sin un contenedor de aislamiento, RA Service (BFF) acumularía adaptadores
+heterogéneos para cada servicio externo, su Ce superaría 5 (NFR-09) y los datos de identidad
+sin sanitizar circularían por el dominio CA en violación del LOPDP.
+
+\noindent\textbf{Decisión:} crear External Adapter Gateway como ACL (Anti-Corruption Layer)
+stateless, sin base de datos propia, con Plugin Registry para adaptadores intercambiables y
+Circuit Breaker por adaptador. Las credenciales de autenticación residen en HSM Integration
+Service, no en External Adapter Gateway. RA Service (BFF) invoca External Adapter Gateway
+durante la revisión de solicitudes (Fase 2). CA Core Service no invoca External Adapter
+Gateway --- la identidad ya fue verificada en Fase 2 (ADR-28).
+
+\noindent\textbf{Alternativas rechazadas:}
+\footnotesize
+\begin{longtable}{@{}p{4.0cm}p{8.5cm}@{}}
+\toprule\textbf{Alternativa} & \textbf{Razón} \\\midrule
+\endhead
+\bottomrule
+\endlastfoot
+Integración directa desde CA Core Service &
+  NFR-09: con 4 sistemas externos Ce CA Core Service = 9, violación grave \\
+API Gateway genérico &
+  PA-02: un gateway no sanitiza datos de identidad ni aplica lógica de dominio CA \\
+\end{longtable}
+\normalsize
+
+\noindent\textbf{Consecuencias:} Ce External Adapter Gateway = 0. External Adapter Gateway
+es ACL pasivo en DMZ (zona desmilitarizada) con egress estricto. RA Service (BFF) es el
+único contenedor del sistema que invoca a External Adapter Gateway para verificación de
+identidad.
+
+\medskip\noindent\textbf{ADR-24 --- Circuit Breaker en RA Service (BFF) para Llamadas a External Adapter Gateway}
+
+\noindent\textbf{Criterio:} NFR-05, QAS-11.
+
+\noindent\textbf{Contexto:} RA Service (BFF) invoca External Adapter Gateway síncronamente
+durante la revisión de solicitudes. Sin Circuit Breaker, un servicio externo lento (ej.\
+Registro Civil caído, timeout TCP $\sim$30\,s) bloquea el thread del operador RA y puede
+saturar RA Service (BFF). CA Core Service no se ve afectado --- CA Core Service no invoca
+External Adapter Gateway (ADR-28).
+
+\noindent\textbf{Decisión:} Circuit Breaker en RA Service (BFF) envolviendo toda llamada a
+External Adapter Gateway. Estados: CLOSED (normal), OPEN (falla rápida $<$ 5\,ms), HALF-OPEN
+(sonda de recuperación). Implementación de referencia: Resilience4j. El umbral de apertura
+es configurable externamente.
+
+\noindent\textbf{Alternativas rechazadas:}
+\footnotesize
+\begin{longtable}{@{}p{4.0cm}p{8.5cm}@{}}
+\toprule\textbf{Alternativa} & \textbf{Razón} \\\midrule
+\endhead
+\bottomrule
+\endlastfoot
+Timeout simple en el cliente HTTP &
+  QAS-11: sigue esperando hasta expirar --- no falla rápido ni protege el pool de threads \\
+Retry con backoff exponencial &
+  NFR-05: los reintentos suman latencia acumulada, incompatible con el presupuesto de 5\,s \\
+\end{longtable}
+\normalsize
+
+\noindent\textbf{Consecuencias:} el Circuit Breaker pertenece a RA Service (BFF), no a CA
+Core Service. Si External Adapter Gateway está en estado OPEN, los operadores no pueden
+aprobar nuevas solicitudes, pero los suscriptores con token ya emitido pueden generar su
+certificado sin interrupción. El margen de 5\,s se distribuye: $\leq$200\,ms HSM (generación
+par) + $\leq$200\,ms HSM (firma) + $\leq$2\,000\,ms External Adapter Gateway (con CB) +
+$\leq$500\,ms pipeline CA Core Service + $\leq$500\,ms red.
+
+\medskip\noindent\textbf{ADR-25 --- Plugin Registry para Adaptadores de External Adapter Gateway}
+
+\noindent\textbf{Criterio:} PA-07, NFR-10.
+
+\noindent\textbf{Contexto:} External Adapter Gateway debe integrar sistemas externos
+heterogéneos sin que añadir uno nuevo requiera modificar el código existente. Sin Plugin
+Registry, External Adapter Gateway contiene lógica condicional para seleccionar el adaptador
+correcto.
+
+\noindent\textbf{Decisión:} External Adapter Gateway implementa Plugin Registry (POSA4
+Cap.~9): los adaptadores (\texttt{RegistroCivilAdapter}, \texttt{SriAdapter},
+\texttt{BiometricoAdapter}, \texttt{TsaAdapter}) se registran en un mapa al arranque desde
+configuración. Agregar un nuevo servicio externo = nueva clase que implementa
+\texttt{IExternalServiceAdapter} + entrada en \texttt{integration-registry.yml}.
+
+\noindent\textbf{Alternativas rechazadas:}
+\footnotesize
+\begin{longtable}{@{}p{4.0cm}p{8.5cm}@{}}
+\toprule\textbf{Alternativa} & \textbf{Razón} \\\midrule
+\endhead
+\bottomrule
+\endlastfoot
+Condicional if/switch por sistema externo &
+  PA-07: agregar un nuevo sistema requiere modificar el orquestador central \\
+Herencia de clases &
+  PC-06: la jerarquía crece con cada nuevo servicio externo \\
+\end{longtable}
+\normalsize
+
+\noindent\textbf{Consecuencias:} NFR-10: nuevo servicio externo sin modificar CA Core Service
+ni el núcleo de External Adapter Gateway. External Adapter Gateway Ce = 0. El Circuit Breaker
+(ADR-24) se aplica por adaptador.
+
+\medskip\noindent\textbf{ADR-26 --- Node.js 20 LTS como Runtime de la PoC}
+
+\noindent\textbf{Módulos afectados:} Immutable Log Service (ILS) (PoC), Message Broker Service (soporte).
+
+\noindent\textbf{Contexto:} el equipo tiene implementación funcional avanzada en Node.js. Migrar a Java o Go implicaría descartar trabajo funcional. La PoC cubre Immutable Log Service (ILS) exclusivamente.
+
+\noindent\textbf{Decisión:} adoptar Node.js 20 LTS + Express 4 como runtime de la PoC de
+Immutable Log Service (ILS). La métrica Ce se adapta a nivel de módulo Node.js medida con
+\texttt{dependency-cruiser}.
+
+\noindent\textbf{Alternativas rechazadas:} Java 21 (mayor fidelidad con Ce C\&K; descartado
+por costo de migración). Go (SDK nativo \texttt{fabric-sdk-go}; mismo motivo).
+
+\noindent\textbf{Consecuencias:} Ce medido con \texttt{dependency-cruiser} --- umbral
+$\leq$5 imports directos. Simulación Python como sustituto de HSM Integration Service.
+
+\medskip\noindent\textbf{ADR-27 --- Message Broker Service con IMessageBroker como Canal Principal}
+
+\noindent\textbf{Criterio:} PA-02, PA-06, PA-07, NFR-09.
+
+\noindent\textbf{Contexto:} la comunicación entre contenedores requiere un mecanismo
+desacoplado que permita escalar productores y consumidores sin modificar el contrato. La
+arquitectura necesita que eventos de certificación, revocación y auditoría fluyan de forma
+confiable entre CA Core Service, CRL Service, HSM Integration Service, RA Service (BFF) e
+Immutable Log Service (ILS).
+
+\noindent\textbf{Decisión:} Message Broker Service es el canal de comunicación principal con
+interfaz abstracta \texttt{IMessageBroker} que expone: \texttt{publish(eventType, payload,
+metadata)}, \texttt{subscribe(eventType, handler)}, \texttt{unsubscribe(eventType, handler)}.
+La tecnología subyacente se selecciona vía adaptador en deploy-time. Ningún contenedor del
+sistema importa clases del broker concreto. Los productores publican directamente via
+\texttt{IMessageBroker.publish()} después del commit transaccional (ADR-32).
+
+\noindent\textbf{Alternativas rechazadas:}
+\footnotesize
+\begin{longtable}{@{}p{4.0cm}p{8.5cm}@{}}
+\toprule\textbf{Alternativa} & \textbf{Razón} \\\midrule
+\endhead
+\bottomrule
+\endlastfoot
+Infraestructura broker anónima &
+  PA-02: sin ID de contenedor no es medible en Ce, no tiene data store asignable ni C4 N3
+  propio \\
+Broker cloud gestionado (AWS SQS, Azure Service Bus) &
+  PA-06: dependencia de proveedor cloud --- viola principio de independencia de proveedor \\
+\end{longtable}
+\normalsize
+
+\noindent\textbf{Consecuencias:} Message Broker Service es el único contenedor que conoce la
+tecnología subyacente de mensajería. Ce Message Broker Service = 3. Las interacciones
+síncronas están documentadas como excepción justificada en C4 N2 (HSM, ACID en revocación,
+consistencia fuerte, respuesta inmediata al usuario, queries).
+
+\medskip\noindent\textbf{ADR-28 --- Flujo de Emisión con Token de Un Solo Uso y Contraseña del Suscriptor}
+
+\noindent\textbf{Criterio:} PA-02, PA-08, ARCOTEL Art.~8.
+
+\noindent\textbf{Contexto:} el proceso real de emisión tiene tres fases separadas en el
+tiempo. \textbf{Fase 1 --- Solicitud:} el suscriptor llena el formulario; la solicitud queda
+en estado PENDIENTE. \textbf{Fase 2 --- Revisión y aprobación:} el operador RA revisa y el
+sistema verifica datos contra Registro Civil y SRI; si es correcto, el sistema envía al
+suscriptor un enlace con token de un solo uso con expiración en días. \textbf{Fase 3 ---
+Generación:} el suscriptor usa el enlace, escribe la contraseña que protegerá su PKCS\#12 y
+hace clic en Generar; el sistema valida el token e invoca CA Core Service.
+
+\noindent\textbf{Decisión:} separar explícitamente verificación de identidad (RA Service
+(BFF), Fase 2) y generación de certificado (CA Core Service, Fase 3). RA Service (BFF) es
+responsable de la Fase 1 y Fase 2. CA Core Service es responsable únicamente de la Fase 3:
+verificar forma del Command, generar el par si el perfil lo requiere, construir y firmar el
+certificado, empaquetar la clave privada. La contraseña del suscriptor
+(\texttt{pkcs12Password}) viaja en el Command de CA Core Service como campo efímero --- no
+persiste en CA Shared Database ni aparece en ningún registro de auditoría.
+
+\noindent\textbf{Alternativas rechazadas:}
+\footnotesize
+\begin{longtable}{@{}p{4.0cm}p{8.5cm}@{}}
+\toprule\textbf{Alternativa} & \textbf{Razón} \\\midrule
+\endhead
+\bottomrule
+\endlastfoot
+CA Core Service verifica identidad contra External Adapter Gateway &
+  Mezcla responsabilidades. Ce CA Core Service sube a 5 con margen cero. Latencia External
+  Adapter Gateway ($\sim$2\,s) impacta al suscriptor en generación. \\
+Contraseña definida en la Fase 1 &
+  La solicitud puede tardar días en aprobarse; la contraseña quedaría en la BD durante ese
+  período --- riesgo de seguridad. \\
+La CA genera una contraseña automática &
+  El suscriptor necesita conocerla; si el canal de entrega falla, el PKCS\#12 es
+  inutilizable y la CA tuvo la contraseña en algún momento. \\
+\end{longtable}
+\normalsize
+
+\noindent\textbf{Consecuencias:} Ce CA Core Service = 3. Ce RA Service (BFF) = 5 ---
+límite exacto NFR-09, sensitivity point ATAM. Latencia emisión CA Core Service $\sim$700\,ms
+p95 SERVER\_SIDE --- NFR-05 ($\leq$5\,s) cumplido con margen amplio.
+
+\medskip\noindent\textbf{ADR-29 --- Hyperledger Fabric 2.5 como Implementación de \texttt{IAuditLogger}}
+
+\noindent\textbf{Módulos afectados:} Immutable Log Service (ILS).
+
+\noindent\textbf{Contexto:} ADR-03 establece Hyperledger Fabric por mandato de la propuesta
+de tesis aprobada. La versión 2.5 es la LTS activa.
+
+\noindent\textbf{Decisión:} implementar \texttt{IAuditLogger} usando Hyperledger Fabric 2.5
+LTS con chaincode en Node.js y \texttt{@hyperledger/fabric-gateway 1.x}. Red local
+\texttt{fabric-samples/test-network} en Docker Compose.
+
+\noindent\textbf{Alternativas rechazadas:} AWS Managed Blockchain (viola PA-06, costo,
+irreproducible sin cuenta AWS). Hyperledger Besu (overhead EVM innecesario para auditoría
+permissioned).
+
+\noindent\textbf{Consecuencias:} PoC reproducible localmente sin dependencia de
+infraestructura cloud. \texttt{IAuditLogger} permanece como interfaz abstracta en la RA ---
+intercambiable sin modificar Immutable Log Service (ILS). La política de endoso concreta
+se delega al adoptante, dado que la estructura organizacional y el marco regulatorio de
+cada despliegue determinan qué entidades participan y bajo qué leyes operan; la
+arquitectura de referencia establece únicamente que las organizaciones participantes deben
+ser operacional y administrativamente independientes entre sí para que la garantía de
+inmutabilidad del ledger sea efectiva.
+
+\medskip\noindent\textbf{ADR-30 --- Data Mapper como Patrón Transversal de Infraestructura de Persistencia}
+
+\noindent\textbf{Contexto:} los C4 N3 de Validation Service (OCSP), CRL Service, HSM
+Integration Service e Immutable Log Service (ILS) usan Data Mapper para aislar sus propios
+schemas de datos de sus modelos de dominio. Este ADR absorbe la decisión anterior de Data
+Mapper específico para CA Core Service e ILS y cubre todos los contenedores con schema
+propio.
+
+\noindent\textbf{Decisión:} Data Mapper (POSA4 Cap.~22) se declara patrón transversal de
+infraestructura de persistencia. \textbf{Restricción de aislamiento:} un Data Mapper de un
+contenedor solo accede al schema de ese contenedor. \textbf{Restricción de Ce:} la presencia
+de Data Mapper en un contenedor no aumenta su Ce porque es un componente interno.
+
+\noindent\textbf{Alternativas rechazadas:}
+\footnotesize
+\begin{longtable}{@{}p{4.0cm}p{8.5cm}@{}}
+\toprule\textbf{Alternativa} & \textbf{Razón} \\\midrule
+\endhead
+\bottomrule
+\endlastfoot
+Table Data Gateway &
+  Expone la estructura de la tabla al código cliente --- viola separación dominio/persistencia
+  (PC-01) \\
+Active Record &
+  Mezcla lógica de dominio criptográfico complejo con código de acceso a BD \\
+\end{longtable}
+\normalsize
+
+\noindent\textbf{Consecuencias:} Data Mapper agregado a los artefactos de Validation Service
+(OCSP), CRL Service y HSM Integration Service. Patrones Table Data Gateway y Active Record
+permanecen descartados.
+
+\medskip\noindent\textbf{ADR-31 --- Criterio Formal Sync vs Async --- Comunicación Asíncrona Preferente}
+
+\noindent\textbf{Criterio:} PA-01, PA-02, PA-07.
+
+\noindent\textbf{Contexto:} la evolución de la arquitectura ha mostrado que la restricción
+original (síncrono por defecto, asíncrono como excepción) era innecesariamente restrictiva.
+El análisis ATAM y la implementación del Message Broker Service demuestran que la comunicación
+asíncrona ofrece mejor desacoplamiento, resiliencia y escalabilidad sin comprometer la
+consistencia cuando se diseña correctamente.
+
+\noindent\textbf{Decisión:} la comunicación asíncrona via Message Broker Service
+(\texttt{IMessageBroker}) es el mecanismo preferente para toda interacción entre contenedores.
+Las interacciones síncronas se limitan a: (1) operaciones HSM que requieren respuesta
+inmediata del hardware; (2) ACID en revocación, donde la consistencia fuerte es mandatoria;
+(3) consistencia fuerte requerida; (4) respuesta inmediata al usuario (ej.\ OCSP); (5) queries
+de lectura que requieren datos actualizados. Toda nueva interacción síncrona debe justificarse
+explícitamente con un ADR.
+
+\noindent\textbf{Alternativas rechazadas:}
+\footnotesize
+\begin{longtable}{@{}p{4.0cm}p{8.5cm}@{}}
+\toprule\textbf{Alternativa} & \textbf{Razón} \\\midrule
+\endhead
+\bottomrule
+\endlastfoot
+Síncrono por defecto (criterio original) &
+  Restricción excesiva que impide aprovechar los beneficios de desacoplamiento del Message
+  Broker Service. Sin fundamento normativo que obligue a sincronía universal. \\
+Asíncrono exclusivo &
+  La sincronía es necesaria en casos específicos (HSM, ACID, queries). La prohibición total
+  sería inviable. \\
+\end{longtable}
+\normalsize
+
+\noindent\textbf{Consecuencias:} las interacciones síncronas del sistema están documentadas
+como excepción justificada en C4 N2 Containers Documentation v2.0. Todo nuevo flujo asume
+comunicación asíncrona por defecto.
+
+\medskip\noindent\textbf{ADR-32 --- Publicación Directa IMessageBroker.publish() Post-Commit}
+
+\noindent\textbf{Criterio:} PA-02, PA-07.
+
+\noindent\textbf{Contexto:} en la arquitectura, los registros de actividades deben
+ocurrir después del commit transaccional exitoso para evitar inconsistencias entre el estado
+persistido y los eventos emitidos. El orden de operaciones garantizado por diseño hace viable
+la publicación directa sin mecanismos adicionales de persistencia intermedia.
+
+\noindent\textbf{Decisión:} los productores publican eventos directamente via
+\texttt{IMessageBroker.publish()} inmediatamente después del commit transaccional exitoso.
+El orden de operaciones es: (1) persistir
+estado en CA Shared Database (commit); (2) si commit exitoso $\rightarrow$
+\texttt{IMessageBroker.publish(event)}; (3) si \texttt{publish} falla $\rightarrow$ log de
+error + mecanismo de retry inline.
+
+\noindent\textbf{Alternativas rechazadas:}
+\footnotesize
+\begin{longtable}{@{}p{4.0cm}p{8.5cm}@{}}
+\toprule\textbf{Alternativa} & \textbf{Razón} \\\midrule
+\endhead
+\bottomrule
+\endlastfoot
+Publicación pre-commit &
+  Riesgo de evento publicado con transacción revertida --- inconsistencia con el estado real. \\
+\end{longtable}
+\normalsize
+
+\noindent\textbf{Consecuencias:} los productores tienen visibilidad directa del resultado de la
+publicación. Ce de los productores no incluye dependencia hacia Message Broker Service como
+contenedor (la dependencia es hacia la interfaz \texttt{IMessageBroker}).
+
+\medskip\noindent\textbf{ADR-33 --- Ce (Acoplamiento Eferente) como Métrica C4 N2}
+
+\noindent\textbf{Criterio:} PA-02.
+
+\noindent\textbf{Contexto:} se requiere una métrica de acoplamiento aplicable al nivel de
+contenedores C4 N2 que cuantifique las dependencias salientes de cada contenedor hacia
+otros contenedores externos.
+
+\noindent\textbf{Decisión:} Ce (Acoplamiento Eferente) es la métrica canónica de acoplamiento
+a nivel C4 N2. Ce(X) = número de contenedores (excluyendo al propio X) que X referencia
+directamente en sus llamadas salientes. Umbral: Ce $\leq$ 5 por contenedor (NFR-09). Medición:
+conteo directo sobre el diagrama C4 N2 Containers.
+
+\noindent\textbf{Alternativas rechazadas:}
+\footnotesize
+\begin{longtable}{@{}p{4.0cm}p{8.5cm}@{}}
+\toprule\textbf{Alternativa} & \textbf{Razón} \\\midrule
+\endhead
+\bottomrule
+\endlastfoot
+Fan-in/Fan-out como métrica sustituta &
+  Fan-in no es relevante a nivel C4 N2. Ce captura solo las dependencias salientes que el
+  contenedor controla. \\
+\end{longtable}
+\normalsize
+
+\noindent\textbf{Consecuencias:} todos los artefactos C4 N2 usan Ce como métrica de acoplamiento eferente.
+
+% ------------------------------------------------------------------
+\subsubsection*{Grupo E --- Technology Architecture}
+% ------------------------------------------------------------------
+
+\footnotesize
+\begin{longtable}{@{}p{1.4cm}p{4.5cm}p{3.5cm}p{3.0cm}@{}}
+\caption{Grupo E --- Technology Architecture (ADR-34 a ADR-38)}\label{tab:adr_grupo_e}\\
+\toprule
+\textbf{ADR} & \textbf{Decisión} & \textbf{Módulos afectados} & \textbf{Trazabilidad} \\
+\midrule
+\endfirsthead
+\multicolumn{4}{l}{\footnotesize\itshape Continuación de la Tabla~\thetable}\\[2pt]
+\toprule
+\textbf{ADR} & \textbf{Decisión} & \textbf{Módulos afectados} & \textbf{Trazabilidad} \\
+\midrule
+\endhead
+\bottomrule
+\endlastfoot
+ADR-34 & Simulación Python de funciones HSM para la PoC &
+  HSM Integration Service & ADR-04, ADR-15, ADR-22, PA-03 \\
+ADR-35 & Apache Kafka como broker de soporte técnico para la PoC &
+  Message Broker Service, ILS & ADR-27, PA-06, PA-07, NFR-10 \\
+ADR-36 & Docker Compose como tailoring del despliegue Kubernetes para entorno académico &
+  INFRA (PoC) & PA-06, NFR-08 \\
+ADR-37 & Retry policy y dead-letter threshold en Message Broker Service &
+  Message Broker Service, ILS & NFR-07, PA-05 \\
+ADR-38 & Formato de serialización entre contenedores &
+  Transversal (todos los contenedores) & PA-02, PA-06 \\
+\end{longtable}
+\normalsize
+
+\medskip\noindent\textbf{ADR-34 --- Simulación Python de Funciones HSM para la PoC}
+
+\noindent\textbf{Módulos afectados:} HSM Integration Service.
+
+\noindent\textbf{Contexto:} ADR-04 establece FIPS 140-2 L3 para producción. La PoC no puede
+acceder a hardware HSM certificado en entorno académico. La simulación Python implementa el
+contrato PKCS\#11 necesario para validar Immutable Log Service (ILS).
+
+\noindent\textbf{Decisión:} usar una simulación en Python de las funciones criptográficas
+específicas del HSM requeridas por la PoC (firma de recibos de auditoría, generación de pares
+de claves). Se expone la misma interfaz PKCS\#11 v2.40.
+
+\noindent\textbf{Alternativas rechazadas:} SoftHSM2 v2.6 (dependencia externa innecesaria
+para el alcance reducido de la PoC). HSM físico en cloud (AWS CloudHSM --- costo,
+complejidad, dependencia). Mock/stub sin PKCS\#11 (no valida la interfaz real).
+
+\noindent\textbf{Consecuencias:} la firma en la PoC es funcionalmente equivalente pero no
+criptográficamente certificada. Esta diferencia se declara explícitamente en el capítulo de
+validación. El código de Immutable Log Service (ILS) no cambia al sustituir la simulación por
+HSM físico.
+
+\medskip\noindent\textbf{ADR-35 --- Apache Kafka como Broker de Soporte Técnico para la PoC}
+
+\noindent\textbf{Módulos afectados:} Message Broker Service (soporte), Immutable Log Service
+(ILS) (consumidor).
+
+\noindent\textbf{Contexto:} Message Broker Service es soporte técnico de la PoC. Se requiere
+una implementación funcional del canal AuditChannel para que Immutable Log Service (ILS)
+reciba eventos. La GQM v3.1 define la arquitectura de comunicación request-reply sobre Kafka.
+
+\noindent\textbf{Decisión:} usar Apache Kafka como implementación concreta de
+\texttt{IMessageBroker} en la PoC, con topics \texttt{audit.events},
+\texttt{audit.events.ledger}, \texttt{audit.queries} y \texttt{audit.replies} según GQM v3.1.
+
+\noindent\textbf{Alternativas rechazadas:} RabbitMQ 3.13 (la GQM v3.1 --- mandatoria para el
+PoC --- usa Kafka con patrón request-reply; migrar a RabbitMQ requeriría redefinir toda la
+suite de pruebas). InMemory adapter (no valida el flujo real async).
+
+\noindent\textbf{Consecuencias:} la invariante de intercambiabilidad de ADR-27 se mantiene
+--- cambiar de Kafka a otro broker en producción requiere solo modificar el adaptador en
+Message Broker Service sin tocar los productores. NFR-10 cumplido.
+
+\medskip\noindent\textbf{ADR-36 --- Docker Compose como Tailoring del Despliegue Kubernetes para Entorno Académico}
+
+\noindent\textbf{Módulos afectados:} INFRA (PoC).
+
+\noindent\textbf{Contexto:} la PoC corre en máquina del desarrollador o servidor
+universitario sin acceso a clúster Kubernetes gestionado.
+
+\noindent\textbf{Decisión:} la PoC se despliega con Docker Compose 2.x en entorno local
+(on-premises). La RA prescribe Kubernetes para despliegue productivo.
+
+\noindent\textbf{Alternativas rechazadas:} Kubernetes local (minikube/k3s --- complejidad
+innecesaria para validación académica). AWS EKS/Azure AKS (costo, dependencia de nube).
+
+\noindent\textbf{Consecuencias:} la topología de contenedores es idéntica a producción. La
+diferencia está solo en el orquestador --- no en la arquitectura de componentes.
+
+\medskip\noindent\textbf{ADR-37 --- Retry Policy y Dead-Letter Threshold en Message Broker Service}
+
+\noindent\textbf{Módulos afectados:} Message Broker Service, Immutable Log Service (ILS).
+
+\noindent\textbf{Contexto:} sin política de retry, un fallo transitorio de Immutable Log
+Service (ILS) pierde el evento de auditoría. Sin dead-letter, los mensajes fallidos se
+acumulan indefinidamente.
+
+\noindent\textbf{Decisión:} retry con backoff exponencial: 3 intentos, delays 1\,s / 4\,s /
+16\,s. Tras 3 fallos $\rightarrow$ dead-letter queue en Immutable Audit Log. Alertas a
+operador desde dead-letter.
+
+\noindent\textbf{Alternativas rechazadas:} retry infinito (agota recursos en fallos
+persistentes). Sin retry (pérdida de eventos de auditoría viola NFR-07).
+
+\noindent\textbf{Consecuencias:} un evento en dead-letter requiere intervención manual del
+operador. Latencia máxima de entrega con 3 reintentos: 1+4+16 = 21\,s --- aceptable para
+flujos asíncronos no críticos.
+
+\medskip\noindent\textbf{ADR-38 --- Formato de Serialización entre Contenedores}
+
+\noindent\textbf{Criterio:} PA-06 (independencia de proveedor), PA-02 (separación).
+
+\noindent\textbf{Contexto:} la arquitectura tiene tres tipos de comunicación: (1) REST/HTTPS
+entre contenedores; (2) eventos \texttt{IMessageBroker}; (3) protocolos estándar PKI (OCSP,
+CRL, X.509 --- formato mandatado por estándar, no es decisión de diseño).
+
+\noindent\textbf{Decisión:} \textbf{Regla 1 --- REST/HTTPS:} JSON
+(\texttt{application/json}). Los DTOs (Data Transfer Objects) son la frontera de
+serialización. \textbf{Regla 2 --- Eventos IMessageBroker:} JSON con envelope estándar que
+incluye los campos \texttt{event\_id} (UUID v4), \texttt{event\_type} (ej.\
+\texttt{CA.CERT\_ISSUED}), \texttt{source} (contenedor emisor), \texttt{occurred\_at}
+(ISO-8601 UTC), \texttt{payload\_hash} (SHA-256 hex del payload) y \texttt{schema\_version}
+(entero). El payload completo no viaja en el mensaje --- solo su hash SHA-256. El receptor
+(Immutable Log Service) verifica el hash contra el registro original en CA Shared Database.
+
+\noindent\textbf{Alternativas rechazadas:}
+\footnotesize
+\begin{longtable}{@{}p{4.0cm}p{8.5cm}@{}}
+\toprule\textbf{Alternativa} & \textbf{Razón} \\\midrule
+\endhead
+\bottomrule
+\endlastfoot
+Protocol Buffers / Avro &
+  PA-06: requiere gestión de esquemas compartidos --- acoplamiento de build \\
+XML &
+  Verbosidad innecesaria, sin ventaja sobre JSON para este dominio \\
+\end{longtable}
+\normalsize
+
+\noindent\textbf{Consecuencias:} todos los contenedores producen y consumen JSON. Sin
+dependencia de biblioteca de serialización propietaria. El hash en el envelope permite a
+Immutable Log Service verificar integridad del evento sin almacenar el payload completo en
+el broker.
+
+% ------------------------------------------------------------------
+\subsubsection*{Grupo F --- Decisiones Tácticas}
+% ------------------------------------------------------------------
+
+\medskip\noindent\textbf{ADR-39 --- Cache TTL y Política de Invalidación OCSP en Validation Service (OCSP)}
+
+\noindent\textbf{Módulos afectados:} Validation Service (OCSP), CRL Service.
+
+\noindent\textbf{Contexto:} sin caché, cada consulta OCSP requiere llamada a HSM Integration
+Service (firma HSM, $\sim$200\,ms). Bajo carga concurrente esto viola NFR-06 ($\leq$500\,ms
+p95). Con TTL largo, hay riesgo de responder \texttt{GOOD} a un certificado revocado (R-01).
+
+\noindent\textbf{Decisión:} TTL de caché OCSP = 5 segundos. Invalidación activa: CRL Service
+notifica a Validation Service (OCSP) síncronamente al revocar (Observer síncrono I-08).
+Validation Service (OCSP) invalida la entrada del certificado antes de responder la próxima
+consulta OCSP.
+
+\noindent\textbf{Alternativas rechazadas:} TTL = 0 (sin caché --- latencia viola NFR-06 bajo
+carga). TTL = 3600\,s (ventana de inconsistencia inaceptable para sistema PKI).
+
+\noindent\textbf{Consecuencias:} ventana máxima de inconsistencia: 5 segundos --- documentado
+como sensitivity point en ATAM (R-01). La invalidación activa reduce la ventana a menos de
+1\,s en el caso nominal de revocación.
+
+% ------------------------------------------------------------------
+\subsubsection*{Trazabilidad ADR $\rightarrow$ Principio Arquitectónico $\rightarrow$ NFR/QAS}
+% ------------------------------------------------------------------
+
+\footnotesize
+\begin{longtable}{@{}p{3.0cm}p{4.5cm}p{5.2cm}@{}}
+\caption{Trazabilidad ADR hacia Principio Arquitectónico y NFR/QAS}\label{tab:adr_trazabilidad}\\
+\toprule
+\textbf{ADR} & \textbf{Principio PA} & \textbf{NFR / QAS Matriz ASR} \\
+\midrule
+\endfirsthead
+\multicolumn{3}{l}{\footnotesize\itshape Continuación de la Tabla~\thetable}\\[2pt]
+\toprule
+\textbf{ADR} & \textbf{Principio PA} & \textbf{NFR / QAS Matriz ASR} \\
+\midrule
+\endhead
+\bottomrule
+\endlastfoot
+ADR-04 v2.1, ADR-09, ADR-13, ADR-22 &
+  PA-03 (HSM) &
+  NFR-03: claves nunca en claro fuera del HSM \\
+\midrule
+ADR-04 v2.1 &
+  PA-03 (HSM) $\cdot$ PA-01 (Cumplimiento) &
+  NFR-03 (generación par suscriptor en HSM) $\cdot$ NFR-05 (latencia +200\,ms dentro de margen)
+  $\cdot$ QAS-02 (destrucción post-entrega elimina vector insider threat) \\
+\midrule
+ADR-06, ADR-31 &
+  PA-01 (Cumplimiento) &
+  NFR-11: consistencia inmediata ARCOTEL \\
+\midrule
+ADR-07, ADR-17, ADR-20 &
+  PA-04 (Zero Trust) &
+  NFR-05: autenticación mutual entre componentes \\
+\midrule
+ADR-10, ADR-11, ADR-14 &
+  PA-05 (Auditoría inmutable) &
+  NFR-07: audit trail verificable e inalterable \\
+\midrule
+ADR-08, ADR-16, ADR-18 &
+  PA-07 (Extensibilidad) &
+  NFR-10: nuevo perfil sin rediseño del motor \\
+\midrule
+ADR-12 &
+  PA-01 (Cumplimiento) &
+  NFR-06: latencia OCSP $\leq$ 500\,ms p95 \\
+\midrule
+ADR-27 &
+  PA-02 (Separación) $\cdot$ PA-07 (Extensibilidad) &
+  NFR-09: productores estables vía \texttt{IMessageBroker} $\cdot$ NFR-10: tecnología Message Broker Service
+  intercambiable \\
+\midrule
+ADR-23, ADR-25 &
+  PA-07 (Extensibilidad) &
+  NFR-10: nuevo servicio externo sin rediseño de CA Core Service \\
+\midrule
+ADR-23 &
+  PA-04 (Zero Trust) &
+  NFR-07: External Adapter Gateway en DMZ con egress estricto \\
+\midrule
+ADR-23 &
+  PA-08 (Privacidad) &
+  NFR-12: datos de identidad no persisten en External Adapter Gateway \\
+\midrule
+ADR-24 &
+  PA-02 (Separación) &
+  NFR-05: latencia emisión $\leq$ 5\,s p95 --- fallo rápido vs.\ timeout \\
+\midrule
+ADR-28 &
+  PA-02 (Separación) $\cdot$ PA-08 (Privacidad) &
+  NFR-05: latencia $\sim$700\,ms p95 $\cdot$ NFR-09: Ce CA Core Service = 3 $\cdot$ ARCOTEL
+  Art.~8 \\
+\midrule
+ADR-32 &
+  PA-02 (Separación) &
+  NFR-09: publicación directa post-commit --- productores no referencian Message Broker
+  Service directamente \\
+\midrule
+ADR-27, ADR-33 &
+  PA-02 (Separación) &
+  NFR-09: Ce como métrica C4 N2 --- umbral $\leq$5 por contenedor \\
+\midrule
+ADR-31 &
+  PA-01 (Cumplimiento) $\cdot$ PA-02 (Separación) $\cdot$ PA-07 (Extensibilidad) &
+  NFR-09: comunicación asíncrona preferente --- sync justificado como excepción \\
+\midrule
+ADR-26 &
+  PA-06 (Independencia de proveedor) &
+  NFR-09: Ce adaptado a módulo Node.js con dependency-cruiser \\
+\midrule
+ADR-29 &
+  PA-05 (Auditoría inmutable) &
+  NFR-07: Hyperledger Fabric como IAuditLogger en PoC \\
+\midrule
+ADR-34 &
+  PA-03 (HSM) &
+  NFR-03: simulación Python con misma interfaz PKCS\#11 en PoC \\
+\midrule
+ADR-35 &
+  PA-07 (Extensibilidad) &
+  NFR-10: Kafka como impl.\ IMessageBroker en PoC --- intercambiable sin modificar
+  productores \\
+\midrule
+ADR-37 &
+  PA-05 (Auditoría inmutable) &
+  NFR-07: retry exponencial + dead-letter --- eventos de auditoría no se pierden \\
+\midrule
+ADR-38 &
+  PA-02 (Separación) $\cdot$ PA-06 (Independencia de proveedor) &
+  NFR-09: JSON + envelope estándar sin dependencia de biblioteca propietaria \\
+\midrule
+ADR-39 &
+  PA-01 (Cumplimiento) &
+  NFR-06: TTL 5\,s + invalidación síncrona SP-05 --- QAS-04 cumplido \\
+\midrule
+ADR-30 &
+  PA-02 (Separación) &
+  NFR-09: aislamiento schema por contenedor --- Ce no aumenta \\
+\end{longtable}
+
+\normalsize
+
+% ======================================================================
+% ANEXO H — ENTORNO EXPERIMENTAL DEL PROTOTIPO
+% ======================================================================
+
+\cleardoublepage
+\section*{Anexo H --- Entorno Experimental del Prototipo}\label{anx:poc_entorno}
+\phantomsection
+\addcontentsline{toc}{section}{Anexo H --- Entorno Experimental del Prototipo}
+
+El entorno experimental se diseñó para máquinas virtuales con requisitos de RAM reducidos,
+representativos de infraestructura de bajo costo, como demostración de la viabilidad del
+prototipo en condiciones conservadoras \cite{wieringa2014design}. La topología de este PoC
+es un artefacto de validación funcional y no constituye una recomendación de despliegue
+productivo. El nodo
+\texttt{blockchain-vm} requiere una máquina virtual con al menos 4\,vCPU y 8\,GB de RAM
+total, dado que concentra la red Hyperledger Fabric con sus 19 contenedores activos y la
+carga de consenso Raft. Los nodos \texttt{kafka-vm} y \texttt{audit-service-vm} se
+dimensionaron para máquinas virtuales de 2\,vCPU y 4\,GB de RAM total cada uno,
+configuración representativa de un servidor de propósito general de gama baja:
+\texttt{kafka-vm} aloja el bus de mensajes Confluent Kafka, mientras que
+\texttt{audit-service-vm} integra PostgreSQL, el servicio de auditoría y el servidor TSA.
+La Tabla~\ref{tab:poc_ram} detalla cómo se distribuyó esa memoria entre los contenedores
+de cada nodo.
+
+\small
+\begin{longtable}{@{}p{3.2cm}p{5.5cm}p{2.5cm}@{}}
+\caption{Límites de memoria por contenedor}\label{tab:poc_ram}\\
+\toprule
+\textbf{Nodo} & \textbf{Contenedor} & \textbf{Límite RAM} \\
+\midrule
+\endfirsthead
+\multicolumn{3}{l}{\small\itshape Continuación de la Tabla~\thetable}\\[2pt]
+\toprule
+\textbf{Nodo} & \textbf{Contenedor} & \textbf{Límite RAM} \\
+\midrule
+\endhead
+\bottomrule
+\endlastfoot
+blockchain-vm & 6$\times$ peer (2 por organización) & 320\,MB c/u \\
+\midrule
+blockchain-vm & 6$\times$ CouchDB (estado Fabric) & 192\,MB c/u \\
+\midrule
+blockchain-vm & 3$\times$ orderer (Raft) & 192\,MB c/u \\
+\midrule
+blockchain-vm & 3$\times$ Fabric CA & 96\,MB c/u \\
+\midrule
+blockchain-vm & CLI & 64\,MB \\
+\midrule
+kafka-vm & Confluent Kafka & 3\,072\,MB \\
+\midrule
+audit-service-vm & PostgreSQL & 512\,MB \\
+\midrule
+audit-service-vm & audit-service & 512\,MB \\
+\midrule
+audit-service-vm & TSA & 128\,MB \\
+\end{longtable}
+\normalsize
+
+Por otra parte, la red Fabric comprende tres organizaciones, seis peers (dos por organización) y tres
+orderers con consenso Raft sobre el canal \texttt{ca-audit}, con el chaincode
+\texttt{cert-tracker} desplegado. La comunicación entre el ILS y los productores de eventos
+emplea cuatro topics Kafka: \texttt{audit.events} (escritura ILS-only),
+\texttt{audit.events.ledger} (escritura con confirmación Fabric), \texttt{audit.queries}
+(consultas al ILS) y \texttt{audit.replies} (respuestas con \texttt{correlationId}). La
+Tabla~\ref{tab:poc_software} detalla las versiones exactas de cada componente para
+garantizar la reproducibilidad del entorno.
+
+\small
+\begin{longtable}{@{}p{3.8cm}p{2.0cm}p{2.5cm}p{3.2cm}@{}}
+\caption{Versiones de software del entorno experimental}\label{tab:poc_software}\\
+\toprule
+\textbf{Componente} & \textbf{Versión} & \textbf{Nodo} & \textbf{Rol} \\
+\midrule
+\endfirsthead
+\multicolumn{4}{l}{\small\itshape Continuación de la Tabla~\thetable}\\[2pt]
+\toprule
+\textbf{Componente} & \textbf{Versión} & \textbf{Nodo} & \textbf{Rol} \\
+\midrule
+\endhead
+\bottomrule
+\endlastfoot
+Hyperledger Fabric & 2.5.15 & blockchain-vm & Peers y orderers \\
+\midrule
+Fabric CA & 1.5.17 & blockchain-vm & Gestión de identidades y claves CA \\
+\midrule
+fabric-contract-api (Node.js) & 2.5.8 & blockchain-vm & Chaincode \texttt{cert-tracker} \\
+\midrule
+CouchDB & 3.3.2 & blockchain-vm & Base de datos de estado Fabric \\
+\midrule
+Node.js (chaincode) & 20.20.2 & blockchain-vm & Entorno de ejecución del chaincode \\
+\midrule
+Confluent Kafka & 7.7.1 (Kafka~3.7) & kafka-vm & Bus de mensajes \\
+\midrule
+KafkaJS & 2.2.4 & audit-service-vm & Cliente producer/consumer Node.js \\
+\midrule
+PostgreSQL Alpine & 16 & audit-service-vm & Almacén primario del ILS \\
+\midrule
+Node.js (audit-service) & 20.20.2 & audit-service-vm & Entorno de ejecución del servicio de auditoría \\
+\midrule
+Python (servidor TSA) & 3.12 & audit-service-vm & Servicio RFC~3161 \\
+\midrule
+Flask (API TSA) & 3.1.0 & audit-service-vm & API HTTP del servidor TSA \\
+\midrule
+OpenSSL & $\geq$\,3.x (Debian slim) & audit-service-vm & Motor criptográfico del TSA \\
+\end{longtable}
+\normalsize
+% ======================================================================
+% ANEXO I — CATÁLOGO GQM: OBJETIVOS Y PREGUNTAS OPERACIONALES
+% ======================================================================
+
+\cleardoublepage
+\section*{Anexo I --- Catálogo GQM: Objetivos y Preguntas Operacionales}\label{anx:gqm_catalogo}
+\phantomsection
+\addcontentsline{toc}{section}{Anexo I --- Catálogo GQM: Objetivos y Preguntas Operacionales}
+
+Este anexo documenta el enunciado completo de los seis objetivos GQM, las treinta y cinco
+preguntas operacionales y las métricas asociadas del experimento PoC sobre el módulo M-05
+Immutable Log Service.
+
+\footnotesize
+\begin{longtable}{@{}p{0.75cm}p{8.0cm}p{3.0cm}@{}}
+\caption{Preguntas operacionales del experimento GQM --- G1 y G2}\label{tab:gqm_preguntas_g1g2}\\
+\toprule
+\textbf{ID} & \textbf{Pregunta} & \textbf{Caso de prueba} \\
+\midrule
+\endfirsthead
+\multicolumn{3}{l}{\footnotesize\itshape Continuación de la Tabla~\thetable}\\[2pt]
+\toprule
+\textbf{ID} & \textbf{Pregunta} & \textbf{Caso de prueba} \\
+\midrule
+\endhead
+\bottomrule
+\endlastfoot
+Q1.1 &
+  ¿Se registran en el ILS los eventos operativos de pre-emisión sin generar ningún evento en Fabric? &
+  Caso 1, Pasos 1--4 \\
+\midrule
+Q1.2 &
+  ¿Se registra \texttt{CA\_KEY\_GENERATED} en el ILS y se confirma en Fabric? &
+  Caso 1, Paso 5 \\
+\midrule
+Q1.3 &
+  ¿Se registra \texttt{CERTIFICATE\_ISSUED} en el ILS con hash encadenado y se confirma en Fabric? &
+  Caso 1, Paso 6 \\
+\midrule
+Q1.4 &
+  ¿Se registran en el ILS los eventos de entrega del certificado (P12, descarga, destrucción de clave) sin generar eventos en Fabric? &
+  Caso 1, Pasos 7--9 \\
+\midrule
+Q1.5 &
+  ¿Permanece íntegro el hash chain tras las fases de pre-emisión, issuance y entrega? &
+  Caso 1, Paso 10 \\
+\midrule
+Q1.6 &
+  ¿Se registra \texttt{CERTIFICATE\_REVOKED} en el ILS y se confirma en Fabric con transacción independiente de la emisión? &
+  Caso 1, Paso 11 \\
+\midrule
+Q1.7 &
+  ¿Se registra en el ILS la exportación del log para el auditor externo sin generar evento en Fabric? &
+  Caso 1, Paso 12 \\
+\midrule
+Q1.8 &
+  ¿Es posible reconstruir el ciclo completo de un certificado desde PostgreSQL por \texttt{cert\_serial}? &
+  Caso 1, Paso 13 \\
+\midrule
+Q1.9 &
+  ¿Permanece íntegro el hash chain al final del ciclo completo de 14 pasos? &
+  Caso 1, Paso 14 \\
+\midrule
+Q1.10 &
+  ¿Se registran correctamente todos los eventos del ciclo de renovación con los tres eventos blockchain independientes? &
+  Caso 3 \\
+\midrule
+Q1.11 &
+  ¿Se registra y notariza el ciclo completo de revocación de emergencia con solo la revocación en blockchain? &
+  Caso 4 \\
+\midrule
+Q1.12 &
+  ¿Queda registrada una solicitud rechazada en el ILS sin generar ningún evento en blockchain, manteniendo la integridad del hash chain? &
+  Caso 5 \\
+\midrule
+Q1.13 &
+  ¿Se procesan correctamente 3 certificados en lote con sus 6 eventos blockchain confirmados en Fabric y trazabilidad completa por \texttt{cert\_serial}? &
+  Caso 6 \\
+\midrule
+Q2.1 &
+  ¿Se registra correctamente cada firma individual \texttt{DOCUMENT\_SIGN} con confirmación en Fabric? &
+  Caso 2, todos los escenarios \\
+\midrule
+Q2.2 &
+  ¿Escala el sistema de 1 a 5 firmantes sin degradación en la tasa de aceptación? &
+  Caso 2 \\
+\midrule
+Q2.3 &
+  ¿La trazabilidad del documento es completa en PostgreSQL para cada escenario de firma? &
+  Caso 2 \\
+\midrule
+Q2.4 &
+  ¿El hash chain permanece íntegro después de los 8 eventos \texttt{DOCUMENT\_SIGN} acumulados? &
+  Caso 2, verificación final \\
+\end{longtable}
+\normalsize
+
+La Tabla siguiente presenta el diseño comprimido del experimento GQM, con objetivo,
+preguntas agrupadas por foco, métrica representativa, umbral de aceptación y ASR de origen.
+
+\footnotesize
+\begin{longtable}{@{}p{0.5cm}p{0.85cm}p{3.8cm}p{3.5cm}p{1.85cm}p{1.7cm}@{}}
+\caption{Diseño GQM del PoC --- M-05 Immutable Log Service}\label{tab:gqm_design}\\
+\toprule
+\textbf{Obj.} & \textbf{Preg.} & \textbf{Foco de verificación} &
+\textbf{Métrica} & \textbf{Umbral} & \textbf{ASR} \\
+\midrule
+\endfirsthead
+\multicolumn{6}{l}{\footnotesize\itshape Continuación de la Tabla~\thetable}\\[2pt]
+\toprule
+\textbf{Obj.} & \textbf{Preg.} & \textbf{Foco de verificación} &
+\textbf{Métrica} & \textbf{Umbral} & \textbf{ASR} \\
+\midrule
+\endhead
+\bottomrule
+\endlastfoot
+G1 & Q1.1 Q1.4 Q1.7 &
+  Registro en ILS-only de eventos operativos (pre-emisión, entrega y exportación
+  del log) sin confirmación en Fabric &
+  \texttt{fabric\_confirmations} por evento operativo &
+  0 confirmaciones &
+  NFR-07 QAS-05 \\
+\midrule
+G1 & Q1.2 Q1.3 Q1.6 &
+  Confirmación en Hyperledger Fabric de \texttt{CA\_KEY\_GENERATED},
+  \texttt{CERTIFICATE\_ISSUED} y \texttt{CERTIFICATE\_REVOKED} &
+  \texttt{fabric\_status}; \texttt{fabric\_tx\_id} &
+  CONFIRMED; $\neq$ null &
+  NFR-07 QAS-05 \\
+\midrule
+G1 & Q1.3 &
+  Latencia desde la publicación en \texttt{audit.events.ledger} hasta el
+  receipt de confirmación Fabric &
+  Tiempo hasta confirmación &
+  $\leq$\,10\,000\,ms &
+  NFR-07 \\
+\midrule
+G1 & Q1.5 Q1.9 &
+  Integridad del hash chain tras el ciclo completo de catorce pasos (once
+  entries escritos en el ILS) &
+  \texttt{verifyChain().ok}; \texttt{entriesChecked} &
+  true; $\geq$\,11 &
+  NFR-07 QAS-05 \\
+\midrule
+G1 & Q1.8 &
+  Trazabilidad forense del ciclo de vida de un certificado por
+  \texttt{cert\_serial} en PostgreSQL &
+  ISSUED y REVOKED presentes;
+  \texttt{seq(ISSUED)} $<$ \texttt{seq(REVOKED)} &
+  Orden cronológico correcto &
+  NFR-07 QAS-05 \\
+\midrule
+G1 & Q1.10--Q1.13 &
+  Correctitud de los ciclos derivados: renovación (3 tx Fabric),
+  revocación de emergencia (1 tx), solicitud rechazada (0 tx) y
+  emisión en lote (6 tx) &
+  Pasos OK / total; eventos blockchain por ciclo &
+  100\,\%; 0, 1 o 6 según diseño &
+  NFR-07 QAS-05 \\
+\midrule
+G2 & Q2.1--Q2.3 &
+  Registro y confirmación Fabric de firmas CAdES-BES para 1, 2 y 5 firmantes;
+  trazabilidad completa en PostgreSQL por \texttt{cert\_serial} &
+  \texttt{fabric\_status} $\times$ N; \texttt{firma\_order} 1\,..\,N &
+  CONFIRMED; 100\,\%; orden creciente &
+  NFR-07 QAS-05 \\
+\midrule
+G2 & Q2.4 &
+  Integridad del hash chain tras ocho eventos \texttt{DOCUMENT\_SIGN}
+  acumulados &
+  \texttt{verifyChain().ok}; \texttt{entriesChecked} &
+  true; $\geq$\,19 &
+  NFR-07 \\
+\midrule
+G3 & Q3.1 Q3.2 &
+  Detectabilidad de alteración directa en \texttt{data\_hash} por actor
+  privilegiado que elude los permisos de solo lectura SQL del ILS &
+  \texttt{data\_hash} $\neq$ \texttt{entry\_hash} tras \texttt{UPDATE} &
+  Discrepancia detectable sin consultar Fabric &
+  NFR-07 QAS-05 \\
+\midrule
+G3 & Q3.3 &
+  Recuperación del estado íntegro tras restaurar el \texttt{data\_hash}
+  original &
+  \texttt{verifyChain().ok} post-restauración &
+  true &
+  NFR-07 \\
+\midrule
+G3 & Q3.4 &
+  Localización del \texttt{sequence\_number} exacto con inconsistencia por
+  el verificador de integridad &
+  Mensaje de error con N coincidente con el entry corrupto &
+  N correcto &
+  NFR-07 \\
+\midrule
+G4 & Q4.1 &
+  Rechazo de solicitudes HTTP sin cabecera \texttt{X-Audit-Source} por el
+  middleware de autenticación &
+  HTTP status &
+  401 &
+  NFR-07 \\
+\midrule
+G4 & Q4.2 &
+  Resistencia a replay: \texttt{entry\_id} únicos para \textit{payloads} idénticos
+  repetidos &
+  \texttt{entry\_id} segunda request $\neq$ primera &
+  Valores distintos &
+  NFR-07 \\
+\midrule
+G4 & Q4.3 &
+  Coherencia del \texttt{entry\_hash} entre PostgreSQL y el receipt del
+  servicio para el mismo entry &
+  \texttt{entry\_hash}(DB) = \texttt{entry\_hash}(receipt) &
+  Igualdad exacta &
+  NFR-07 QAS-05 \\
+\midrule
+G5 & Q5.1--Q5.5 &
+  Throughput y latencia del producer Kafka bajo cinco patrones de carga
+  (burst, sostenida, multi-firma, revocación burst y carga mixta) con cuatro
+  umbrales simultáneos &
+  avg; p95; errorRate; fabricConfirmRate &
+  $\leq$\,2\,000\,ms; $\leq$\,5\,000\,ms; $\leq$\,5\,\%; $\geq$\,95\,\% &
+  NFR-14 \\
+\midrule
+G5 & Q5.6 &
+  Análisis comparativo de degradación entre los cinco patrones de carga &
+  throughput; p50; p99; fabricConfirmRate (n\,=\,10) &
+  Descriptivo &
+  NFR-14 \\
+\midrule
+G6 & Q6.1 Q6.3 Q6.5 &
+  Historia completa de certificados X.509 y documentos firmados en PostgreSQL
+  por \texttt{cert\_serial} o identificador de documento &
+  event\_types distintos por serial;
+  \texttt{seq(ISSUED)} $<$ \texttt{seq(REVOKED)} &
+  $\geq$\,2 por serial; orden cronológico &
+  NFR-07 QAS-05 \\
+\midrule
+G6 & Q6.2 &
+  Reconstrucción de la cadena de sustitución en renovación mediante serial
+  anterior y nuevo &
+  ISSUED(newCertSerial) + REVOKED(oldCertSerial, \texttt{superseded}) &
+  Ambos CONFIRMED &
+  NFR-07 QAS-05 \\
+\midrule
+G6 & Q6.4 &
+  Detección de manipulación post-registro mediante la combinación DB\,+\,Fabric &
+  \texttt{data\_hash} $\neq$ \texttt{entry\_hash} en DB;
+  \texttt{entry\_hash}(DB) = \texttt{entry\_hash}(receipt) &
+  Discrepancia detectable; igualdad exacta &
+  NFR-07 QAS-05 \\
+\end{longtable}
+\normalsize
+
+\footnotesize
+\begin{longtable}{@{}p{0.6cm}p{4.8cm}p{2.2cm}p{4.5cm}@{}}
+\caption{Catálogo de objetivos GQM del PoC --- M-05 ILS}\label{tab:gqm_objetivos}\\
+\toprule
+\textbf{ID} & \textbf{Enunciado del objetivo} & \textbf{Preguntas} & \textbf{ASR origen} \\
+\midrule
+\endfirsthead
+\multicolumn{4}{l}{\footnotesize\itshape Continuación de la Tabla~\thetable}\\[2pt]
+\toprule
+\textbf{ID} & \textbf{Enunciado del objetivo} & \textbf{Preguntas} & \textbf{ASR origen} \\
+\midrule
+\endhead
+\bottomrule
+\endlastfoot
+G1 & Verificar la correctitud funcional del ciclo de vida de certificados X.509
+     en el ILS & Q1.1--Q1.13 & NFR-07, QAS-05 \\
+\midrule
+G2 & Verificar la correctitud del firmado electrónico multi-firma CAdES-BES
+     & Q2.1--Q2.4 & NFR-07, QAS-05 \\
+\midrule
+G3 & Verificar la integridad criptográfica del hash chain ante manipulación
+     deliberada por actor privilegiado & Q3.1--Q3.4 & NFR-07, QAS-05 \\
+\midrule
+G4 & Verificar la resistencia del ILS a ataques de autenticación sin
+     credenciales y de replay & Q4.1--Q4.3 & NFR-07 \\
+\midrule
+G5 & Verificar el rendimiento y la escalabilidad del ILS bajo cinco patrones
+     de carga variados & Q5.1--Q5.6 & NFR-14 \\
+\midrule
+G6 & Verificar la capacidad de trazabilidad forense del ciclo de vida de
+     certificados y documentos firmados & Q6.1--Q6.5 & NFR-07, QAS-05 \\
+\end{longtable}
+\normalsize
+
+\footnotesize
+\begin{longtable}{@{}p{0.8cm}p{0.65cm}p{7.8cm}p{2.5cm}@{}}
+\caption{Catálogo de preguntas operacionales GQM del PoC --- M-05 ILS}\label{tab:gqm_preguntas}\\
+\toprule
+\textbf{ID} & \textbf{Obj.} & \textbf{Pregunta operacional} & \textbf{Métricas} \\
+\midrule
+\endfirsthead
+\multicolumn{4}{l}{\footnotesize\itshape Continuación de la Tabla~\thetable}\\[2pt]
+\toprule
+\textbf{ID} & \textbf{Obj.} & \textbf{Pregunta operacional} & \textbf{Métricas} \\
+\midrule
+\endhead
+\bottomrule
+\endlastfoot
+Q1.1 & G1 & ¿Registra el ILS únicamente en almacenamiento local, sin confirmación en
+             Fabric, los eventos de pre-emisión del ciclo estándar de certificado? &
+             M1.1.1--M1.1.3 \\
+\midrule
+Q1.2 & G1 & ¿Confirma Hyperledger Fabric el evento \texttt{CA\_KEY\_GENERATED} con
+             \texttt{fabric\_status = CONFIRMED} y \texttt{fabric\_tx\_id} $\neq$ \texttt{null}? &
+             M1.2.1--M1.2.4 \\
+\midrule
+Q1.3 & G1 & ¿Confirma Hyperledger Fabric el evento \texttt{CERTIFICATE\_ISSUED} con
+             \texttt{fabric\_status = CONFIRMED} y latencia hasta confirmación
+             $\leq$\,10\,000\,ms? &
+             M1.3.1--M1.3.5 \\
+\midrule
+Q1.4 & G1 & ¿Registra el ILS únicamente en almacenamiento local, sin confirmación en
+             Fabric, los eventos de entrega del certificado al suscriptor? &
+             M1.4.1--M1.4.2 \\
+\midrule
+Q1.5 & G1 & ¿Retorna \texttt{verifyChain().ok = true} en la verificación intermedia
+             del hash chain (\textit{chainMid}) durante el ciclo estándar? &
+             M1.5.1--M1.5.2 \\
+\midrule
+Q1.6 & G1 & ¿Confirma Hyperledger Fabric el evento \texttt{CERTIFICATE\_REVOKED} con
+             \texttt{fabric\_status = CONFIRMED} y \texttt{fabric\_tx\_id} $\neq$ \texttt{null}? &
+             M1.6.1--M1.6.3 \\
+\midrule
+Q1.7 & G1 & ¿Registra el ILS únicamente en almacenamiento local, sin confirmación en
+             Fabric, los eventos de exportación del log de auditoría? &
+             M1.7.1--M1.7.2 \\
+\midrule
+Q1.8 & G1 & ¿Permite el ILS reconstruir la trazabilidad forense de un certificado por
+             \texttt{cert\_serial}, con eventos \texttt{ISSUED} y \texttt{REVOKED} en
+             orden cronológico correcto en PostgreSQL? &
+             M1.8.1--M1.8.3 \\
+\midrule
+Q1.9 & G1 & ¿Son al menos 11 los entries verificados (\texttt{entriesChecked} $\geq$ 11)
+             en la verificación final del hash chain (\textit{chainFinal}) del ciclo
+             estándar? &
+             M1.9.1--M1.9.3 \\
+\midrule
+Q1.10 & G1 & ¿Completa el ciclo de renovación correctamente con exactamente 3
+              transacciones Fabric confirmadas (\textit{tx~Fabric})? &
+              M1.10.1--M1.10.7 \\
+\midrule
+Q1.11 & G1 & ¿Completa el ciclo de revocación de emergencia correctamente con
+              exactamente 1 transacción Fabric confirmada? &
+              M1.11.1--M1.11.4 \\
+\midrule
+Q1.12 & G1 & ¿Completa el ciclo de solicitud rechazada correctamente con 0
+              transacciones Fabric (ningún evento de alta relevancia regulatoria)? &
+              M1.12.1--M1.12.4 \\
+\midrule
+Q1.13 & G1 & ¿Completa el ciclo de emisión en lote de seis certificados correctamente
+              con exactamente 6 transacciones Fabric confirmadas? &
+              M1.13.1--M1.13.7 \\
+\midrule
+Q2.1 & G2 & ¿Confirma Hyperledger Fabric el evento \texttt{DOCUMENT\_SIGN} para firma
+             uni-personal (1 firmante) con \texttt{fabric\_status = CONFIRMED} y
+             \texttt{firma\_order = 1} en PostgreSQL? &
+             M2.1.1--M2.1.5 \\
+\midrule
+Q2.2 & G2 & ¿Confirma Hyperledger Fabric los eventos \texttt{DOCUMENT\_SIGN} para
+             firma bi-personal (2 firmantes) con \texttt{fabric\_status = CONFIRMED}
+             y \texttt{firma\_order} 1..2 en PostgreSQL? &
+             M2.2.1--M2.2.3 \\
+\midrule
+Q2.3 & G2 & ¿Confirma Hyperledger Fabric los eventos \texttt{DOCUMENT\_SIGN} para
+             firma multi-personal (5 firmantes) con \texttt{fabric\_status = CONFIRMED}
+             y \texttt{firma\_order} 1..5 en PostgreSQL? &
+             M2.3.1--M2.3.3 \\
+\midrule
+Q2.4 & G2 & ¿Verifica \texttt{verifyChain()} el hash chain con \texttt{ok = true} y
+             \texttt{entriesChecked} $\geq$ 19 tras el acumulado de ocho eventos
+             \texttt{DOCUMENT\_SIGN}? &
+             M2.4.1--M2.4.2 \\
+\midrule
+Q3.1 & G3 & ¿Produce la alteración directa del campo \texttt{data\_hash} por un actor
+             privilegiado una discrepancia \texttt{data\_hash} $\neq$ \texttt{entry\_hash}
+             detectable por el verificador de integridad? &
+             M3.1.1 \\
+\midrule
+Q3.2 & G3 & ¿Es dicha discrepancia detectable sin necesidad de consultar Hyperledger
+             Fabric, empleando exclusivamente el log local del ILS? &
+             M3.2.1--M3.2.3 \\
+\midrule
+Q3.3 & G3 & ¿Recupera \texttt{verifyChain()} el estado íntegro (\texttt{ok = true})
+             tras restaurar el \texttt{data\_hash} original del entry alterado? &
+             M3.3.1--M3.3.3 \\
+\midrule
+Q3.4 & G3 & ¿Incluye el mensaje de error del verificador el \texttt{sequence\_number}
+             exacto del entry con inconsistencia? &
+             M3.4.1--M3.4.2 \\
+\midrule
+Q4.1 & G4 & ¿Rechaza el middleware de autenticación con HTTP 401 toda solicitud al ILS
+             que carezca de la cabecera \texttt{X-Audit-Source}? &
+             M4.1.1 \\
+\midrule
+Q4.2 & G4 & ¿Genera el ILS \texttt{entry\_id} distintos para \textit{payloads} idénticos
+             enviados en solicitudes repetidas, impidiendo ataques de replay? &
+             M4.2.1--M4.2.3 \\
+\midrule
+Q4.3 & G4 & ¿Es el \texttt{entry\_hash} almacenado en PostgreSQL idéntico al
+             \texttt{entry\_hash} del receipt del servicio para el mismo entry? &
+             M4.3.1--M4.3.3 \\
+\midrule
+Q5.1 & G5 & ¿Se mantienen avg $\leq$\,2\,000\,ms, p95 $\leq$\,5\,000\,ms,
+             errorRate $\leq$\,5\,\% y fabricConfirmRate $\geq$\,95\,\% bajo el
+             patrón de carga \emph{burst}? &
+             avg\newline p95\newline errorRate\newline fabricConfirmRate \\
+\midrule
+Q5.2 & G5 & ¿Se mantienen los cuatro umbrales de rendimiento bajo el patrón de carga
+             \emph{sostenida}? &
+             avg\newline p95\newline errorRate\newline fabricConfirmRate \\
+\midrule
+Q5.3 & G5 & ¿Se mantienen los cuatro umbrales de rendimiento bajo el patrón de carga
+             \emph{multi-firma}? &
+             avg\newline p95\newline errorRate\newline fabricConfirmRate \\
+\midrule
+Q5.4 & G5 & ¿Se mantienen los cuatro umbrales de rendimiento bajo el patrón de carga
+             \emph{revocación burst}? &
+             avg\newline p95\newline errorRate\newline fabricConfirmRate \\
+\midrule
+Q5.5 & G5 & ¿Se mantienen los cuatro umbrales de rendimiento bajo el patrón de carga
+             \emph{mixta}? &
+             avg\newline p95\newline errorRate\newline fabricConfirmRate \\
+\midrule
+Q5.6 & G5 & ¿Qué patrón de degradación exhiben throughput, p50, p99 y
+             fabricConfirmRate al comparar los cinco patrones de carga en
+             $n = 10$ iteraciones? &
+             throughput\newline p50\newline p99\newline fabricConfirmRate \\
+\midrule
+Q6.1 & G6 & ¿Recupera el ILS al menos dos tipos de evento distintos para un
+             certificado X.509 consultado por número de serie, con orden cronológico
+             correcto? &
+             M6.1.1--M6.1.3 \\
+\midrule
+Q6.2 & G6 & ¿Permite el ILS reconstruir la cadena de sustitución de una renovación
+             con \texttt{ISSUED(newCertSerial)} y
+             \texttt{REVOKED(oldCertSerial,~superseded)}, ambos \texttt{CONFIRMED}
+             en Fabric? &
+             M6.2.1--M6.2.3 \\
+\midrule
+Q6.3 & G6 & ¿Recupera el ILS la historia completa de eventos de un documento firmado
+             consultado por identificador de documento, en orden cronológico? &
+             M6.3.1--M6.3.3 \\
+\midrule
+Q6.4 & G6 & ¿Detecta el ILS manipulación post-registro mediante la combinación
+             DB\,+\,Fabric: \texttt{data\_hash} $\neq$ \texttt{entry\_hash} en BD
+             y \texttt{entry\_hash}(BD) $=$ \texttt{entry\_hash}(receipt)? &
+             M6.4.1--M6.4.3 \\
+\midrule
+Q6.5 & G6 & ¿Recupera el ILS correctamente múltiples certificados en consulta por
+             lote de seriales, con todos los eventos \texttt{CERTIFICATE\_ISSUED}
+             presentes? &
+             M6.5.1--M6.5.2 \\
+\end{longtable}
+\normalsize
+
+% ======================================================================
+% ANEXO J — ÁRBOL DE UTILIDAD ATAM COMPLETO
+% ======================================================================
+
+\cleardoublepage
+\section*{Anexo J --- Árbol de Utilidad ATAM: Catálogo Completo de QAS}\label{anx:utility_tree}
+\phantomsection
+\addcontentsline{toc}{section}{Anexo J --- Árbol de Utilidad ATAM: Catálogo Completo de QAS}
+
+Este anexo presenta el Árbol de Utilidad ATAM con los veintiséis escenarios de atributo de
+calidad del catálogo oficial (Anexo~D), organizados por característica ISO/IEC~25010:2023.
+Las prioridades se expresan como par (importancia para el negocio, dificultad de evaluación
+arquitectónica), donde H\,=\,alto y M\,=\,medio. Los once QAS marcados con~(*) son los
+analizados en detalle en la subsección~\ref{subsec:atam}.
+
+\footnotesize
+\begin{longtable}{@{}p{2.5cm}p{1.0cm}p{7.5cm}p{1.5cm}@{}}
+\caption{Árbol de Utilidad ATAM --- 26 QAS del catálogo oficial}\label{tab:utility_tree_completo}\\
+\toprule
+\textbf{Atributo} & \textbf{QAS} & \textbf{Enunciado resumido} & \textbf{Prioridad} \\
+\midrule
+\endfirsthead
+\multicolumn{4}{l}{\footnotesize\itshape Continuación de la Tabla~\thetable}\\[2pt]
+\toprule
+\textbf{Atributo} & \textbf{QAS} & \textbf{Enunciado resumido} & \textbf{Prioridad} \\
+\midrule
+\endhead
+\bottomrule
+\endlastfoot
+Seguridad & QAS-01\textsuperscript{*} &
+  mTLS obligatorio en toda comunicación inter-contenedor; arcos internos sin etiqueta mTLS en C4 Nivel~2 = 0 &
+  (H,\;M) \\
+\midrule
+Seguridad & QAS-02 &
+  Clave delegada OCSP distinta a clave de emisión; extensiones \texttt{id-kp-OCSPSigning} y \texttt{ocspNoCheck} presentes en perfil &
+  (H,\;L) \\
+\midrule
+Seguridad & QAS-03\textsuperscript{*} &
+  0 operaciones criptográficas fuera del perímetro HSM; 0 arcos directos desde otros contenedores al HSM físico &
+  (H,\;H) \\
+\midrule
+Seguridad & QAS-04\textsuperscript{*} &
+  Clave generada en HSM post-aprobación; enlace de un solo uso; destrucción certificada tras confirmación de descarga &
+  (H,\;H) \\
+\midrule
+Seguridad & QAS-20\textsuperscript{*} &
+  0 operaciones privilegiadas ejecutables con autorización de un único actor; intento fallido registrado en ILS &
+  (H,\;H) \\
+\midrule
+Seguridad & QAS-24 &
+  RBAC aplicado exclusivamente en M-06 vía \texttt{AuthorizationInterceptor}; M-09 no contiene lógica de autorización &
+  (H,\;M) \\
+\midrule
+Disponibilidad & QAS-09 &
+  0 arcos síncronos entre componentes críticos y mensajería asíncrona en C4 Nivel~2 &
+  (H,\;M) \\
+\midrule
+Disponibilidad & QAS-10\textsuperscript{*} &
+  0 arcos de dependencia directa entre componente de emisión y componente de revocación/CRL &
+  (H,\;H) \\
+\midrule
+Disponibilidad & QAS-11\textsuperscript{*} &
+  Ningún contenedor de servicio declara estado de sesión compartido entre instancias en el diseño &
+  (H,\;M) \\
+\midrule
+Disponibilidad & QAS-21 &
+  0 endpoints del repositorio sin health check declarado; mecanismo de alerta de \texttt{nextUpdate} presente en diseño &
+  (H,\;M) \\
+\midrule
+Rendimiento & QAS-18 &
+  Las dos consultas de validación de identidad (SRI + Registro Civil) se inician en paralelo sin dependencia secuencial &
+  (M,\;M) \\
+\midrule
+Modificabilidad & QAS-07\textsuperscript{*} &
+  Ce promedio $\leq$\,3 $\cdot$ max(Ce) $\leq$\,5 $\cdot$ 0 arcos directos servicio$\rightarrow$BD de otro servicio &
+  (H,\;H) \\
+\midrule
+Modificabilidad & QAS-08 &
+  0 contenedores de base de datos con más de un servicio propietario conectado directamente &
+  (H,\;L) \\
+\midrule
+Modificabilidad & QAS-22 &
+  0 componentes en M-03 que concentren más de una responsabilidad (construir, firmar, publicar CRL) &
+  (H,\;M) \\
+\midrule
+Modificabilidad & QAS-23 &
+  Diseño de M-07 impide retirar URL activa mientras existan certificados vigentes que la referencien &
+  (H,\;M) \\
+\midrule
+Modificabilidad & QAS-25 &
+  0 productores que importen clases concretas de broker; 1 artefacto a modificar para cambiar tecnología de broker &
+  (H,\;M) \\
+\midrule
+Extensibilidad & QAS-12\textsuperscript{*} &
+  0 modificaciones al código del motor de emisión para incorporar nuevo perfil ARCOTEL; cambio confinado a configuración &
+  (H,\;H) \\
+\midrule
+Extensibilidad & QAS-13 &
+  0 dependencias del motor con implementaciones concretas de HSM, ILS o broker en C4 Nivel~3 &
+  (H,\;M) \\
+\midrule
+Extensibilidad & QAS-14 &
+  0 cambios en el motor de emisión para incorporar Sub-CA; perfil registrado bajo el mismo contrato \texttt{ICertificateProfile} &
+  (H,\;M) \\
+\midrule
+Extensibilidad & QAS-15 &
+  Nombre del algoritmo parametrizado en estrategia de firma; 0 referencias al nombre del algoritmo fuera del componente HSM &
+  (M,\;M) \\
+\midrule
+Extensibilidad & QAS-16\textsuperscript{*} &
+  0 referencias al SDK del proveedor HSM fuera del componente HSM en C4 Nivel~3; exactamente 5 operaciones expuestas por la interfaz &
+  (H,\;M) \\
+\midrule
+Extensibilidad & QAS-17 &
+  Interfaz de abstracción HSM definida independientemente de hardware; contrato suficiente para verificar comportamiento sin hardware real &
+  (M,\;M) \\
+\midrule
+Auditabilidad & QAS-05\textsuperscript{*} &
+  0 operaciones UPDATE/DELETE/PATCH en contrato del ILS; cadena criptográfica verificable \textit{offline} sin acceso al servidor activo &
+  (H,\;H) \\
+\midrule
+Auditabilidad & QAS-06\textsuperscript{*} &
+  0 campos con datos personales identificables en texto claro presentes en el esquema del ILS &
+  (H,\;M) \\
+\midrule
+Corrección funcional & QAS-19 &
+  Flujo catálogo$\rightarrow$emisión sin camino donde el motor reciba solicitud de firma sin validación previa del catálogo &
+  (H,\;M) \\
+\midrule
+Corrección funcional & QAS-26 &
+  Endpoint público declara estado, emisión, caducidad y vigencia en toda respuesta; sin autenticación del cliente &
+  (H,\;L) \\
+\end{longtable}
+\normalsize
+
+% ======================================================================
+% ANEXO K — SENSITIVITY POINTS Y TRADEOFF POINTS COMPLETOS
+% ======================================================================
+
+\cleardoublepage
+\section*{Anexo K --- Sensitivity Points y Tradeoff Points: Catálogo Completo}\label{anx:atam_sp_tp}
+\phantomsection
+\addcontentsline{toc}{section}{Anexo K --- Sensitivity Points y Tradeoff Points: Catálogo Completo}
+
+Este anexo documenta el catálogo completo de sensitivity points y tradeoff points
+identificados en el análisis ATAM. Los presentados en las
+Tablas~\ref{tab:atam_st_risk} y~\ref{tab:atam_st_nonrisk} de la sección de resultados
+constituyen el subconjunto derivado de los once QAS del Utility Tree.
+
+\subsection*{Clasificados como Risk}\label{anx:atam_sp_tp_risk}
+
+\footnotesize
+\begin{longtable}{@{}p{0.8cm}p{4.2cm}p{2.1cm}p{1.5cm}p{2.5cm}@{}}
+\caption{Catálogo completo de SP y TP clasificados como \textit{risk}}\label{tab:sp_tp_risk_completo}\\
+\toprule
+\textbf{ID} & \textbf{Descripción resumida} & \textbf{Atributo} & \textbf{QAS} &
+  \textbf{Risk} \\
+\midrule
+\endfirsthead
+\multicolumn{5}{l}{\footnotesize\itshape Continuación de la Tabla~\thetable}\\[2pt]
+\toprule
+\textbf{ID} & \textbf{Descripción resumida} & \textbf{Atributo} & \textbf{QAS} &
+  \textbf{Risk} \\
+\midrule
+\endhead
+\bottomrule
+\endlastfoot
+S3 & Cobertura del \texttt{zeroize} en Lifecycle Callbacks dependiente del adoptante &
+  Seguridad & QAS-03 & R1 \\
+\midrule
+S4 & Granularidad del modelo RBAC --- bypass posible por rol demasiado permisivo &
+  Seguridad & QAS-20 & R2 \\
+\midrule
+S10 & Inmutabilidad del objeto Memento dependiente de la implementación del adoptante &
+  Auditabilidad & QAS-05 & R-NR-E \\
+\midrule
+S11 & Completitud del registro dependiente de cobertura del \texttt{AuditInterceptor}; rutas AOP bypass no detectadas &
+  Auditabilidad & QAS-05 & R-NR-F \\
+\midrule
+S15 & Métrica Ce sin mecanismo de enforcement automático --- degradación gradual posible sin gate en CI &
+  Modificabilidad & QAS-07 & R-NR-G \\
+\midrule
+S16 & Ce de RA Service (BFF) = 6 $>$ umbral máximo 5 --- QAS-07 actualmente violado &
+  Modificabilidad & QAS-07 & R-NR-H \\
+\midrule
+S17 & Aislamiento de esquema de datos personales nominal vs.\ real según implementación del adoptante &
+  Privacidad & QAS-06 & R-NR-I \\
+\midrule
+T2 & TTL del caché OCSP sin rango obligatorio --- TTL excesivo puede dejar certificado revocado como válido &
+  Disponibilidad $\cdot$ Seguridad & QAS-09 & T2-risk \\
+\midrule
+T3 & Hyperledger Fabric como \texttt{IAuditLogger} --- latencia de notarización bajo carga real no validada antes del PoC &
+  Auditabilidad $\cdot$ Rendimiento & QAS-05 & T3-risk \\
+\end{longtable}
+\normalsize
+
+\subsection*{Clasificados como Non-Risk}\label{anx:atam_sp_tp_nonrisk}
+
+\footnotesize
+\begin{longtable}{@{}p{0.8cm}p{3.5cm}p{2.0cm}p{1.5cm}p{4.0cm}@{}}
+\caption{Catálogo completo de SP y TP clasificados como \textit{non-risk}}\label{tab:sp_tp_nonrisk_completo}\\
+\toprule
+\textbf{ID} & \textbf{Descripción resumida} & \textbf{Atributo} & \textbf{QAS} &
+  \textbf{Razonamiento} \\
+\midrule
+\endfirsthead
+\multicolumn{5}{l}{\footnotesize\itshape Continuación de la Tabla~\thetable}\\[2pt]
+\toprule
+\textbf{ID} & \textbf{Descripción resumida} & \textbf{Atributo} & \textbf{QAS} &
+  \textbf{Razonamiento} \\
+\midrule
+\endhead
+\bottomrule
+\endlastfoot
+S1 & Número de capas del modelo de aislamiento HSM (6 capas) &
+  Seguridad & QAS-03 &
+  ADR-09 implementado y documentado; propiedad verificable por inspección del diseño interno \\
+\midrule
+S2 & Cantidad de operaciones expuestas en Facade PKCS\#11 (= 5) &
+  Seguridad & QAS-16 &
+  ADR-15 fija exactamente 5 operaciones con justificación regulatoria explícita \\
+\midrule
+S5 & Ciclo de vida del Command --- ejecución prematura impedida estructuralmente &
+  Seguridad & QAS-20 &
+  ADR-10: Command Processor valida estado \texttt{APPROVED} antes de ejecutar; propiedad estructural no dependiente del adoptante \\
+\midrule
+S6 & Configuración del pool de workers Half-Sync/Half-Async &
+  Disponibilidad & QAS-09 &
+  ADR-12 establece el patrón; calibración de workers es operacional --- valores fuera de rango degradan rendimiento, no la propiedad de aislamiento \\
+\midrule
+S7 & Umbral de apertura del Circuit Breaker &
+  Disponibilidad & QAS-11 &
+  ADR-24 establece el patrón; umbral es parámetro operacional configurable; la propiedad de aislamiento de fallos no depende del valor exacto \\
+\midrule
+S8 & Comunicación asíncrona preferente via broker &
+  Disponibilidad & QAS-09 &
+  ADR-31 establece desconexión estructural verificable en C4 Nivel~2 \\
+\midrule
+S9 & Statelessness de contenedores de servicio &
+  Disponibilidad & QAS-11 &
+  QAS-11 documenta la propiedad; ningún contenedor declara estado de sesión compartido entre instancias \\
+\midrule
+S12 & Estabilidad de la interfaz \texttt{IAuditLogger} &
+  Auditabilidad $\cdot$ Modificabilidad & QAS-05 &
+  ADR-03/ADR-29: estabilidad es constraint de diseño explícito que habilita la intercambiabilidad del ledger \\
+\midrule
+S13 & Estabilidad de la interfaz \texttt{ICertificateProfile} &
+  Extensibilidad & QAS-12 &
+  ADR-08: interfaz es el contrato del Microkernel; decisión arquitectónica explícita con estabilidad prescrita \\
+\midrule
+S14 & Ausencia de efectos secundarios compartidos en Chain of Responsibility &
+  Extensibilidad & QAS-12 &
+  ADR-16: cada eslabón es intercambiable; ausencia de efectos secundarios es consecuencia estructural del patrón \\
+\midrule
+T1 & Scoped Locking PKCS\#11 --- sesión por operación &
+  Seguridad $\cdot$ Rendimiento & QAS-03 &
+  ADR-13: tradeoff aceptado; impacto en latencia acotado y dentro de los umbrales del QAS de rendimiento \\
+\end{longtable}
+\normalsize
+
+% ======================================================================
+% ANEXO L — RISKS IDENTIFICADOS COMPLETOS
+% ======================================================================
+
+\cleardoublepage
+\section*{Anexo L --- \textit{Risks} Identificados: Catálogo Completo}\label{anx:atam_risks}
+\phantomsection
+\addcontentsline{toc}{section}{Anexo L --- \textit{Risks} Identificados: Catálogo Completo}
+
+Este anexo documenta el catálogo completo de \textit{risks} identificados en el análisis ATAM.
+Los cuatro \textit{risks} de la Tabla~\ref{tab:atam_risks} en la sección de resultados corresponden
+al subconjunto derivado de los once QAS del Utility Tree; este anexo incluye los \textit{risks}
+adicionales derivados del análisis de los veintiséis QAS del catálogo completo.
+
+\small
+\begin{longtable}{@{}p{1.1cm}p{2.8cm}p{4.5cm}p{2.0cm}p{1.0cm}@{}}
+\caption{Catálogo completo de \textit{risks} identificados en el análisis ATAM}\label{tab:risks_completo}\\
+\toprule
+\textbf{ID} & \textbf{Tipo} & \textbf{\textit{Gap} o decisión sin especificar} &
+  \textbf{Atributo} & \textbf{QAS} \\
+\midrule
+\endfirsthead
+\multicolumn{5}{l}{\small\itshape Continuación de la Tabla~\thetable}\\[2pt]
+\toprule
+\textbf{ID} & \textbf{Tipo} & \textbf{\textit{Gap} o decisión sin especificar} &
+  \textbf{Atributo} & \textbf{QAS} \\
+\midrule
+\endhead
+\bottomrule
+\endlastfoot
+R1 & Decisión no tomada &
+  Procedimiento concreto de failover al HSM secundario (RTO/RPO) delegado al adoptante; no especificado en la RA &
+  Disponibilidad & QAS-04 \\
+\midrule
+R2 & Decisión no tomada &
+  Quórum concreto (m-of-n) para operaciones de alto impacto no fijado en la RA; configurable por el adoptante &
+  Seguridad & QAS-20 \\
+\midrule
+R3 & Decisión no tomada &
+  Mecanismo de rate-limiting en perímetro DMZ ante DDoS volumétrico no definido en la RA &
+  Disponibilidad & QAS-09 \\
+\midrule
+R4 & Decisión no tomada &
+  Validación de autenticidad e integridad del código de plugins del Microkernel no definida en la RA &
+  Seguridad & QAS-12 \\
+\midrule
+R5 & Decisión no tomada &
+  Ciclo de vida de certificados mTLS de los contenedores (emisión, rotación, revocación) no especificado en la RA &
+  Seguridad $\cdot$ Disponibilidad & QAS-01 \\
+\midrule
+R-NR-E & Consecuencias no completamente comprendidas &
+  Inmutabilidad del Memento dependiente de la implementación --- el adoptante puede crear un Memento mutable &
+  Auditabilidad & QAS-05 \\
+\midrule
+R-NR-F & Consecuencias no completamente comprendidas &
+  Completitud del registro dependiente de cobertura AOP --- rutas que eludan el \textit{framework} no son detectadas por la RA &
+  Auditabilidad & QAS-05 \\
+\midrule
+R-NR-G & Consecuencias no completamente comprendidas &
+  Métrica Ce sin enforcement automático --- degradación gradual posible sin gate en pipeline de CI &
+  Modificabilidad & QAS-07 \\
+\midrule
+R-NR-H & Consecuencias no completamente comprendidas &
+  Ce de RA Service (BFF) = 6 sobre umbral máximo de 5; QAS-07 actualmente violado en la versión C4 Nivel~2 v2.0 &
+  Modificabilidad & QAS-07 \\
+\midrule
+R-NR-I & Consecuencias no completamente comprendidas &
+  Aislamiento de datos personales nominal vs.\ real --- adoptante puede implementar sin controles de acceso a nivel de esquema &
+  Privacidad & QAS-06 \\
+\midrule
+T2-risk & Decisión no tomada (valor del TTL) &
+  TTL de caché OCSP sin rango obligatorio --- TTL excesivo puede dejar certificado revocado como válido durante el período &
+  Seguridad $\cdot$ Disponibilidad & QAS-09 \\
+\midrule
+T3-risk & Consecuencias no completamente comprendidas &
+  Latencia de notarización Hyperledger Fabric bajo carga real no validada antes de la ejecución del PoC &
+  Auditabilidad $\cdot$ Rendimiento & QAS-05 \\
+\midrule
+R-NR-J & Consecuencias no completamente comprendidas &
+  ADR-28 elimina la persistencia de la contraseña efímera en BD y logs. En la
+  implementación de CA Core Service, las variables sensibles como la contraseña efímera
+  deben llevar un control estricto de su ciclo de vida en memoria volátil, aspecto que
+  corresponde a la fase de implementación completa del módulo &
+  Seguridad & QAS-03 \\
+\end{longtable}
+\normalsize
+
+% ======================================================================
+% ANEXO M — NON-RISKS DOCUMENTADOS COMPLETOS
+% ======================================================================
+
+\cleardoublepage
+\section*{Anexo M --- \textit{Non-Risks} Documentados: Catálogo Completo}\label{anx:atam_nonrisks}
+\phantomsection
+\addcontentsline{toc}{section}{Anexo M --- \textit{Non-Risks} Documentados: Catálogo Completo}
+
+Este anexo documenta el catálogo completo de \textit{non-risks} formales identificados en el
+análisis ATAM. Los dos \textit{non-risks} de la Tabla~\ref{tab:atam_nonrisks} en la sección de
+resultados corresponden al subconjunto alineado con los once QAS del Utility Tree; este
+anexo incluye los \textit{non-risks} adicionales derivados del análisis del catálogo completo.
+
+\small
+\begin{longtable}{@{}p{0.8cm}p{4.5cm}p{1.4cm}p{4.5cm}@{}}
+\caption{Catálogo completo de \textit{non-risks} documentados en el análisis ATAM}\label{tab:nonrisks_completo}\\
+\toprule
+\textbf{ID} & \textbf{Decisión arquitectónica} & \textbf{QAS} &
+  \textbf{Supuesto de vigencia} \\
+\midrule
+\endfirsthead
+\multicolumn{4}{l}{\small\itshape Continuación de la Tabla~\thetable}\\[2pt]
+\toprule
+\textbf{ID} & \textbf{Decisión arquitectónica} & \textbf{QAS} &
+  \textbf{Supuesto de vigencia} \\
+\midrule
+\endhead
+\bottomrule
+\endlastfoot
+NR-1 & ADR-04: HSM FIPS~140-2 Nivel~3 como único proveedor de operaciones criptográficas &
+  QAS-03, QAS-04 &
+  ARCOTEL Art.~9 no modifique el requisito de nivel FIPS $\cdot$ HSM del adoptante certificado FIPS~140-2 L3 \\
+\midrule
+NR-2 & ADR-17: Interceptor (AOP) como mecanismo transversal de auditoría &
+  QAS-05 &
+  El \textit{framework} AOP del adoptante cubra todos los puntos de entrada declarados $\cdot$ No se introduzcan llamadas directas que eludan el \textit{framework} \\
+\midrule
+NR-3 & ADR-06 (EA-10): independencia estructural de contenedores --- Ce promedio = 2{,}7 $\leq$ umbral 3 &
+  QAS-07 &
+  No se agreguen contenedores que eleven el Ce promedio por encima de 3 $\cdot$ Ce de RA Service (BFF) sea reducido o justificado formalmente antes de adopción \\
+\midrule
+NR-4 & ADR-10: Command + CommandProcessor como unidad de auditoría &
+  QAS-05, QAS-20 &
+  CommandProcessor no sea modificado para aceptar estados distintos de \texttt{APPROVED} $\cdot$ Command sea la única ruta de invocación de operaciones de dominio \\
+\end{longtable}
+\normalsize
+

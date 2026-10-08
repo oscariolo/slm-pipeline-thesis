@@ -1,0 +1,68 @@
+% Paquetes esenciales
+\usepackage{iftex}
+\ifPDFTeX
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[sfdefault]{arimo} % Arial (clon métrico) — guía UCuenca
+\renewcommand*{\ttdefault}{\sfdefault} % Arial también en \texttt y URLs
+\else
+\usepackage{fontspec}
+\setmainfont{Arial}
+\setsansfont{Arial}
+\setmonofont{Arial}
+\fi
+\usepackage[spanish]{babel}
+
+% Formato y diseño
+\usepackage{geometry}
+\usepackage{setspace}
+\usepackage{titlesec}
+\usepackage{fancyhdr}
+\usepackage{parskip}
+\usepackage{etoolbox}
+\usepackage{xpatch}
+
+% Tablas y figuras
+\usepackage{graphicx}
+\usepackage{longtable}
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{multirow}
+\usepackage{float}
+\usepackage[table,xcdraw,dvipsnames]{xcolor}
+\usepackage{caption}
+\usepackage[titles]{tocloft}
+
+% Enlaces y referencias
+\usepackage[bookmarks,breaklinks,colorlinks=true,allcolors=black,citecolor=black]{hyperref}
+\usepackage{url}
+\urlstyle{same}
+\usepackage[square,numbers]{natbib}
+\usepackage{tocbibind}
+
+% Listas y enumeraciones
+\usepackage{enumitem}
+
+% Código fuente
+\usepackage{listings}
+
+% Utilidades
+\usepackage{ragged2e}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage[italic]{mathastext} % Arial también en fórmulas
+\usepackage{csquotes}
+\usepackage{soul}
+\sethlcolor{cyan}
+
+% Símbolos especiales
+\usepackage[official]{eurosym}
+\usepackage{academicons}
+\ifPDFTeX\else
+\makeatletter\renewfontfamily\ai@font{academicons.otf}\makeatother % XeLaTeX no la halla por nombre
+\fi
+\definecolor{orcidlogocol}{HTML}{A6CE39}
+
+% Herramientas de desarrollo (comentar en versión final)
+\usepackage{todonotes}
+\usepackage{comment}
