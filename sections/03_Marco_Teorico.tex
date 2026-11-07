@@ -1,392 +1,93 @@
-Quis autem vel eum iure reprehenderit qui in ea voluptate velit esse quam nihil molestiae consequatur, vel illum qui dolorem eum fugiat quo voluptas nulla pariatur.
+\chapter{Marco Teórico} \label{cap:marco_teorico}
 
-Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt. Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit, sed quia non numquam eius modi tempora incidunt ut labore et dolore magnam aliquam quaerat voluptatem. Ut enim ad minima veniam, quis nostrum exercitationem ullam corporis suscipit laboriosam, nisi ut aliquid ex ea commodi consequatur. Quis autem vel eum iure reprehenderit qui in ea voluptate velit esse quam nihil molestiae consequatur, vel illum qui dolorem eum fugiat quo voluptas nulla pariatur. At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis praesentium voluptatum deleniti atque corrupti quos dolores et quas molestias excepturi sint occaecati cupiditate non provident.
+Este capítulo presenta los conceptos sobre los que se apoya el \textit{pipeline}: los modelos de lenguaje pequeños y sus técnicas de compresión y adaptación, la tarea de detección de anomalías en logs, las métricas de evaluación, los \textit{embeddings} y la búsqueda vectorial, el uso de LLM como anotadores con medición de acuerdo, y la validación mediante inyección de fallos.
 
-% ─────────────────────────────────────────────────────────────────────────────
+\section{Modelos de lenguaje pequeños}\label{sec:mt_slm}
 
-\section{Infraestructura de Clave Pública (PKI)}
+\subsection{LLM y SLM}
 
-Temporibus autem quibusdam et aut officiis debitis aut rerum necessitatibus saepe eveniet ut et voluptates repudiandae sint et molestiae non recusandae. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+Los modelos de lenguaje de gran tamaño (LLM), con decenas o cientos de miles de millones de parámetros, muestran capacidades de razonamiento y comprensión contextual, pero exigen recursos de cómputo y memoria elevados para su despliegue~\cite{wang2025_slm_survey, chen2025_collab_survey}. Los modelos de lenguaje pequeños (SLM) son modelos compactos, desde millones hasta unos pocos miles de millones de parámetros (por ejemplo, DistilBERT, TinyBERT, Llama-3.2-1B/3B o Phi-3.5), que buscan equilibrar capacidad y eficiencia en entornos de recursos limitados~\cite{wang2025_slm_survey, saha2025_slm_minimal}.
+% TODO: definir con precisión el umbral de parámetros que usa esta tesis para llamar "pequeño" a un modelo (el estudio incluye modelos de 0.6B a 9B parámetros; Qwen3.5-9B es el más grande).
 
-\subsection{Fundamentos criptográficos: criptografía asimétrica, cadena de confianza y modelos de confianza}
+\subsection{Técnicas de compresión}\label{subsec:mt_compresion}
 
-At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis praesentium voluptatum deleniti atque corrupti quos dolores et quas molestias excepturi sint occaecati cupiditate non provident. Et harum quidem rerum facilis est et expedita distinctio, nam libero tempore, cum soluta nobis est eligendi optio cumque nihil impedit quo minus id quod maxime placeat facere possimus. Temporibus autem quibusdam et aut officiis debitis aut rerum necessitatibus saepe eveniet ut et voluptates repudiandae sint et molestiae non recusandae. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+La revisión de Wang et al.~\cite{wang2025_slm_survey} agrupa las técnicas para obtener modelos pequeños y eficientes en tres familias:
 
-Ut enim ad minima veniam, quis nostrum exercitationem ullam corporis suscipit laboriosam, nisi ut aliquid ex ea commodi consequatur. Quis autem vel eum iure reprehenderit qui in ea voluptate velit esse quam nihil molestiae consequatur, vel illum qui dolorem eum fugiat quo voluptas nulla pariatur. Et harum quidem rerum facilis est et expedita distinctio, nam libero tempore, cum soluta nobis est eligendi optio cumque nihil impedit quo minus id quod maxime placeat facere possimus. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+\begin{description}
+  \item[Cuantización.] Reduce la precisión numérica de pesos y activaciones (por ejemplo, de 16 bits a 8, 4 o menos bits), con ahorros de memoria de varios factores y pérdida moderada de calidad. Se distingue la cuantización posterior al entrenamiento de la cuantización consciente del entrenamiento.
+  \item[Poda.] Elimina parámetros o componentes poco relevantes, ya sea pesos individuales (no estructurada) o estructuras completas como capas, canales o cabezas de atención (estructurada).
+  \item[Destilación de conocimiento.] Transfiere el comportamiento de un modelo \textit{profesor} grande a un modelo \textit{estudiante} pequeño.
+\end{description}
 
-% ----------------------------------------------------------------------
-% EJEMPLO de figura (copia el bloque, descomentalo y reemplaza ruta y caption):
-% \begin{figure}[H]
-%   \centering
-%   \includegraphics[width=\textwidth]{figs/mi_figura.pdf}
-%   \caption[Titulo corto]{Descripcion de la figura.}
-%   \label{fig:mi_figura}   % se cita con: Figura~\ref{fig:mi_figura}
-% \end{figure}
-% ----------------------------------------------------------------------
+En este trabajo se emplean modelos ya cuantizados en formato GGUF (por ejemplo, Q4\_K\_M y Q6\_K) servidos con Ollama, junto con modelos en precisión completa cargados con Hugging Face Transformers (véase la Sección~\ref{sec:met_slm}).
 
-Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt. Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit, sed quia non numquam eius modi tempora incidunt ut labore et dolore magnam aliquam quaerat voluptatem. Ut enim ad minima veniam, quis nostrum exercitationem ullam corporis suscipit laboriosam, nisi ut aliquid ex ea commodi consequatur. At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis praesentium voluptatum deleniti atque corrupti quos dolores et quas molestias excepturi sint occaecati cupiditate non provident. Temporibus autem quibusdam et aut officiis debitis aut rerum necessitatibus saepe eveniet ut et voluptates repudiandae sint et molestiae non recusandae.
+\subsection{Ventajas del despliegue \textit{on-premise}}
 
-Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam eaque ipsa quae ab illo inventore veritatis.
+Ejecutar el modelo dentro de la infraestructura institucional permite que la telemetría no salga de la organización, elimina el costo recurrente por \textit{token} de las API externas y ofrece latencias bajas adecuadas para análisis continuo~\cite{wang2025_slm_survey, pardeshi2026_smartllm, ma2026_adaptivelog}. % TODO: las cifras concretas de latencia y costo que reportan SmartLLM y AdaptiveLog están en notes/03_slm_fundamentos.md; incluirlas solo con la página/tabla exacta verificada.
 
-\begin{itemize}
-    \item At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis praesentium voluptatum deleniti atque corrupti quos dolores et quas molestias excepturi sint occaecati cupiditate non provident.
+\section{Ajuste fino eficiente en parámetros}\label{sec:mt_peft}
 
-    \item Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
-
-    \item Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.
-\end{itemize}
-
-\subsection{Roles del ecosistema PKI}
-
-Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+El ajuste fino completo de un modelo es costoso. Los métodos de ajuste fino eficiente en parámetros (PEFT) entrenan una fracción pequeña de parámetros adicionales manteniendo congelado el modelo base. En la literatura de análisis de logs se discuten tres:
 
 \begin{itemize}
-    \item At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis praesentium voluptatum deleniti atque corrupti quos dolores et quas molestias.
-
-    \item Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit, sed quia non numquam eius modi tempora incidunt.
-
-    \item Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit, sed quia non numquam.
-
-    \item At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis praesentium voluptatum deleniti.
-
-    \item Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+  \item \textbf{LoRA} (\textit{Low-Rank Adaptation}): congela los pesos preentrenados $W$ e inyecta matrices de bajo rango entrenables $A$ y $B$ tales que la actualización es $\Delta W = BA$, típicamente en las proyecciones de atención~\cite{lim2025_logadreft, wang2025_slm_survey}. % TODO: \cite{TODO} del artículo original de LoRA (Hu et al.), no está en el notebook ni en el .bib.
+  \item \textbf{ReFT} (\textit{Representation Fine-Tuning}): en lugar de modificar pesos, aplica intervenciones de bajo rango sobre las representaciones ocultas entre capas; LogADReft lo aplica a detección de anomalías en logs~\cite{lim2025_logadreft}.
+  \item \textbf{LINEADAPTER}: adaptador que inserta una capa convolucional 1D ligera tras la capa \textit{feed-forward} de los bloques \textit{Transformer} congelados, para capturar dependencias secuenciales locales en logs~\cite{liu2025_lineadapter}.
 \end{itemize}
 
-\subsection{Estándar X.509 v3: estructura de certificado, extensiones críticas y OIDs}
+El \textit{fine-tuning} realizado en este trabajo utiliza LoRA (véase la Sección~\ref{sec:met_finetuning}).
 
-At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis praesentium voluptatum deleniti atque corrupti quos dolores et quas molestias excepturi sint occaecati cupiditate non provident. Et harum quidem rerum facilis est et expedita distinctio, nam libero tempore, cum soluta nobis est eligendi optio cumque nihil impedit quo minus id quod maxime placeat facere possimus.
+\section{Detección de anomalías en logs}\label{sec:mt_anomalias}
+
+\subsection{Formulación}
+
+Un \textit{log} es un registro textual con marca de tiempo, nivel de severidad (\texttt{TRACE}, \texttt{DEBUG}, \texttt{INFO}, \texttt{WARN}, \texttt{ERROR}), origen (\textit{logger}) y mensaje, a veces acompañado de una traza de pila. La detección de anomalías consiste en decidir, para un evento o para un conjunto de eventos, si representa un comportamiento anómalo o una falla~\cite{he2021_survey}. En este trabajo la decisión se toma sobre un \textit{batch} de eventos consecutivos: el \textit{batch} es positivo (\emph{error}) si contiene al menos un evento que constituye una falla del sistema según el criterio operativo definido en la Sección~\ref{sec:met_criterio}.
+
+\subsection{Enfoques}
+
+Los enfoques se clasifican en supervisados (requieren etiquetas), no supervisados (modelan el comportamiento normal y marcan desviaciones) y basados en modelos de lenguaje, que pueden operar en modo \textit{zero-shot} o \textit{few-shot} mediante \textit{prompting}~\cite{liu2024_logprompt, karlsen2024_benchmark} o tras ajuste fino~\cite{lim2025_logadreft, liu2025_lineadapter}. Los costos de usar modelos grandes en todo el flujo han motivado esquemas colaborativos, donde un SLM atiende los casos sencillos y un LLM los difíciles~\cite{ma2026_adaptivelog}.
+
+\subsection{Del diagnóstico a la causa raíz y la recomendación}
+
+El análisis de causa raíz (RCA) busca identificar el componente o evento que origina una falla; las revisiones recientes cubren métodos basados en grafos, trazas y modelos de lenguaje~\cite{wang2024_rca}. Algunos trabajos combinan detección y RCA con LLM y redes bayesianas~\cite{pedroso2025_maia}. En el presente trabajo, la recomendación (causa probable y acción sugerida) se produce con un modelo de lenguaje local; no se evalúa formalmente su calidad frente a un conjunto de referencia.
+% TODO: si se evalúa la calidad de las recomendaciones (p.ej. revisión experta de una muestra), agregarlo aquí y en Resultados.
+
+\section{Métricas de evaluación}\label{sec:mt_metricas}
+
+Sea $TP$, $FP$, $TN$ y $FN$ el número de verdaderos positivos, falsos positivos, verdaderos negativos y falsos negativos, tomando \emph{error} como clase positiva.
+
+\begin{align}
+\mathrm{Accuracy} &= \frac{TP + TN}{TP + FP + TN + FN}\\
+\mathrm{Precision} &= \frac{TP}{TP + FP}\\
+\mathrm{Recall} &= \frac{TP}{TP + FN}\\
+\mathrm{Especificidad} &= \frac{TN}{TN + FP}\\
+F_1 &= \frac{2\,\mathrm{Precision}\cdot\mathrm{Recall}}{\mathrm{Precision} + \mathrm{Recall}}
+\end{align}
+
+La curva ROC grafica la tasa de verdaderos positivos frente a la de falsos positivos al variar el umbral de decisión sobre una puntuación continua; el área bajo la curva (AUC) resume la capacidad de discriminación independientemente del umbral. En el \textit{pipeline}, la puntuación es la probabilidad $P(\text{error})$ que el modelo asigna al \textit{token} que escribe el valor booleano de su respuesta JSON, obtenida de los \textit{logits} (Hugging Face) o de los \textit{logprobs} (Ollama). El coeficiente de correlación de Matthews y la exactitud balanceada se reportan como complemento cuando la clase positiva es minoritaria.
+
+Con clases desbalanceadas, \textit{accuracy} puede ser engañosa: un clasificador que nunca predice \emph{error} obtiene alta exactitud si los errores son raros. Por eso se reportan \textit{precision}, \textit{recall}, $F_1$ y AUC además de \textit{accuracy}.
+
+\section{\textit{Embeddings} y búsqueda vectorial}\label{sec:mt_embeddings}
+
+Un modelo de \textit{embeddings} transforma un texto en un vector denso en el que textos semánticamente similares quedan próximos (similitud coseno). Aplicado a logs, permite comparar mensajes por significado y no por coincidencia literal, y es más robusto ante vocabulario no visto y cambios de formato que los analizadores sintácticos~\cite{murphy2024_embeddings}. El proyecto utiliza el modelo \texttt{sentence-transformers/all-MiniLM-L6-v2} y una base vectorial Milvus Lite. Se emplean dos usos:
 
 \begin{itemize}
-    \item Et harum quidem rerum facilis est et expedita.
-    \item Et harum quidem rerum facilis est et expedita.
-    \item Quis autem vel eum iure reprehenderit qui in.
-    \item Ut enim ad minima veniam, quis nostrum exercitationem.
-    \item Temporibus autem quibusdam et aut officiis debitis aut.
-    \item Quis autem vel eum iure reprehenderit qui in ea.
+  \item \textbf{Caché semántico:} si un \textit{batch} nuevo tiene similitud coseno mayor o igual a un umbral (0.8 por defecto) con uno ya clasificado, se reutiliza la clasificación.
+  \item \textbf{Evaluación semántica:} cada \textit{batch} del SLM se compara con sus $k$ \textit{batches} más cercanos del \textit{ground truth} (vecinos más próximos, $k$-NN), lo que permite evaluar corridas con tamaños de \textit{batch} distintos al de la referencia.
 \end{itemize}
 
-Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.
+\section{LLM como anotadores y acuerdo entre anotadores}\label{sec:mt_anotacion}
 
-\begin{itemize}
-    \item Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, adipisci.
+Cuando no existen etiquetas, una práctica es el \textit{pseudo-etiquetado}: varios modelos votan y se toma la mayoría. Para medir cuánto coinciden se usa el $\kappa$ de Fleiss, que generaliza el acuerdo corregido por azar a más de dos anotadores:
+\begin{equation}
+\kappa = \frac{\bar{P} - \bar{P}_e}{1 - \bar{P}_e},
+\end{equation}
+donde $\bar{P}$ es el acuerdo observado medio y $\bar{P}_e$ el esperado por azar. Valores cercanos a 1 indican acuerdo casi total. % TODO: \cite{TODO} Fleiss (1971) y Landis y Koch (1977) si se citan; no están en el .bib.
+Un $\kappa$ alto entre modelos no implica que sus etiquetas sean correctas respecto al criterio del dominio; el Capítulo~\ref{cap:resultados} documenta un caso en el que ocurre lo contrario. Por ello se complementa con revisión de expertos y se reportan intervalos de confianza de Wilson para proporciones.
 
-    \item Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit, sed.
+\section{Notificación, recomendación e inyección de errores}\label{sec:mt_reaccion}
 
-    \item Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione.
-\end{itemize}
+La reducción de la fatiga de alertas pasa por notificar solo los eventos relevantes y con contexto suficiente para actuar. La recomendación asistida por LLM complementa la alerta con una causa probable y una acción sugerida~\cite{pedroso2025_maia}. % TODO: \cite{} para recomendación de remediación asistida por LLM (candidato en notes/03_onpremise_chaos.md: Wang et al. 2025, Preprints.org; agregar al .bib tras verificar).
 
-Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam eaque ipsa quae ab illo inventore veritatis.
-
-\subsection{Ciclo de vida del certificado: emisión, renovación y revocación (CRL vs.\ OCSP)}
-
-Ut enim ad minima veniam, quis nostrum exercitationem ullam corporis suscipit laboriosam, nisi ut aliquid ex ea commodi consequatur.
-
-\begin{enumerate}
-    \item Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit, sed.
-    \item Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris.
-    \item Et harum quidem rerum facilis est et expedita distinctio, nam libero tempore, cum soluta nobis est eligendi.
-    \item At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis praesentium voluptatum deleniti.
-\end{enumerate}
-
-At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis praesentium voluptatum deleniti atque corrupti quos dolores et quas molestias excepturi sint occaecati cupiditate non provident.
-
-\begin{itemize}
-    \item Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
-
-    \item At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis praesentium voluptatum deleniti atque corrupti quos dolores et quas molestias excepturi sint occaecati cupiditate non provident.
-\end{itemize}
-
-\subsection{Gestión de claves y HSM: PKCS\#11, FIPS 140-2 y \textit{key ceremony}}
-
-Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam eaque ipsa quae ab illo inventore veritatis. Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt.
-
-Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
-
-\begin{itemize}
-    \item Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-    \item Duis aute irure dolor in reprehenderit in voluptate.
-    \item At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis praesentium voluptatum deleniti atque corrupti quos.
-    \item Quis autem vel eum iure reprehenderit qui in ea voluptate velit esse quam nihil.
-\end{itemize}
-
-Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt.
-
-Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam eaque ipsa quae ab illo inventore veritatis. Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt.
-
-% ─────────────────────────────────────────────────────────────────────────────
-
-\section{Marco Normativo}
-
-Et harum quidem rerum facilis est et expedita distinctio, nam libero tempore, cum soluta nobis est eligendi optio cumque nihil impedit quo minus id quod maxime placeat facere possimus. Temporibus autem quibusdam et aut officiis debitis aut rerum necessitatibus saepe eveniet ut et voluptates repudiandae sint et molestiae non recusandae. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.
-
-\subsection{Marco legal ecuatoriano}
-
-\subsubsection{Ley de Comercio Electrónico y Firmas Electrónicas (LCE) y su Reglamento}
-
-Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit, sed quia non numquam eius modi tempora incidunt ut labore et dolore magnam aliquam quaerat voluptatem. Ut enim ad minima veniam, quis nostrum exercitationem ullam corporis suscipit laboriosam, nisi ut aliquid ex ea commodi consequatur. At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis praesentium voluptatum deleniti atque corrupti quos dolores et quas molestias excepturi sint occaecati cupiditate non provident. Et harum quidem rerum facilis est et expedita distinctio, nam libero tempore, cum soluta nobis est eligendi optio cumque nihil impedit quo minus id quod maxime placeat facere possimus.
-
-\subsubsection{Resolución ARCOTEL-2024-0176}
-
-Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam eaque ipsa quae ab illo inventore veritatis. Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit, sed quia non numquam eius modi tempora incidunt ut labore et dolore magnam aliquam quaerat voluptatem.
-
-\begin{itemize}
-    \item At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis praesentium voluptatum deleniti atque corrupti.
-    \item Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam eaque ipsa.
-    \item Quis autem vel eum iure reprehenderit qui in ea voluptate velit.
-    \item Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat.
-    \item Quis autem vel eum iure reprehenderit qui in ea voluptate velit.
-\end{itemize}
-
-\subsubsection{LOPDP: implicaciones para datos personales en el proceso de emisión}
-
-Ut enim ad minima veniam, quis nostrum exercitationem ullam corporis suscipit laboriosam, nisi ut aliquid ex ea commodi consequatur. At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis praesentium voluptatum deleniti atque corrupti quos dolores et quas molestias excepturi sint occaecati cupiditate non provident. Et harum quidem rerum facilis est et expedita distinctio, nam libero tempore, cum soluta nobis est eligendi optio cumque nihil impedit quo minus id quod maxime placeat facere possimus.
-
-\subsection{Estándares internacionales de referencia}
-
-Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt. Ut enim ad minima veniam, quis nostrum exercitationem ullam corporis suscipit laboriosam, nisi ut aliquid ex ea commodi consequatur.
-
-\begin{itemize}
-    \item Quis autem vel eum iure reprehenderit qui in ea voluptate velit esse quam nihil molestiae consequatur, vel illum qui dolorem eum fugiat quo voluptas nulla.
-
-    \item Temporibus autem quibusdam et aut officiis debitis aut rerum necessitatibus saepe eveniet ut et voluptates repudiandae sint et molestiae non recusandae.
-\end{itemize}
-
-\subsection{Brecha normativa: qué exige ARCOTEL que los sistemas monolíticos no pueden satisfacer por diseño}
-
-Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.
-
-\begin{enumerate}
-    \item At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis praesentium voluptatum deleniti atque corrupti quos dolores et quas molestias excepturi sint occaecati cupiditate non.
-
-    \item Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
-\end{enumerate}
-
-% ─────────────────────────────────────────────────────────────────────────────
-
-\section{Arquitectura de Software}
-
-Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam eaque ipsa quae ab illo inventore veritatis.
-
-\subsection{Arquitecturas de referencia: definición, propósito y diferencia con la arquitectura de instancia}
-
-Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam eaque ipsa quae ab illo inventore veritatis. Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt.
-
-Ut enim ad minima veniam, quis nostrum exercitationem ullam corporis suscipit laboriosam, nisi ut aliquid ex ea commodi consequatur. Quis autem vel eum iure reprehenderit qui in ea voluptate velit esse quam nihil molestiae consequatur, vel illum qui dolorem eum fugiat quo voluptas nulla pariatur. At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis praesentium voluptatum deleniti atque corrupti quos dolores et quas molestias excepturi sint occaecati cupiditate non provident.
-
-\subsection{Atributos de calidad como conductores del diseño (ISO/IEC 25010)}
-
-Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam eaque ipsa quae ab illo inventore veritatis. Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt.
-
-\begin{itemize}
-    \item Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu.
-
-    \item Quis autem vel eum iure reprehenderit qui in ea voluptate velit esse quam nihil molestiae.
-
-    \item Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam.
-
-    \item Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.
-\end{itemize}
-
-\subsection{Estilos arquitectónicos relevantes}
-
-Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam eaque ipsa quae ab illo inventore veritatis. Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit, sed quia non numquam eius modi tempora incidunt ut labore et dolore magnam aliquam quaerat voluptatem.
-
-\begin{itemize}
-    \item Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.
-
-    \item Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
-
-    \item Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
-
-    \item At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis praesentium voluptatum deleniti atque corrupti quos dolores et quas molestias excepturi.
-
-    \item Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.
-
-    \item Quis autem vel eum iure reprehenderit qui in ea voluptate velit esse quam nihil molestiae consequatur, vel illum qui dolorem eum fugiat.
-
-    \item Temporibus autem quibusdam et aut officiis debitis aut rerum necessitatibus saepe eveniet ut et voluptates repudiandae sint et molestiae non recusandae.
-
-    \item Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
-
-    \item Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
-\end{itemize}
-
-\subsection{Patrones aplicados}
-
-Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam eaque ipsa quae ab illo inventore veritatis. Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt.
-
-\subsubsection{Patrones arquitectónicos}
-
-\begin{itemize}
-    \item Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
-
-    \item Et harum quidem rerum facilis est et expedita distinctio, nam libero tempore, cum soluta nobis est eligendi optio cumque nihil impedit quo minus id quod maxime placeat facere possimus.
-
-    \item Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
-
-    \item Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt.
-
-    \item Quis autem vel eum iure reprehenderit qui in ea voluptate velit esse quam nihil molestiae consequatur, vel illum qui dolorem eum fugiat quo voluptas nulla pariatur.
-\end{itemize}
-
-\subsubsection{Patrones de diseño}
-
-\begin{itemize}
-    \item Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
-
-    \item At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis praesentium voluptatum deleniti atque corrupti quos dolores et quas molestias excepturi sint occaecati cupiditate.
-
-    \item Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
-
-    \item At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis praesentium voluptatum deleniti atque corrupti quos dolores et quas molestias excepturi sint occaecati cupiditate non provident.
-
-    \item Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit, sed quia non numquam eius modi tempora incidunt ut labore et dolore magnam aliquam quaerat voluptatem.
-
-\end{itemize}
-
-\subsection{Acoplamiento Eferente (Ce) como indicador de modularidad}
-
-Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam eaque ipsa quae ab illo inventore veritatis. Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt.
-
-Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt. Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit, sed quia non numquam eius modi tempora incidunt ut labore et dolore magnam aliquam quaerat voluptatem. Ut enim ad minima veniam, quis nostrum exercitationem ullam corporis suscipit laboriosam, nisi ut aliquid ex ea commodi consequatur.
-
-% ─────────────────────────────────────────────────────────────────────────────
-
-\section{TOGAF ADM}
-
-Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
-
-\subsection{Enterprise Architecture: definición, propósito y capas}
-
-Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam eaque ipsa quae ab illo inventore veritatis.
-
-Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.
-
-\begin{itemize}
-    \item Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut.
-    \item Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod.
-    \item Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod.
-    \item Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor.
-\end{itemize}
-
-\subsection{TOGAF Standard 10th Ed.: estructura del \textit{framework}, Architecture Repository y Architecture Capability}
-
-Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit, sed quia non numquam eius modi tempora incidunt ut labore et dolore magnam aliquam quaerat voluptatem. Ut enim ad minima veniam, quis nostrum exercitationem ullam corporis suscipit laboriosam, nisi ut aliquid ex ea commodi consequatur. At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis praesentium voluptatum deleniti atque corrupti quos dolores et quas molestias excepturi sint occaecati cupiditate non provident.
-
-Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.
-
-Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
-
-\subsection{Architecture Development Method (ADM): ciclo iterativo y fases}
-
-Et harum quidem rerum facilis est et expedita distinctio, nam libero tempore, cum soluta nobis est eligendi optio cumque nihil impedit quo minus id quod maxime placeat facere possimus. Temporibus autem quibusdam et aut officiis debitis aut rerum necessitatibus saepe eveniet ut et voluptates repudiandae sint et molestiae non recusandae. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
-
-\begin{itemize}
-    \item Ut enim ad minima veniam, quis nostrum exercitationem ullam corporis suscipit laboriosam, nisi ut aliquid ex ea commodi.
-
-    \item Et harum quidem rerum facilis est et expedita distinctio, nam libero tempore, cum soluta nobis est eligendi optio cumque nihil impedit quo minus id quod maxime.
-
-    \item Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit, sed quia non numquam.
-
-    \item Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam eaque ipsa quae.
-
-    \item Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
-
-    \item At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis praesentium voluptatum deleniti atque corrupti quos.
-
-    \item Quis autem vel eum iure reprehenderit qui in ea voluptate velit esse quam nihil molestiae consequatur, vel.
-
-    \item Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam.
-
-    \item Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo.
-
-    \item Quis autem vel eum iure reprehenderit qui in ea voluptate velit esse quam nihil molestiae consequatur, vel illum qui dolorem eum fugiat quo voluptas nulla pariatur.
-\end{itemize}
-
-\subsection{ADM \textit{Tailoring}: personalización del ciclo de desarrollo arquitectónico}
-
-Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam eaque ipsa quae ab illo inventore veritatis. Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt. Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit, sed quia non numquam eius modi tempora incidunt ut labore et dolore magnam aliquam quaerat voluptatem.
-
-Ut enim ad minima veniam, quis nostrum exercitationem ullam corporis suscipit laboriosam, nisi ut aliquid ex ea commodi consequatur. Quis autem vel eum iure reprehenderit qui in ea voluptate velit esse quam nihil molestiae consequatur, vel illum qui dolorem eum fugiat quo voluptas nulla pariatur. At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis praesentium voluptatum deleniti atque corrupti quos dolores et quas molestias excepturi sint occaecati cupiditate non provident. Et harum quidem rerum facilis est et expedita distinctio, nam libero tempore, cum soluta nobis est eligendi optio cumque nihil impedit quo minus id quod maxime placeat facere possimus. Temporibus autem quibusdam et aut officiis debitis aut rerum necessitatibus saepe eveniet ut et voluptates repudiandae sint et molestiae non recusandae.
-
-\subsection{Architecture Decision Records (ADRs): formato, propósito y vínculo con principios}
-
-Temporibus autem quibusdam et aut officiis debitis aut rerum necessitatibus saepe eveniet ut et voluptates repudiandae sint et molestiae non recusandae. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.
-
-Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt.
-
-% ─────────────────────────────────────────────────────────────────────────────
-
-\section{ATAM (\textit{Architecture Tradeoff Analysis Method})}
-
-Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
-
-\subsection{Origen y contexto: SEI/CMU, Kazman et al.}
-
-Temporibus autem quibusdam et aut officiis debitis aut rerum necessitatibus saepe eveniet ut et voluptates repudiandae sint et molestiae non recusandae. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt.
-
-\subsection{Proceso ATAM: fases, roles y dinámica colaborativa}
-
-Quis autem vel eum iure reprehenderit qui in ea voluptate velit esse quam nihil molestiae consequatur, vel illum qui dolorem eum fugiat quo voluptas nulla pariatur.
-
-\begin{enumerate}
-    \item Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut.
-    \item Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam eaque ipsa quae ab.
-    \item Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed.
-    \item Quis autem vel eum iure reprehenderit qui in ea voluptate velit esse quam nihil molestiae consequatur.
-\end{enumerate}
-
-Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam eaque ipsa quae ab illo inventore veritatis. Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt.
-
-\subsection{Utility Tree: escenarios de calidad, conductores arquitectónicos y priorización}
-
-Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt. Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit, sed quia non numquam eius modi tempora incidunt ut labore et dolore magnam aliquam quaerat voluptatem.
-
-Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam eaque ipsa quae ab illo inventore veritatis. Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt.
-
-\subsection{Conceptos clave: \textit{sensitivity points}, \textit{tradeoff points}, riesgos y no-riesgos}
-
-Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
-
-\begin{itemize}
-    \item Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
-
-    \item Temporibus autem quibusdam et aut officiis debitis aut rerum necessitatibus saepe eveniet ut et voluptates repudiandae sint et molestiae non recusandae.
-
-    \item Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed.
-
-    \item Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod.
-\end{itemize}
-
-\subsection{Aplicación en Arquitecturas de Referencia}
-
-Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt. Ut enim ad minima veniam, quis nostrum exercitationem ullam corporis suscipit laboriosam, nisi ut aliquid ex ea commodi consequatur. Quis autem vel eum iure reprehenderit qui in ea voluptate velit esse quam nihil molestiae consequatur, vel illum qui dolorem eum fugiat quo voluptas nulla pariatur.
-
-\subsection{Vínculo \texorpdfstring{ATAM~$\leftrightarrow$~ADRs}{ATAM <-> ADRs}: cada \textit{sensitivity point} debe tener un ADR}
-
-Et harum quidem rerum facilis est et expedita distinctio, nam libero tempore, cum soluta nobis est eligendi optio cumque nihil impedit quo minus id quod maxime placeat facere possimus. Temporibus autem quibusdam et aut officiis debitis aut rerum necessitatibus saepe eveniet ut et voluptates repudiandae sint et molestiae non recusandae. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.
-
-% ─────────────────────────────────────────────────────────────────────────────
-
-\section{Tecnologías Habilitantes}
-
-Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam eaque ipsa quae ab illo inventore veritatis.
-
-\subsection{Modelo C4 (Simon Brown): niveles, diferencia con UML y notación}
-
-At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis praesentium voluptatum deleniti atque corrupti quos dolores et quas molestias excepturi sint occaecati cupiditate non provident. Et harum quidem rerum facilis est et expedita distinctio, nam libero tempore, cum soluta nobis est eligendi optio cumque nihil impedit quo minus id quod maxime placeat facere possimus.
-
-\begin{itemize}
-    \item Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat.
-    \item Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt.
-    \item Et harum quidem rerum facilis est et expedita.
-    \item Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor.
-\end{itemize}
-
-Et harum quidem rerum facilis est et expedita distinctio, nam libero tempore, cum soluta nobis est eligendi optio cumque nihil impedit quo minus id quod maxime placeat facere possimus. Temporibus autem quibusdam et aut officiis debitis aut rerum necessitatibus saepe eveniet ut et voluptates repudiandae sint et molestiae non recusandae.
-
-\subsection{Distributed Ledger Technology (DLT) para auditoría: blockchain permisionado y Hyperledger Fabric}
-
-Quis autem vel eum iure reprehenderit qui in ea voluptate velit esse quam nihil molestiae consequatur, vel illum qui dolorem eum fugiat quo voluptas nulla pariatur. At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis praesentium voluptatum deleniti atque corrupti quos dolores et quas molestias excepturi sint occaecati cupiditate non provident. Et harum quidem rerum facilis est et expedita distinctio, nam libero tempore, cum soluta nobis est eligendi optio cumque nihil impedit quo minus id quod maxime placeat facere possimus.
-
-Ut enim ad minima veniam, quis nostrum exercitationem ullam corporis suscipit laboriosam, nisi ut aliquid ex ea commodi consequatur. At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis praesentium voluptatum deleniti atque corrupti quos dolores et quas molestias excepturi sint occaecati cupiditate non provident. Et harum quidem rerum facilis est et expedita distinctio, nam libero tempore, cum soluta nobis est eligendi optio cumque nihil impedit quo minus id quod maxime placeat facere possimus. Temporibus autem quibusdam et aut officiis debitis aut rerum necessitatibus saepe eveniet ut et voluptates repudiandae sint et molestiae non recusandae.
+La inyección de fallos y la ingeniería del caos introducen perturbaciones controladas para evaluar la resiliencia del sistema y la capacidad de los modelos de detectarlas. MAIA, por ejemplo, usa Chaos Mesh para inyectar fallos en Kubernetes y medir \textit{recall} y $F_1$ del detector por tipo de fallo, e identifica tipos con menor desempeño~\cite{pedroso2025_maia}. En este trabajo se sigue una idea análoga a escala del \textit{batch}: se inyectan eventos de error simulados en el flujo de logs y se verifica si el \textit{batch} que los contiene se clasifica como error (véase la Sección~\ref{sec:met_inyeccion}).
