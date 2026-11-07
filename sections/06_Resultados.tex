@@ -1,941 +1,207 @@
 \chapter{Resultados}\label{cap:resultados}
 
-Et harum quidem rerum facilis est et expedita distinctio, nam libero tempore, cum soluta nobis est eligendi optio cumque nihil impedit quo minus id quod maxime placeat facere possimus. Temporibus autem quibusdam et aut officiis debitis aut rerum necessitatibus saepe eveniet ut et voluptates repudiandae sint et molestiae non recusandae. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.
+Este capítulo presenta los resultados obtenidos: el conjunto de datos y su \textit{ground truth}, la evaluación de los SLM, la sensibilidad al tamaño de \textit{batch}, la fiabilidad de ejecución y el estado de los componentes de notificación, recomendación e inyección de errores. Todas las cifras provienen de los reportes del proyecto técnico (\texttt{analysis/batch\_size\_matrix/}, \texttt{pseudo\_labeling/}) o, cuando se indica, de un recálculo propio de solo lectura sobre esos archivos (\texttt{notes/eval\_final\_gt.py}). Donde un resultado no existe todavía, se indica con un comentario \texttt{TODO}.
 
-% ======================================================================
-% 6.1 — CATÁLOGO DE REQUISITOS
-% ======================================================================
+\section{Conjunto de datos (objetivo específico 1)}\label{sec:res_dataset}
 
-\section{Catálogo de Requisitos}\label{sec:requisitos}
+\subsection{Prefiltrado}
 
-Ut enim ad minima veniam, quis nostrum exercitationem ullam corporis suscipit laboriosam, nisi ut aliquid ex ea commodi consequatur. Quis autem vel eum iure reprehenderit qui in ea voluptate velit esse quam nihil molestiae consequatur, vel illum qui dolorem eum fugiat quo voluptas nulla pariatur. At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis praesentium voluptatum deleniti atque corrupti quos dolores et quas molestias excepturi sint occaecati cupiditate non provident. Et harum quidem rerum facilis est et expedita distinctio, nam libero tempore, cum soluta nobis est eligendi optio cumque nihil impedit quo minus id quod maxime placeat facere possimus.
+De 27{,}752{,}836 eventos del corpus \texttt{ms-users} se conservaron 223{,}104 (0.804\,\%), organizados en 4{,}463 \textit{batches} de 50 eventos (4{,}462 completos y uno de 4). % TODO: tabla con el desglose del filter_report.txt (eventos descartados por motivo) y distribución por nivel/logger de los eventos conservados.
 
-% ----------------------------------------------------------------------
-\subsection{Identificación de requisitos del módulo de auditoría}\label{subsec:cadena_poc}
+\subsection{Preetiquetado por consenso}
 
-Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam eaque ipsa quae ab illo inventore veritatis. Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt. Ut enim ad minima veniam, quis nostrum exercitationem ullam corporis suscipit laboriosam, nisi ut aliquid ex ea commodi consequatur.
+La votación de tres LLM sobre cada \textit{batch} produjo 1{,}370 \textit{batches} error (30.70\,\%) y 3{,}093 normales por mayoría, con $\kappa$ de Fleiss de 0.886 (Sección~\ref{subsec:met_kappa}). Los votos individuales, el tiempo y el consumo de \textit{tokens} están en la Tabla~\ref{tab:met_votos}. El consenso coincide con la referencia derivada de las etiquetas por evento (error si algún evento lo es) en 4{,}400 de 4{,}463 \textit{batches} (98.59\,\%).
 
-\small
-\begin{table}[H]
-\centering
-\caption{Neque porro quisquam est, qui dolorem ipsum quia.}
-\label{tab:epic_poc}
-\begin{tabular}{@{}p{1cm}p{4.8cm}p{5.2cm}p{1.3cm}@{}}
-\toprule
-\textbf{EPIC} & \textbf{Nombre} & \textbf{Referencias normativas} & \textbf{MoSCoW} \\
-\midrule
-Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
-\bottomrule
-\end{tabular}
-\end{table}
-\normalsize
+\subsection{Revisión experta}
 
-At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis praesentium voluptatum deleniti atque corrupti quos dolores et quas molestias excepturi sint occaecati cupiditate non provident. Et harum quidem rerum facilis est et expedita distinctio, nam libero tempore, cum soluta nobis est eligendi optio cumque nihil impedit quo minus id quod maxime placeat facere possimus. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.
-
-\small
-\begin{table}[H]
-\centering
-\caption{Lorem ipsum dolor sit amet, consectetur adipiscing elit.}
-\label{tab:bd_poc}
-\begin{tabular}{@{}p{0.7cm}p{6.0cm}p{2.3cm}p{3.7cm}@{}}
-\toprule
-\textbf{BD} & \textbf{Driver} & \textbf{Tipo} & \textbf{Fuente normativa} \\
-\midrule
-Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
-\bottomrule
-\end{tabular}
-\end{table}
-\normalsize
-
-Et harum quidem rerum facilis est et expedita distinctio, nam libero tempore, cum soluta nobis est eligendi optio cumque nihil impedit quo minus id quod maxime placeat facere possimus. Temporibus autem quibusdam et aut officiis debitis aut rerum necessitatibus saepe eveniet ut et voluptates repudiandae sint et molestiae non recusandae. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
-
-\small
-\begin{table}[H]
-\centering
-\caption{Et harum quidem rerum facilis est et expedita.}
-\label{tab:nfr_poc}
-\begin{tabular}{@{}p{1cm}p{3.4cm}p{3.1cm}p{4cm}p{1.2cm}@{}}
-\toprule
-\textbf{ID} & \textbf{Nombre} & \textbf{Sub-caract. ISO~25010} & \textbf{Valor objetivo} & \textbf{MoSCoW} \\
-\midrule
-Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
-\midrule
-Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
-\midrule
-Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
-\bottomrule
-\end{tabular}
-\end{table}
-\normalsize
-
-At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis praesentium voluptatum deleniti atque corrupti quos dolores et quas molestias excepturi sint occaecati cupiditate non provident. Et harum quidem rerum facilis est et expedita distinctio, nam libero tempore, cum soluta nobis est eligendi optio cumque nihil impedit quo minus id quod maxime placeat facere possimus.
-
-\small
-\begin{table}[H]
-\centering
-\caption{Sed ut perspiciatis unde omnis iste natus error.}
-\label{tab:qas_poc}
-\begin{tabular}{@{}p{0.9cm}p{1.5cm}p{3.2cm}p{2.5cm}p{4.6cm}@{}}
-\toprule
-\textbf{ID} & \textbf{NFR(s)} & \textbf{Estímulo} & \textbf{Artefacto} & \textbf{Medida de respuesta} \\
-\midrule
-Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
-\midrule
-Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
-\bottomrule
-\end{tabular}
-\end{table}
-\normalsize
-
-Ut enim ad minima veniam, quis nostrum exercitationem ullam corporis suscipit laboriosam, nisi ut aliquid ex ea commodi consequatur. Quis autem vel eum iure reprehenderit qui in ea voluptate velit esse quam nihil molestiae consequatur, vel illum qui dolorem eum fugiat quo voluptas nulla pariatur.
-
-% ----------------------------------------------------------------------
-\subsection{Requisitos Funcionales}\label{subsec:req_funcionales}
-
-Quis autem vel eum iure reprehenderit qui in ea voluptate velit esse quam nihil molestiae consequatur, vel illum qui dolorem eum fugiat quo voluptas nulla pariatur. At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis praesentium voluptatum deleniti atque corrupti quos dolores et quas molestias excepturi sint occaecati cupiditate non provident. Temporibus autem quibusdam et aut officiis debitis aut rerum necessitatibus saepe eveniet ut et voluptates repudiandae sint et molestiae non recusandae. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
-
-Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam eaque ipsa quae ab illo inventore veritatis.
+La Tabla~\ref{tab:res_expertos} muestra el resultado de la segunda revisión de la muestra aleatoria estratificada de 220 \textit{batches}, hecha con el criterio acordado (Tabla~\ref{tab:met_criterio}). Del total, 63 etiquetas pasaron de error a normal respecto de la primera revisión y ninguna de normal a error.
 
 \begin{table}[H]
 \centering
+\caption{Segunda revisión experta de la muestra aleatoria estratificada. IC: intervalo de Wilson al 95\,\%.}
+\label{tab:res_expertos}
 \small
-\caption{Excepteur sint occaecat cupidatat non proident, sunt in.}
-\label{tab:epics_core}
-\begin{tabular}{@{}p{1cm}p{3.8cm}p{7.2cm}p{1.3cm}@{}}
+\begin{tabular}{@{}lrrrr@{}}
 \toprule
-\textbf{EPIC} & \textbf{Nombre} & \textbf{Referencias normativas} & \textbf{MoSCoW} \\
+\textbf{Estrato (según los LLM)} & \textbf{\textit{Batches} revisados} & \textbf{Error según experto} & \textbf{IC 95\,\%} & \textbf{Contradice al consenso} \\
 \midrule
-Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
-\midrule
-Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
-\midrule
-Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
-\midrule
-Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
+Error unánime (3/3) & 88 & 11 (12.5\,\%) & 7.1--21.0\,\% & 77/88 (87.5\,\%) \\
+Desacuerdo (1 o 2 votos) & 88 & 6 (6.8\,\%) & 3.2--14.1\,\% & 43/88 (48.9\,\%) \\
+Normal unánime (0/3) & 44 & 0 (0\,\%) & 0--8.0\,\% & 0/44 \\
 \bottomrule
 \end{tabular}
+\normalsize
 \end{table}
 
-Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam eaque ipsa quae ab illo inventore veritatis.
+El hallazgo central es que \textbf{el consenso de tres LLM sobreestima el error}: solo el 12.5\,\% de los \textit{batches} en los que los tres modelos coinciden en ``error'' lo son según los expertos. Los modelos marcaban como error condiciones que los revisores consideran funcionales (política de contraseñas, respuestas 404/406, usuario no encontrado), y en parte esto se explica porque el \textit{prompt} de la votación las incluye como errores (Apéndice~\ref{ap:prompt_votacion}). En total los expertos revisaron 329 \textit{batches} (220 de la muestra y 109 de rondas dirigidas): 39 error y 290 normales.
 
-\paragraph{Et harum quidem rerum facilis est et expedita.}
-Ut enim ad minima veniam, quis nostrum exercitationem ullam corporis suscipit laboriosam, nisi ut aliquid ex ea commodi consequatur. Quis autem vel eum iure reprehenderit qui in ea voluptate velit esse quam nihil molestiae consequatur, vel illum qui dolorem eum fugiat quo voluptas nulla pariatur. At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis praesentium voluptatum deleniti atque corrupti quos dolores et quas molestias excepturi sint occaecati cupiditate non provident. Temporibus autem quibusdam et aut officiis debitis aut rerum necessitatibus saepe eveniet ut et voluptates repudiandae sint et molestiae non recusandae.
+\subsection{\textit{Ground truth} final}
 
-\paragraph{Duis aute irure dolor in reprehenderit in voluptate.}
-Ut enim ad minima veniam, quis nostrum exercitationem ullam corporis suscipit laboriosam, nisi ut aliquid ex ea commodi consequatur. Quis autem vel eum iure reprehenderit qui in ea voluptate velit esse quam nihil molestiae consequatur, vel illum qui dolorem eum fugiat quo voluptas nulla pariatur. Et harum quidem rerum facilis est et expedita distinctio, nam libero tempore, cum soluta nobis est eligendi optio cumque nihil impedit quo minus id quod maxime placeat facere possimus. Temporibus autem quibusdam et aut officiis debitis aut rerum necessitatibus saepe eveniet ut et voluptates repudiandae sint et molestiae non recusandae. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
-
-\paragraph{Et harum quidem rerum facilis est et expedita.}
-Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit, sed quia non numquam eius modi tempora incidunt ut labore et dolore magnam aliquam quaerat voluptatem. Ut enim ad minima veniam, quis nostrum exercitationem ullam corporis suscipit laboriosam, nisi ut aliquid ex ea commodi consequatur. Quis autem vel eum iure reprehenderit qui in ea voluptate velit esse quam nihil molestiae consequatur, vel illum qui dolorem eum fugiat quo voluptas nulla pariatur. At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis praesentium voluptatum deleniti atque corrupti quos dolores et quas molestias excepturi sint occaecati cupiditate non provident. Temporibus autem quibusdam et aut officiis debitis aut rerum necessitatibus saepe eveniet ut et voluptates repudiandae sint et molestiae non recusandae.
-
-% ----------------------------------------------------------------------
-\subsection{Requisitos No Funcionales}\label{subsec:nfr}
-
-Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt.
+La propagación del criterio produjo etiquetas para los 4{,}463 \textit{batches}, sin ninguno pendiente (Tabla~\ref{tab:res_origen}). El \textit{ground truth} final contiene \textbf{130 \textit{batches} error (2.91\,\%)}: 39 por revisión directa y 91 por reglas; la similitud solo asigna normal. Por estrato original, hay 120 errores en error unánime (de 1{,}203), 10 en desacuerdo (de 324) y 0 en normal unánime. El consenso preliminar y el \textit{ground truth} final coinciden en 3{,}221 de 4{,}463 \textit{batches} (72.2\,\%).
 
 \begin{table}[H]
 \centering
+\caption{Origen de la etiqueta en el \textit{ground truth} final.}
+\label{tab:res_origen}
 \small
-\caption{Duis aute irure dolor in reprehenderit in voluptate.}
-\label{tab:bd_nfr_core}
-\begin{tabular}{@{}p{0.7cm}p{6.0cm}p{2.3cm}p{3.7cm}@{}}
+\begin{tabular}{@{}lrrr@{}}
 \toprule
-\textbf{BD} & \textbf{Driver} & \textbf{Tipo} & \textbf{Fuente normativa} \\
+\textbf{Origen (\texttt{label\_source})} & \textbf{\textit{Batches}} & \textbf{Error} & \textbf{Normal} \\
 \midrule
-Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
-\midrule
-Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
-\midrule
-Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
-\midrule
-Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
-\midrule
-Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
-\midrule
-Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
+Ningún LLM votó error & 2{,}892 & 0 & 2{,}892 \\
+Similitud con \textit{batch} revisado & 1{,}093 & 0 & 1{,}093 \\
+Experto & 329 & 39 & 290 \\
+Regla ``AS400 normal'' & 58 & 0 & 58 \\
+Regla de error & 55 & 55 & 0 \\
+Regla de error + similitud & 31 & 31 & 0 \\
+Regla de error sobre similitud & 5 & 5 & 0 \\
+\textbf{Total} & \textbf{4{,}463} & \textbf{130} & \textbf{4{,}333} \\
 \bottomrule
 \end{tabular}
+\normalsize
 \end{table}
 
-At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis praesentium voluptatum deleniti atque corrupti quos dolores et quas molestias excepturi sint occaecati cupiditate non provident. Temporibus autem quibusdam et aut officiis debitis aut rerum necessitatibus saepe eveniet ut et voluptates repudiandae sint et molestiae non recusandae. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+La estimación por muestreo aleatorio extrapola unos 172 errores (3.9\,\%) con un intervalo muy amplio (96--534), de modo que el valor final de 130 cae dentro del intervalo pero por debajo de la estimación puntual: el \textit{ground truth} podría subestimar algunos errores. La validación \textit{leave-one-out} de las reglas sobre los 285 \textit{batches} revisados con voto de error da TP $=17$, FP $=0$, FN $=8$, TN $=174$ y 86 sin resolver (precisión 1.00, \textit{recall} 0.44), pero es optimista porque los patrones salen de las mismas etiquetas.
+% TODO: tabla de tipos de error del GT final (por regla/tipo de evento) para cerrar el objetivo 1 "clasificados por tipos".
+% TODO: acuerdo entre expertos (no se midió) y muestra independiente de comprobación de lo propagado: están pendientes (GROUND_TRUTH_BATCHES.md, sección 10).
 
-\small
-\begin{longtable}{@{}p{1cm}p{3.4cm}p{3.1cm}p{4cm}p{1.2cm}@{}}
-\caption{Lorem ipsum dolor sit amet, consectetur adipiscing elit.}\label{tab:nfr_core}\\
-\toprule
-\textbf{ID} & \textbf{Nombre} & \textbf{Sub-caract. ISO~25010} & \textbf{Valor objetivo} & \textbf{MoSCoW} \\
-\midrule
-\endfirsthead
-\multicolumn{5}{l}{\small\itshape Continuación de la Tabla~\thetable}\\[2pt]
-\toprule
-\textbf{ID} & \textbf{Nombre} & \textbf{Sub-caract. ISO~25010} & \textbf{Valor objetivo} & \textbf{MoSCoW} \\
-\midrule
-\endhead
-\bottomrule
-\endlastfoot
-Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
-\midrule
-Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
-\midrule
-Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
-\midrule
-Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
-\midrule
-Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
-\midrule
-Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
-\midrule
-Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
-\midrule
-Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
-\midrule
-Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
-\midrule
-Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
-\midrule
-Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
-\midrule
-Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
-\end{longtable}
-\normalsize
+\section{Evaluación de los SLM (objetivo específico 3)}\label{sec:res_slm}
 
-Quis autem vel eum iure reprehenderit qui in ea voluptate velit esse quam nihil molestiae consequatur, vel illum qui dolorem eum fugiat quo voluptas nulla pariatur. At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis praesentium voluptatum deleniti atque corrupti quos dolores et quas molestias excepturi sint occaecati cupiditate non provident. Et harum quidem rerum facilis est et expedita distinctio, nam libero tempore, cum soluta nobis est eligendi optio cumque nihil impedit quo minus id quod maxime placeat facere possimus.
+\subsection{Resultados contra la referencia por consenso, $N=50$}\label{subsec:res_n50}
 
-\footnotesize
-\begin{longtable}{@{}p{0.9cm}p{1.5cm}p{3.2cm}p{2.5cm}p{4.6cm}@{}}
-\caption{At vero eos et accusamus et iusto odio.}\label{tab:qas_core}\\
-\toprule
-\textbf{ID} & \textbf{NFR(s)} & \textbf{Estímulo} & \textbf{Artefacto} & \textbf{Medida de respuesta} \\
-\midrule
-\endfirsthead
-\multicolumn{5}{l}{\footnotesize\itshape Continuación de la Tabla~\thetable}\\[2pt]
-\toprule
-\textbf{ID} & \textbf{NFR(s)} & \textbf{Estímulo} & \textbf{Artefacto} & \textbf{Medida de respuesta} \\
-\midrule
-\endhead
-\bottomrule
-\endlastfoot
-Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
-\midrule
-Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
-\midrule
-Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
-\midrule
-Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
-\midrule
-Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
-\midrule
-Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
-\midrule
-Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
-\midrule
-Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
-\midrule
-Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
-\midrule
-Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
-\midrule
-Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
-\end{longtable}
-\normalsize
-
-Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam eaque ipsa quae ab illo inventore veritatis.
-
-% ======================================================================
-% 6.2 — ARQUITECTURA DE REFERENCIA
-% ======================================================================
-
-\section{Arquitectura de Referencia}\label{sec:arquitectura}
-
-Quis autem vel eum iure reprehenderit qui in ea voluptate velit esse quam nihil molestiae consequatur, vel illum qui dolorem eum fugiat quo voluptas nulla pariatur. At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis praesentium voluptatum deleniti atque corrupti quos dolores et quas molestias excepturi sint occaecati cupiditate non provident.
-
-% ----------------------------------------------------------------------
-\subsection{Nivel 1 --- Diagrama de Contexto}\label{subsec:c4_n1}
-
-Temporibus autem quibusdam et aut officiis debitis aut rerum necessitatibus saepe eveniet ut et voluptates repudiandae sint et molestiae non recusandae. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
-
-% ----------------------------------------------------------------------
-% EJEMPLO de figura (copia el bloque, descomentalo y reemplaza ruta y caption):
-% \begin{figure}[H]
-%   \centering
-%   \includegraphics[width=\textwidth]{figs/mi_figura.pdf}
-%   \caption[Titulo corto]{Descripcion de la figura.}
-%   \label{fig:mi_figura}   % se cita con: Figura~\ref{fig:mi_figura}
-% \end{figure}
-% ----------------------------------------------------------------------
-
-Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt. Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit, sed quia non numquam eius modi tempora incidunt ut labore et dolore magnam aliquam quaerat voluptatem. Ut enim ad minima veniam, quis nostrum exercitationem ullam corporis suscipit laboriosam, nisi ut aliquid ex ea commodi consequatur. At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis praesentium voluptatum deleniti atque corrupti quos dolores et quas molestias excepturi sint occaecati cupiditate non provident. Et harum quidem rerum facilis est et expedita distinctio, nam libero tempore, cum soluta nobis est eligendi optio cumque nihil impedit quo minus id quod maxime placeat facere possimus.
-
-Temporibus autem quibusdam et aut officiis debitis aut rerum necessitatibus saepe eveniet ut et voluptates repudiandae sint et molestiae non recusandae. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam eaque ipsa quae ab illo inventore veritatis. Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit, sed quia non numquam eius modi tempora incidunt ut labore et dolore magnam aliquam quaerat voluptatem.
-
-% ----------------------------------------------------------------------
-\subsection{Análisis de Estilos Arquitectónicos y Decisión Adoptada}\label{subsec:estilos}
-
-Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam eaque ipsa quae ab illo inventore veritatis. Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt. Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit, sed quia non numquam eius modi tempora incidunt ut labore et dolore magnam aliquam quaerat voluptatem. Ut enim ad minima veniam, quis nostrum exercitationem ullam corporis suscipit laboriosam, nisi ut aliquid ex ea commodi consequatur.
-
-Ut enim ad minima veniam, quis nostrum exercitationem ullam corporis suscipit laboriosam, nisi ut aliquid ex ea commodi consequatur. Quis autem vel eum iure reprehenderit qui in ea voluptate velit esse quam nihil molestiae consequatur, vel illum qui dolorem eum fugiat quo voluptas nulla pariatur. At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis praesentium voluptatum deleniti atque corrupti quos dolores et quas molestias excepturi sint occaecati cupiditate non provident. Et harum quidem rerum facilis est et expedita distinctio, nam libero tempore, cum soluta nobis est eligendi optio cumque nihil impedit quo minus id quod maxime placeat facere possimus. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
-
-Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit, sed quia non numquam eius modi tempora incidunt ut labore et dolore magnam aliquam quaerat voluptatem. Ut enim ad minima veniam, quis nostrum exercitationem ullam corporis suscipit laboriosam, nisi ut aliquid ex ea commodi consequatur. At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis praesentium voluptatum deleniti atque corrupti quos dolores et quas molestias excepturi sint occaecati cupiditate non provident. Temporibus autem quibusdam et aut officiis debitis aut rerum necessitatibus saepe eveniet ut et voluptates repudiandae sint et molestiae non recusandae. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
-
-% ----------------------------------------------------------------------
-\subsection{Visión Arquitectónica}\label{subsec:vision_arq}
-
-Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam eaque ipsa quae ab illo inventore veritatis.
-
-\begin{quote}\itshape
-Temporibus autem quibusdam et aut officiis debitis aut rerum necessitatibus saepe eveniet ut et voluptates repudiandae sint et molestiae non recusandae. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam eaque ipsa quae ab illo inventore veritatis. Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt.
-
-\end{quote}
-
-Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt.
-
-\small
-\begin{longtable}{@{}p{0.8cm}p{2.0cm}p{9.0cm}@{}}
-\caption{Neque porro quisquam est, qui dolorem ipsum quia.}\label{tab:restricciones_arq}\\
-\toprule
-\textbf{ID} & \textbf{Tipo} & \textbf{Descripción} \\
-\midrule
-\endfirsthead
-\multicolumn{3}{l}{\small\itshape Continuación de la Tabla~\thetable}\\[2pt]
-\toprule
-\textbf{ID} & \textbf{Tipo} & \textbf{Descripción} \\
-\midrule
-\endhead
-\bottomrule
-\endlastfoot
-Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
-\midrule
-Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
-\midrule
-Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
-\midrule
-Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
-\midrule
-Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
-\midrule
-Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
-\midrule
-Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
-\midrule
-Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
-\midrule
-Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
-\midrule
-Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
-\midrule
-Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
-\end{longtable}
-\normalsize
-
-Quis autem vel eum iure reprehenderit qui in ea voluptate velit esse quam nihil molestiae consequatur, vel illum qui dolorem eum fugiat quo voluptas nulla pariatur. Et harum quidem rerum facilis est et expedita distinctio, nam libero tempore, cum soluta nobis est eligendi optio cumque nihil impedit quo minus id quod maxime placeat facere possimus.
-
-% ----------------------------------------------------------------------
-\subsection{Principios Arquitectónicos}\label{subsec:principios_arq}
-
-Quis autem vel eum iure reprehenderit qui in ea voluptate velit esse quam nihil molestiae consequatur, vel illum qui dolorem eum fugiat quo voluptas nulla pariatur. At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis praesentium voluptatum deleniti atque corrupti quos dolores et quas molestias excepturi sint occaecati cupiditate non provident.
-
-\small
-\begin{longtable}{@{}p{0.75cm}p{3.0cm}p{8.0cm}@{}}
-\caption{At vero eos et accusamus et iusto odio.}\label{tab:principios_inline}\\
-\toprule
-\textbf{ID} & \textbf{Enunciado} & \textbf{Implicación principal} \\
-\midrule
-\endfirsthead
-\multicolumn{3}{l}{\small\itshape Continuación de la Tabla~\thetable}\\[2pt]
-\toprule
-\textbf{ID} & \textbf{Enunciado} & \textbf{Implicación principal} \\
-\midrule
-\endhead
-\bottomrule
-\endlastfoot
-Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
-\midrule
-Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
-\midrule
-Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
-\midrule
-Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
-\midrule
-Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
-\midrule
-Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
-\midrule
-Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
-\midrule
-Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
-\end{longtable}
-\normalsize
-
-Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit, sed quia non numquam eius modi tempora incidunt ut labore et dolore magnam aliquam quaerat voluptatem. Ut enim ad minima veniam, quis nostrum exercitationem ullam corporis suscipit laboriosam, nisi ut aliquid ex ea commodi consequatur.
-
-% ----------------------------------------------------------------------
-\subsection{Decisiones Arquitectónicas Clave}\label{subsec:adrs_principales}
-
-Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
-
-\footnotesize
-\begin{longtable}{@{}p{0.9cm}p{4.5cm}p{3.0cm}p{3.4cm}@{}}
-\caption{Nemo enim ipsam voluptatem quia voluptas sit aspernatur.}\label{tab:adrs_core}\\
-\toprule
-\textbf{ADR} & \textbf{Decisión} & \textbf{Consecuencia} & \textbf{ADRs relacionados} \\
-\midrule
-\endfirsthead
-\multicolumn{4}{l}{\footnotesize\itshape Continuación de la Tabla~\thetable}\\[2pt]
-\toprule
-\textbf{ADR} & \textbf{Decisión} & \textbf{Consecuencia} & \textbf{ADRs relacionados} \\
-\midrule
-\endhead
-\bottomrule
-\endlastfoot
-Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
-\midrule
-Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
-\midrule
-Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
-\midrule
-Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
-\midrule
-Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
-\midrule
-Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
-\midrule
-Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
-\midrule
-Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
-\midrule
-Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
-\midrule
-Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
-\end{longtable}
-\normalsize
-
-Temporibus autem quibusdam et aut officiis debitis aut rerum necessitatibus saepe eveniet ut et voluptates repudiandae sint et molestiae non recusandae. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.
-
-% ----------------------------------------------------------------------
-\subsection{Nivel 2 --- Diagrama de Contenedores}\label{subsec:c4_n2}
-
-Ut enim ad minima veniam, quis nostrum exercitationem ullam corporis suscipit laboriosam, nisi ut aliquid ex ea commodi consequatur. At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis praesentium voluptatum deleniti atque corrupti quos dolores et quas molestias excepturi sint occaecati cupiditate non provident.
-
-Et harum quidem rerum facilis est et expedita distinctio, nam libero tempore, cum soluta nobis est eligendi optio cumque nihil impedit quo minus id quod maxime placeat facere possimus. Temporibus autem quibusdam et aut officiis debitis aut rerum necessitatibus saepe eveniet ut et voluptates repudiandae sint et molestiae non recusandae. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt.
-
-\footnotesize
-\begin{longtable}{@{}p{2.3cm}p{1.4cm}p{5.5cm}p{2.5cm}@{}}
-\caption{Nemo enim ipsam voluptatem quia voluptas sit aspernatur.}\label{tab:contenedores}\\
-\toprule
-\textbf{Contenedor} & \textbf{Tipo} & \textbf{Responsabilidad} & \textbf{Protocolo principal} \\
-\midrule
-\endfirsthead
-\multicolumn{4}{l}{\footnotesize\itshape Continuación de la Tabla~\thetable}\\[2pt]
-\toprule
-\textbf{Contenedor} & \textbf{Tipo} & \textbf{Responsabilidad} & \textbf{Protocolo principal} \\
-\midrule
-\endhead
-\bottomrule
-\endlastfoot
-Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
-\midrule
-Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
-\midrule
-Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
-\midrule
-Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
-\midrule
-Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
-\midrule
-Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
-\midrule
-Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
-\midrule
-Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
-\midrule
-Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
-\midrule
-Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
-\midrule
-Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
-\midrule
-Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
-\midrule
-Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
-\end{longtable}
-\normalsize
-
-Et harum quidem rerum facilis est et expedita distinctio, nam libero tempore, cum soluta nobis est eligendi optio cumque nihil impedit quo minus id quod maxime placeat facere possimus. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam eaque ipsa quae ab illo inventore veritatis.
-
-% ----------------------------------------------------------------------
-\subsection{Nivel 3 --- Diagramas de Componentes}\label{subsec:c4_n3}
-
-Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam eaque ipsa quae ab illo inventore veritatis.
-
-% --- M-01 -----------------------------------------------------------
-Et harum quidem rerum facilis est et expedita distinctio, nam libero tempore, cum soluta nobis est eligendi optio cumque nihil impedit quo minus id quod maxime placeat facere possimus. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
-
-Quis autem vel eum iure reprehenderit qui in ea voluptate velit esse quam nihil molestiae consequatur, vel illum qui dolorem eum fugiat quo voluptas nulla pariatur. Et harum quidem rerum facilis est et expedita distinctio, nam libero tempore, cum soluta nobis est eligendi optio cumque nihil impedit quo minus id quod maxime placeat facere possimus. Temporibus autem quibusdam et aut officiis debitis aut rerum necessitatibus saepe eveniet ut et voluptates repudiandae sint et molestiae non recusandae. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
-
-% --- M-02 -----------------------------------------------------------
-Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit, sed quia non numquam eius modi tempora incidunt ut labore et dolore magnam aliquam quaerat voluptatem. Ut enim ad minima veniam, quis nostrum exercitationem ullam corporis suscipit laboriosam, nisi ut aliquid ex ea commodi consequatur. At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis praesentium voluptatum deleniti atque corrupti quos dolores et quas molestias excepturi sint occaecati cupiditate non provident.
-
-Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit, sed quia non numquam eius modi tempora incidunt ut labore et dolore magnam aliquam quaerat voluptatem. Ut enim ad minima veniam, quis nostrum exercitationem ullam corporis suscipit laboriosam, nisi ut aliquid ex ea commodi consequatur. Quis autem vel eum iure reprehenderit qui in ea voluptate velit esse quam nihil molestiae consequatur, vel illum qui dolorem eum fugiat quo voluptas nulla pariatur. At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis praesentium voluptatum deleniti atque corrupti quos dolores et quas molestias excepturi sint occaecati cupiditate non provident. Temporibus autem quibusdam et aut officiis debitis aut rerum necessitatibus saepe eveniet ut et voluptates repudiandae sint et molestiae non recusandae.
-
-% --- M-03 -----------------------------------------------------------
-Ut enim ad minima veniam, quis nostrum exercitationem ullam corporis suscipit laboriosam, nisi ut aliquid ex ea commodi consequatur. At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis praesentium voluptatum deleniti atque corrupti quos dolores et quas molestias excepturi sint occaecati cupiditate non provident. Temporibus autem quibusdam et aut officiis debitis aut rerum necessitatibus saepe eveniet ut et voluptates repudiandae sint et molestiae non recusandae.
-
-Ut enim ad minima veniam, quis nostrum exercitationem ullam corporis suscipit laboriosam, nisi ut aliquid ex ea commodi consequatur. At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis praesentium voluptatum deleniti atque corrupti quos dolores et quas molestias excepturi sint occaecati cupiditate non provident. Et harum quidem rerum facilis est et expedita distinctio, nam libero tempore, cum soluta nobis est eligendi optio cumque nihil impedit quo minus id quod maxime placeat facere possimus. Temporibus autem quibusdam et aut officiis debitis aut rerum necessitatibus saepe eveniet ut et voluptates repudiandae sint et molestiae non recusandae. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
-
-% --- M-05 -----------------------------------------------------------
-Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam eaque ipsa quae ab illo inventore veritatis.
-
-Quis autem vel eum iure reprehenderit qui in ea voluptate velit esse quam nihil molestiae consequatur, vel illum qui dolorem eum fugiat quo voluptas nulla pariatur. At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis praesentium voluptatum deleniti atque corrupti quos dolores et quas molestias excepturi sint occaecati cupiditate non provident. Et harum quidem rerum facilis est et expedita distinctio, nam libero tempore, cum soluta nobis est eligendi optio cumque nihil impedit quo minus id quod maxime placeat facere possimus. Temporibus autem quibusdam et aut officiis debitis aut rerum necessitatibus saepe eveniet ut et voluptates repudiandae sint et molestiae non recusandae. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
-
-% ======================================================================
-% 6.3 — PROTOTIPO: MÓDULO DE AUDITORÍA (ILS)
-% ======================================================================
-
-\section{Prototipo: Módulo de Auditoría (ILS)}\label{sec:prototipo}
-
-Temporibus autem quibusdam et aut officiis debitis aut rerum necessitatibus saepe eveniet ut et voluptates repudiandae sint et molestiae non recusandae. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.
-
-% ----------------------------------------------------------------------
-\subsection{Implementación: Diagrama de Código (C4 Nivel 4)}\label{subsec:c4_n4}
-
-Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt. Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit, sed quia non numquam eius modi tempora incidunt ut labore et dolore magnam aliquam quaerat voluptatem. Quis autem vel eum iure reprehenderit qui in ea voluptate velit esse quam nihil molestiae consequatur, vel illum qui dolorem eum fugiat quo voluptas nulla pariatur.
-
-Temporibus autem quibusdam et aut officiis debitis aut rerum necessitatibus saepe eveniet ut et voluptates repudiandae sint et molestiae non recusandae. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.
-
-Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam eaque ipsa quae ab illo inventore veritatis.
-
-Et harum quidem rerum facilis est et expedita distinctio, nam libero tempore, cum soluta nobis est eligendi optio cumque nihil impedit quo minus id quod maxime placeat facere possimus. Temporibus autem quibusdam et aut officiis debitis aut rerum necessitatibus saepe eveniet ut et voluptates repudiandae sint et molestiae non recusandae. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt.
-
-% ======================================================================
-% 6.4 — EVALUACIÓN DE LA ARQUITECTURA Y EL PROTOTIPO
-% ======================================================================
-
-\section{Evaluación de la Arquitectura y el Prototipo}\label{sec:evaluacion}
-
-Quis autem vel eum iure reprehenderit qui in ea voluptate velit esse quam nihil molestiae consequatur, vel illum qui dolorem eum fugiat quo voluptas nulla pariatur. At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis praesentium voluptatum deleniti atque corrupti quos dolores et quas molestias excepturi sint occaecati cupiditate non provident. Et harum quidem rerum facilis est et expedita distinctio, nam libero tempore, cum soluta nobis est eligendi optio cumque nihil impedit quo minus id quod maxime placeat facere possimus. Temporibus autem quibusdam et aut officiis debitis aut rerum necessitatibus saepe eveniet ut et voluptates repudiandae sint et molestiae non recusandae.
-
-% ----------------------------------------------------------------------
-\subsection{Proceso GQM: Correctitud Funcional (G1--G2)}\label{subsec:poc_g1g2}
-
-Et harum quidem rerum facilis est et expedita distinctio, nam libero tempore, cum soluta nobis est eligendi optio cumque nihil impedit quo minus id quod maxime placeat facere possimus. Temporibus autem quibusdam et aut officiis debitis aut rerum necessitatibus saepe eveniet ut et voluptates repudiandae sint et molestiae non recusandae. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam eaque ipsa quae ab illo inventore veritatis.
-
-\footnotesize
-\begin{longtable}{@{}p{0.75cm}p{8.5cm}p{2.5cm}@{}}
-\caption{Lorem ipsum dolor sit amet, consectetur adipiscing elit.}\label{tab:preguntas_g1}\\
-\toprule
-\textbf{ID} & \textbf{Pregunta} & \textbf{Caso de prueba} \\
-\midrule
-\endfirsthead
-\multicolumn{3}{l}{\small\itshape Continuación de la Tabla~\thetable}\\[2pt]
-\toprule
-\textbf{ID} & \textbf{Pregunta} & \textbf{Caso de prueba} \\
-\midrule
-\endhead
-\bottomrule
-\endlastfoot
-Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
-\midrule
-Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
-\midrule
-Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
-\midrule
-Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
-\midrule
-Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
-\midrule
-Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
-\midrule
-Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
-\midrule
-Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
-\midrule
-Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
-\midrule
-Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
-\midrule
-Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
-\midrule
-Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
-\midrule
-Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
-\end{longtable}
-\normalsize
-
-Ut enim ad minima veniam, quis nostrum exercitationem ullam corporis suscipit laboriosam, nisi ut aliquid ex ea commodi consequatur. Quis autem vel eum iure reprehenderit qui in ea voluptate velit esse quam nihil molestiae consequatur, vel illum qui dolorem eum fugiat quo voluptas nulla pariatur. At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis praesentium voluptatum deleniti atque corrupti quos dolores et quas molestias excepturi sint occaecati cupiditate non provident. Et harum quidem rerum facilis est et expedita distinctio, nam libero tempore, cum soluta nobis est eligendi optio cumque nihil impedit quo minus id quod maxime placeat facere possimus. Temporibus autem quibusdam et aut officiis debitis aut rerum necessitatibus saepe eveniet ut et voluptates repudiandae sint et molestiae non recusandae.
-
-\footnotesize
-\begin{longtable}{@{}p{0.75cm}p{8.5cm}p{2.5cm}@{}}
-\caption{Temporibus autem quibusdam et aut officiis debitis aut.}\label{tab:preguntas_g2}\\
-\toprule
-\textbf{ID} & \textbf{Pregunta} & \textbf{Caso de prueba} \\
-\midrule
-\endfirsthead
-\multicolumn{3}{l}{\small\itshape Continuación de la Tabla~\thetable}\\[2pt]
-\toprule
-\textbf{ID} & \textbf{Pregunta} & \textbf{Caso de prueba} \\
-\midrule
-\endhead
-\bottomrule
-\endlastfoot
-Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
-\midrule
-Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
-\midrule
-Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
-\midrule
-Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
-\end{longtable}
-\normalsize
-
-Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam eaque ipsa quae ab illo inventore veritatis. Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt. Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit, sed quia non numquam eius modi tempora incidunt ut labore et dolore magnam aliquam quaerat voluptatem.
-
-\footnotesize
-\begin{longtable}{@{}p{0.85cm}p{4.2cm}p{3.4cm}p{1.6cm}p{1.5cm}@{}}
-\caption{Sed ut perspiciatis unde omnis iste natus error.}\label{tab:gqm_g1_diseno}\\
-\toprule
-\textbf{Preg.} & \textbf{Foco de verificación} & \textbf{Métrica} & \textbf{Umbral} & \textbf{ASR} \\
-\midrule
-\endfirsthead
-\multicolumn{5}{l}{\small\itshape Continuación de la Tabla~\thetable}\\[2pt]
-\toprule
-\textbf{Preg.} & \textbf{Foco de verificación} & \textbf{Métrica} & \textbf{Umbral} & \textbf{ASR} \\
-\midrule
-\endhead
-\bottomrule
-\endlastfoot
-Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
-\midrule
-Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
-\midrule
-Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
-\midrule
-Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
-\midrule
-Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
-\midrule
-Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
-\end{longtable}
-\normalsize
-
-Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam eaque ipsa quae ab illo inventore veritatis. Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt. Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit, sed quia non numquam eius modi tempora incidunt ut labore et dolore magnam aliquam quaerat voluptatem.
-
-\footnotesize
-\begin{longtable}{@{}p{0.85cm}p{4.2cm}p{3.4cm}p{1.6cm}p{1.5cm}@{}}
-\caption{Et harum quidem rerum facilis est et expedita.}\label{tab:gqm_g2_diseno}\\
-\toprule
-\textbf{Preg.} & \textbf{Foco de verificación} & \textbf{Métrica} & \textbf{Umbral} & \textbf{ASR} \\
-\midrule
-\endfirsthead
-\multicolumn{5}{l}{\small\itshape Continuación de la Tabla~\thetable}\\[2pt]
-\toprule
-\textbf{Preg.} & \textbf{Foco de verificación} & \textbf{Métrica} & \textbf{Umbral} & \textbf{ASR} \\
-\midrule
-\endhead
-\bottomrule
-\endlastfoot
-Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
-\midrule
-Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
-\end{longtable}
-\normalsize
-
-Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt. Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit, sed quia non numquam eius modi tempora incidunt ut labore et dolore magnam aliquam quaerat voluptatem. Ut enim ad minima veniam, quis nostrum exercitationem ullam corporis suscipit laboriosam, nisi ut aliquid ex ea commodi consequatur. Quis autem vel eum iure reprehenderit qui in ea voluptate velit esse quam nihil molestiae consequatur, vel illum qui dolorem eum fugiat quo voluptas nulla pariatur. Et harum quidem rerum facilis est et expedita distinctio, nam libero tempore, cum soluta nobis est eligendi optio cumque nihil impedit quo minus id quod maxime placeat facere possimus.
-
-Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam eaque ipsa quae ab illo inventore veritatis. Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt.
+La Tabla~\ref{tab:res_n50} presenta las métricas de los ocho SLM con $N=50$ frente a la colección de referencia \texttt{gt\_\_final\_\_consensus\_is\_error\_\_n50} (consenso por evento; 1{,}370 \textit{batches} positivos de 4{,}463, es decir 30.7\,\%), con $k=1$. En todas las corridas de $N=50$ el vecino más cercano es el mismo \textit{batch} (\texttt{same\_batch\_top1\_rate}$=1.0$), de modo que la comparación equivale a una comparación posicional. \textbf{Esta referencia no es el \textit{ground truth} corregido por expertos}; ver la Sección~\ref{subsec:res_gtfinal}.
 
 \begin{table}[H]
 \centering
+\caption{Métricas de los SLM con $N=50$ contra la referencia por consenso (kNN, $k=1$). \textit{Batches}: número evaluado (válidos).}
+\label{tab:res_n50}
 \small
-\caption{Excepteur sint occaecat cupidatat non proident, sunt in.}
-\label{tab:poc_funcionales}
-\begin{tabular}{@{}p{0.5cm}p{3.0cm}p{0.8cm}p{0.8cm}p{6.1cm}@{}}
+\begin{tabular}{@{}lrrrrrr@{}}
 \toprule
-\textbf{G} & \textbf{Suite} & \textbf{PASS} & \textbf{FAIL} & \textbf{Observación} \\
+\textbf{Modelo} & \textbf{\textit{Batches}} & \textbf{Acc.} & \textbf{Prec.} & \textbf{Recall} & \textbf{$F_1$} & \textbf{AUC} \\
 \midrule
-Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
-\midrule
-Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
-\midrule
-Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
-\midrule
-Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
-\midrule
-Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
-\midrule
-Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
+granite-4.1-3b & 4{,}463 & 0.971 & 0.990 & 0.915 & 0.951 & 0.997 \\
+Phi-3.5-mini-instruct & 4{,}461 & 0.949 & 0.994 & 0.840 & 0.911 & 0.997 \\
+gemma-3-4b-it & 4{,}455 & 0.682 & 0.491 & 0.956 & 0.649 & 0.948 \\
+Qwen3.5-9B (Q6\_K) & 4{,}463 & 0.828 & 0.919 & 0.482 & 0.632 & 0.978 \\
+Ling-3.0-tiny (Q4\_K\_M) & 4{,}460 & 0.526 & 0.382 & 0.880 & 0.533 & 0.909 \\
+Ministral-3-3B (BF16) & 4{,}312 & 0.424 & 0.341 & 0.983 & 0.506 & 0.872 \\
+llama-3.2-1B-log-analyzer (Q4\_K\_M) & 4{,}441 & 0.690 & 0.432 & 0.047 & 0.085 & 0.573 \\
+SmolLM2-1.7B (parcial) & 2{,}200 & 0.615 & 0.000 & 0.000 & 0.000 & 0.470 \\
 \bottomrule
 \end{tabular}
+\normalsize
 \end{table}
 
-Et harum quidem rerum facilis est et expedita distinctio, nam libero tempore, cum soluta nobis est eligendi optio cumque nihil impedit quo minus id quod maxime placeat facere possimus. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam eaque ipsa quae ab illo inventore veritatis.
+% TODO: convertir y copiar a figs/resultados/ las curvas ROC y matrices de confusión (analysis/batch_size_matrix/comparison/*/roc_knn.png, confusion_knn.png) y las figuras SVG f1_por_modelo_dotplot.svg y f1_vs_recall_dumbbell(2).svg (raíz del proyecto técnico) a PDF; insertar con \includegraphics.
 
-% ----------------------------------------------------------------------
-\subsection{Resultados de Métricas por Escenario}\label{subsec:poc_metricas}
+Contra esta referencia, granite-4.1-3b y Phi-3.5-mini son los mejores (\textit{accuracy} 0.971 y 0.949, $F_1$ 0.951 y 0.911, AUC 0.997 ambos). Gemma, Ling y Ministral sobredetectan error: \textit{recall} alto (0.956, 0.880, 0.983) y precisión baja (0.491, 0.382, 0.341), lo que en operación equivale a generar fatiga de alertas. El modelo llama-3.2-1B-log-analyzer casi nunca marca error (\textit{recall} 0.047). Qwen3.5-9B muestra el comportamiento opuesto a gemma: precisión alta (0.919) y \textit{recall} bajo (0.482), aunque con AUC de 0.978, lo que sugiere que un umbral distinto sobre $P(\text{error})$ mejoraría su \textit{recall}. SmolLM2-1.7B solo tiene 2{,}200 \textit{batches} evaluables porque 2{,}263 fallaron, y no predijo ningún error en ellos.
 
-Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam eaque ipsa quae ab illo inventore veritatis. Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit, sed quia non numquam eius modi tempora incidunt ut labore et dolore magnam aliquam quaerat voluptatem.
+\subsection{Recálculo contra el \textit{ground truth} final}\label{subsec:res_gtfinal}
 
-\paragraph{Temporibus autem quibusdam et aut officiis debitis aut.}
-Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit, sed quia non numquam eius modi tempora incidunt ut labore et dolore magnam aliquam quaerat voluptatem. Quis autem vel eum iure reprehenderit qui in ea voluptate velit esse quam nihil molestiae consequatur, vel illum qui dolorem eum fugiat quo voluptas nulla pariatur.
-
-\small
-\begin{longtable}{@{}p{1.4cm}p{4.1cm}p{4.5cm}p{1.0cm}@{}}
-\caption{Ut enim ad minima veniam, quis nostrum exercitationem.}\label{tab:poc_seguridad}\\
-\toprule
-\textbf{Métrica} & \textbf{Verificación} & \textbf{Resultado observado} & \textbf{Est.} \\
-\midrule
-\endfirsthead
-\multicolumn{4}{l}{\small\itshape Continuación de la Tabla~\thetable}\\[2pt]
-\toprule
-\textbf{Métrica} & \textbf{Verificación} & \textbf{Resultado observado} & \textbf{Est.} \\
-\midrule
-\endhead
-\bottomrule
-\endlastfoot
-Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
-\midrule
-Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
-\midrule
-Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
-\midrule
-Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
-\midrule
-Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
-\midrule
-Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
-\midrule
-Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
-\end{longtable}
-\normalsize
-
-Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam eaque ipsa quae ab illo inventore veritatis. Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt. Ut enim ad minima veniam, quis nostrum exercitationem ullam corporis suscipit laboriosam, nisi ut aliquid ex ea commodi consequatur. Quis autem vel eum iure reprehenderit qui in ea voluptate velit esse quam nihil molestiae consequatur, vel illum qui dolorem eum fugiat quo voluptas nulla pariatur.
-
-\paragraph{Neque porro quisquam est, qui dolorem ipsum quia.}
-Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit, sed quia non numquam eius modi tempora incidunt ut labore et dolore magnam aliquam quaerat voluptatem. Ut enim ad minima veniam, quis nostrum exercitationem ullam corporis suscipit laboriosam, nisi ut aliquid ex ea commodi consequatur. Quis autem vel eum iure reprehenderit qui in ea voluptate velit esse quam nihil molestiae consequatur, vel illum qui dolorem eum fugiat quo voluptas nulla pariatur.
+Como la referencia de la sección anterior sobreestima el error, se recalcularon las métricas de las corridas de $N=50$ contra la etiqueta final (\texttt{final\_is\_error}, 130 positivos) alineando por posición del \textit{batch}; los \textit{batches} inválidos se excluyen. Los conteos de \textit{batches} predichos como error coinciden con los de los reportes de la matriz, lo que confirma la alineación. El resultado se muestra en la Tabla~\ref{tab:res_n50_final}. Este cálculo es propio (no proviene de \texttt{collection\_comparison.py}).
 
 \begin{table}[H]
 \centering
+\caption{Métricas con $N=50$ contra el \textit{ground truth} final por \textit{batch} (130 errores en 4{,}463). TP, FP, TN, FN con \textit{error} como clase positiva. Recálculo propio.}
+\label{tab:res_n50_final}
 \small
-\caption{At vero eos et accusamus et iusto odio.}
-\label{tab:poc_estres}
-\begin{tabular}{@{}p{3.0cm}p{0.7cm}p{0.9cm}p{0.9cm}p{0.9cm}p{1.0cm}p{1.0cm}p{1.8cm}p{0.8cm}@{}}
+\begin{tabular}{@{}lrrrrrrrrr@{}}
 \toprule
-Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
+\textbf{Modelo} & \textbf{Válidos} & \textbf{Acc.} & \textbf{Prec.} & \textbf{Recall} & \textbf{$F_1$} & \textbf{AUC} & \textbf{TP} & \textbf{FP} & \textbf{FN} \\
 \midrule
-Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
-\midrule
-Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
-\midrule
-Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
-\midrule
-Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
-\midrule
-Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
-\midrule
-Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
+Qwen3.5-9B & 4{,}463 & 0.866 & 0.174 & 0.962 & 0.295 & 0.987 & 125 & 593 & 5 \\
+granite-4.1-3b & 4{,}463 & 0.743 & 0.099 & 0.962 & 0.179 & 0.932 & 125 & 1{,}142 & 5 \\
+Phi-3.5-mini & 4{,}461 & 0.762 & 0.097 & 0.868 & 0.174 & 0.904 & 112 & 1{,}045 & 17 \\
+gemma-3-4b-it & 4{,}455 & 0.429 & 0.047 & 0.961 & 0.089 & 0.841 & 124 & 2{,}541 & 5 \\
+llama-3.2-1B-log-analyzer & 4{,}441 & 0.943 & 0.081 & 0.094 & 0.087 & 0.549 & 12 & 136 & 116 \\
+Ling-3.0-tiny & 4{,}460 & 0.319 & 0.040 & 0.962 & 0.076 & 0.933 & 125 & 3{,}031 & 5 \\
+Ministral-3-3B & 4{,}312 & 0.161 & 0.032 & 0.984 & 0.062 & 0.876 & 120 & 3{,}616 & 2 \\
+SmolLM2-1.7B (parcial) & 2{,}200 & 0.957 & 0.000 & 0.000 & 0.000 & 0.361 & 0 & 0 & 95 \\
 \bottomrule
 \end{tabular}
+\normalsize
 \end{table}
 
-Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam eaque ipsa quae ab illo inventore veritatis. Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit, sed quia non numquam eius modi tempora incidunt ut labore et dolore magnam aliquam quaerat voluptatem. Ut enim ad minima veniam, quis nostrum exercitationem ullam corporis suscipit laboriosam, nisi ut aliquid ex ea commodi consequatur.
+El cambio de referencia modifica sustancialmente la lectura. Casi todos los modelos detectan más del 86\,\% de los 130 errores reales (\textit{recall} de 0.868 a 0.984), pero su precisión es muy baja (0.032 a 0.174): señalan como error muchos \textit{batches} que los expertos consideran normales. Para granite, por ejemplo, de 1{,}267 \textit{batches} señalados solo 125 son errores según el \textit{ground truth} final, de modo que su precisión no puede superar 0.103. El mejor $F_1$ pasa a ser el de Qwen3.5-9B (0.295), que es también el de mayor AUC (0.987). SmolLM2 y llama-3.2-1B-log-analyzer logran \textit{accuracy} alta (0.957 y 0.943) solo porque casi nunca predicen error, lo que ilustra por qué \textit{accuracy} es insuficiente con 2.91\,\% de positivos. Los SLM de mejor rendimiento contra el consenso de LLM (granite, Phi) reproducen el criterio de los LLM de votación, que los expertos corrigieron; esto sugiere que la elevada concordancia con el consenso no implica concordancia con el criterio del dominio, en línea con el hallazgo de la sección anterior.
+% TODO: verificar este recálculo con collection_comparison.py contra una colección construida desde ground_truth_batches_final.jsonl (build_collections.py --ground-truth ...), que es el procedimiento oficial; las cifras deberían coincidir en N=50 por ser top-1 = mismo batch.
+% TODO: añadir curvas ROC y matrices de confusión contra el GT final; analizar los 1,142 falsos positivos de granite por tipo de evento (¿4xx, contraseñas, usuario no encontrado?) para verificar si el prompt no logra transmitir el criterio.
 
-Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam eaque ipsa quae ab illo inventore veritatis. Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt.
+\subsection{Sensibilidad al tamaño de \textit{batch}}\label{subsec:res_tamano}
 
-\paragraph{Ut enim ad minima veniam, quis nostrum exercitationem.}
-Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam eaque ipsa quae ab illo inventore veritatis.
+Los modelos se ejecutaron también con $N=30$ y $N=20$ y se compararon contra la referencia de 50 (mismo consenso por evento). La Tabla~\ref{tab:res_tamano} reporta el $F_1$ del vecino más cercano y el de la métrica por solapamiento de índices (\texttt{index\_overlap}).
 
+\begin{table}[H]
+\centering
+\caption{$F_1$ por tamaño de \textit{batch} contra la referencia de consenso de 50 (primera cifra: kNN $k=1$; entre paréntesis: solapamiento de índices). ``--'': corrida pendiente.}
+\label{tab:res_tamano}
 \small
-\begin{longtable}{@{}p{3.0cm}p{1.2cm}p{5.7cm}p{1.0cm}@{}}
-\caption{Excepteur sint occaecat cupidatat non proident, sunt in.}\label{tab:poc_forense}\\
+\begin{tabular}{@{}lccc@{}}
 \toprule
-\textbf{Operación} & \textbf{Caso} & \textbf{Resultado observado} & \textbf{Est.} \\
+\textbf{Modelo} & \textbf{$N=50$} & \textbf{$N=30$} & \textbf{$N=20$} \\
 \midrule
-\endfirsthead
-\multicolumn{4}{l}{\small\itshape Continuación de la Tabla~\thetable}\\[2pt]
-\toprule
-\textbf{Operación} & \textbf{Caso} & \textbf{Resultado observado} & \textbf{Est.} \\
-\midrule
-\endhead
+granite-4.1-3b & 0.951 (0.951) & 0.553 (0.695) & 0.487 (0.584) \\
+Phi-3.5-mini & 0.911 (0.911) & 0.415 (0.493) & 0.402 (0.480) \\
+Qwen3.5-9B & 0.632 (0.632) & 0.347 (0.434) & -- \\
+gemma-3-4b-it & 0.649 (0.649) & 0.550 (0.663) & -- \\
+Ling-3.0-tiny & 0.533 (0.533) & 0.449 (0.518) & 0.438 (0.486) \\
+Ministral-3-3B & 0.506 (0.506) & 0.477 (0.554) & -- \\
+llama-3.2-1B-log-analyzer & 0.085 (0.085) & 0.124 (0.140) & 0.298 (0.335) \\
 \bottomrule
-\endlastfoot
-Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
-\midrule
-Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
-\midrule
-Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
-\midrule
-Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
-\end{longtable}
+\end{tabular}
 \normalsize
+\end{table}
 
-Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam eaque ipsa quae ab illo inventore veritatis. Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt. Ut enim ad minima veniam, quis nostrum exercitationem ullam corporis suscipit laboriosam, nisi ut aliquid ex ea commodi consequatur. Quis autem vel eum iure reprehenderit qui in ea voluptate velit esse quam nihil molestiae consequatur, vel illum qui dolorem eum fugiat quo voluptas nulla pariatur.
+Para los dos mejores modelos el $F_1$ cae de forma marcada al reducir el \textit{batch} (granite: 0.951, 0.553, 0.487), por lo que no hay evidencia de que \textit{batches} menores a 50 mejoren la detección. La interpretación debe ser cautelosa: al comparar \textit{batches} de tamaño distinto con una referencia de 50, la alineación semántica cambia (la similitud media del vecino más cercano es 0.994 y la mínima 0.441) y la proporción de positivos de la referencia efectiva cambia (por ejemplo, 2{,}242 positivos en $N=30$ y 3{,}338 en $N=20$ para granite), de modo que la caída refleja en parte el método de comparación y no solo el modelo. % TODO: SmolLM2 N=30/N=20 y gemma/Qwen/Ministral N=20 siguen pendientes (RESUMEN_CONTEXTO_TESIS.md, sección 5); completar la tabla. Recalcular con el GT final.
 
-% ======================================================================
-% 6.4.3 — ANÁLISIS ATAM
-% ======================================================================
+\subsection{Fiabilidad de ejecución y tiempo}\label{subsec:res_fiabilidad}
 
-% ----------------------------------------------------------------------
-\subsection{Análisis ATAM de la Arquitectura de Referencia}\label{subsec:atam}
+Con $N=50$ las corridas terminaron con 4{,}463 \textit{batches} procesados, pero algunos no produjeron respuesta válida: Ministral-3-3B 151 \textit{batches} inválidos (183 con $N=30$), llama-3.2-1B-log-analyzer 22, gemma-3-4b-it 8 fallidos, Ling-3.0-tiny 3 fallidos, Phi-3.5-mini 2 fallidos y SmolLM2-1.7B 2{,}263 fallidos (la mitad del corpus). La causa dominante en Ministral es un JSON casi válido (saltos de línea dentro de cadenas, comillas sin escapar); el \textit{parser} tolerante y \texttt{reparse\_run.py} atienden ese caso. % TODO: reparsear los inválidos de Ministral y llama con evaluation/reparse_run.py y reportar el efecto en las métricas; rehacer SmolLM2 N=50.
 
-At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis praesentium voluptatum deleniti atque corrupti quos dolores et quas molestias excepturi sint occaecati cupiditate non provident. Et harum quidem rerum facilis est et expedita distinctio, nam libero tempore, cum soluta nobis est eligendi optio cumque nihil impedit quo minus id quod maxime placeat facere possimus. Temporibus autem quibusdam et aut officiis debitis aut rerum necessitatibus saepe eveniet ut et voluptates repudiandae sint et molestiae non recusandae.
+Los tiempos totales de las corridas de $N=50$ van de 6{,}442~s (granite-4.1-3b, 1.8 h) a 22{,}649~s (gemma-3-4b-it) y 51{,}188~s (SmolLM2-1.7B), con Qwen3.5-9B en 10{,}640~s. No son comparables directamente porque las corridas se hicieron en dos máquinas con GPU distinta (NVIDIA y AMD) y distinto motor (Ollama o Transformers). % TODO: tabla de tiempos por batch normalizados por máquina/backend y uso de VRAM.
 
-Ut enim ad minima veniam, quis nostrum exercitationem ullam corporis suscipit laboriosam, nisi ut aliquid ex ea commodi consequatur. Quis autem vel eum iure reprehenderit qui in ea voluptate velit esse quam nihil molestiae consequatur, vel illum qui dolorem eum fugiat quo voluptas nulla pariatur.
+\subsection{Experimentos previos con prompt y caché}\label{sec:res_previos}
 
-\subsubsection*{Árbol de Utilidad}
+Antes de la matriz actual se compararon variantes del \textit{prompt} y del caché semántico con \textit{evaluación posicional} contra el \textit{ground truth} por evento (consenso, agregado por \textit{batch} de 50; criterio anterior a la calibración experta). Con granite-4.1-3b: la variante base con caché dio $F_1$ de 0.549, el \textit{prompt} ajustado con caché 0.639 y el \textit{prompt} ajustado sin caché 0.897 (\textit{accuracy} 0.934, AUC 0.992). Con gemma-3-4b-it, el \textit{prompt} ajustado sin caché dio $F_1$ de 0.551 y con caché 0.521. Estas cifras sugieren que el \textit{prompt} aporta más que el caché y que el caché reduce la calidad al reutilizar clasificaciones; la matriz final se ejecutó sin caché (\texttt{embedding\_hits}$=0$). % TODO: confirmar el significado exacto de cada carpeta (base_and_embedding / prompt_no_embedding / prompt_and_embedding) con los autores y la configuración en run_<id>.json; las rutas del eval_report.json apuntan a otra máquina, y el prompt "base" no está documentado en el repositorio.
 
-Temporibus autem quibusdam et aut officiis debitis aut rerum necessitatibus saepe eveniet ut et voluptates repudiandae sint et molestiae non recusandae. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.
+\section{Ajuste fino LoRA (objetivo específico 2)}\label{sec:res_lora}
 
-\footnotesize
-\begin{longtable}{@{}p{2.5cm}p{1.0cm}p{7.0cm}p{1.5cm}@{}}
-\caption{Ut enim ad minima veniam, quis nostrum exercitationem.}\label{tab:atam_utility_tree}\\
-\toprule
-\textbf{Atributo} & \textbf{QAS} & \textbf{Enunciado resumido} & \textbf{Prioridad} \\
-\midrule
-\endfirsthead
-\multicolumn{4}{l}{\footnotesize\itshape Continuación de la Tabla~\thetable}\\[2pt]
-\toprule
-\textbf{Atributo} & \textbf{QAS} & \textbf{Enunciado resumido} & \textbf{Prioridad} \\
-\midrule
-\endhead
-\bottomrule
-\endlastfoot
-Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
-\midrule
-Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
-\midrule
-Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
-\midrule
-Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
-\midrule
-Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
-\midrule
-Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
-\midrule
-Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
-\midrule
-Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
-\midrule
-Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
-\midrule
-Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
-\midrule
-Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
-\end{longtable}
-\normalsize
+El entrenamiento LoRA ($r=8$, $\alpha=32$, 3 épocas, 1{,}200 pasos) registró una pérdida de evaluación de 0.0071 al final de la primera época y de 0.0096 al final de la segunda, con pérdida de entrenamiento de 0.518 (paso 500) a 0.0037 (paso 1{,}000). Los \textit{checkpoints} existentes (500, 1{,}200) se entrenaron sobre un conjunto de 10{,}001 registros con solo 39 positivos, que no parece provenir de \texttt{ms-users} (Sección~\ref{sec:met_finetuning}). % TODO: no existe evaluación del adaptador ajustado contra el GT por batch; ejecutarla (y compararla con el modelo base) o declarar el ajuste fino como trabajo futuro. La pérdida de evaluación de 0.0096 con 39 positivos de 10,001 sugiere que el modelo aprendió la clase mayoritaria; verificar con métricas por clase.
 
-Et harum quidem rerum facilis est et expedita distinctio, nam libero tempore, cum soluta nobis est eligendi optio cumque nihil impedit quo minus id quod maxime placeat facere possimus. Temporibus autem quibusdam et aut officiis debitis aut rerum necessitatibus saepe eveniet ut et voluptates repudiandae sint et molestiae non recusandae.
+\section{Notificación, recomendación e inyección de errores (objetivos 4 y 5)}\label{sec:res_reaccion}
 
-\subsubsection*{Sensitivity Points y Tradeoff Points}
-Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam eaque ipsa quae ab illo inventore veritatis. Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt.
+\subsection{Implementación}
 
-\footnotesize
-\begin{longtable}{@{}p{0.8cm}p{4.2cm}p{2.1cm}p{1.5cm}p{2.5cm}@{}}
-\caption{Excepteur sint occaecat cupidatat non proident, sunt in.}\label{tab:atam_st_risk}\\
-\toprule
-\textbf{ID} & \textbf{Descripción resumida} & \textbf{Atributo} & \textbf{QAS} & \textbf{Risk} \\
-\midrule
-\endfirsthead
-\multicolumn{5}{l}{\footnotesize\itshape Continuación de la Tabla~\thetable}\\[2pt]
-\toprule
-\textbf{ID} & \textbf{Descripción resumida} & \textbf{Atributo} & \textbf{QAS} & \textbf{Risk} \\
-\midrule
-\endhead
-\bottomrule
-\endlastfoot
-Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
-\midrule
-Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
-\midrule
-Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
-\midrule
-Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
-\end{longtable}
-\normalsize
+El \textit{pipeline} cuenta con notificación a Slack, recomendador local, inyección de errores desde el \textit{dashboard} y \textit{dashboard} de seguimiento, todos cubiertos por pruebas unitarias (Sección~\ref{sec:met_pruebas}). % TODO: capturas de pantalla del dashboard y de una alerta de Slack; ejemplo real de recomendación (recommendations.jsonl) para un batch de error del GT.
 
-Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam eaque ipsa quae ab illo inventore veritatis. Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt. Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit, sed quia non numquam eius modi tempora incidunt ut labore et dolore magnam aliquam quaerat voluptatem.
+\subsection{Simulación de errores}
 
-\footnotesize
-\begin{longtable}{@{}p{0.8cm}p{3.5cm}p{2.0cm}p{1.5cm}p{4.0cm}@{}}
-\caption{Ut enim ad minima veniam, quis nostrum exercitationem.}\label{tab:atam_st_nonrisk}\\
-\toprule
-\textbf{ID} & \textbf{Descripción resumida} & \textbf{Atributo} & \textbf{QAS} & \textbf{Razonamiento} \\
-\midrule
-\endfirsthead
-\multicolumn{5}{l}{\footnotesize\itshape Continuación de la Tabla~\thetable}\\[2pt]
-\toprule
-\textbf{ID} & \textbf{Descripción resumida} & \textbf{Atributo} & \textbf{QAS} & \textbf{Razonamiento} \\
-\midrule
-\endhead
-\bottomrule
-\endlastfoot
-Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
-\midrule
-Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
-\midrule
-Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
-\midrule
-Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
-\midrule
-Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
-\end{longtable}
-\normalsize
+% TODO: no existen resultados de simulación. Las plantillas de inyección son placeholders y el protocolo no está definido. Una vez definidos, reportar por tipo de error inyectado: tasa de detección, latencia hasta la alerta y calidad de la recomendación; con al menos el modelo de mayor F1 contra el GT final (Qwen3.5-9B) y uno de los más rápidos (granite-4.1-3b).
+Para el objetivo 5 no se dispone todavía de evidencia experimental; este resultado queda pendiente.
 
-Temporibus autem quibusdam et aut officiis debitis aut rerum necessitatibus saepe eveniet ut et voluptates repudiandae sint et molestiae non recusandae. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+\section{Discusión}\label{sec:res_discusion}
 
-\subsubsection*{\textit{Risks} Identificados}
-Quis autem vel eum iure reprehenderit qui in ea voluptate velit esse quam nihil molestiae consequatur, vel illum qui dolorem eum fugiat quo voluptas nulla pariatur. At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis praesentium voluptatum deleniti atque corrupti quos dolores et quas molestias excepturi sint occaecati cupiditate non provident. Et harum quidem rerum facilis est et expedita distinctio, nam libero tempore, cum soluta nobis est eligendi optio cumque nihil impedit quo minus id quod maxime placeat facere possimus.
+\textbf{Cumplimiento de los objetivos.} La Tabla~\ref{tab:res_objetivos} resume el estado de cada objetivo específico a la fecha.
 
+\begin{table}[H]
+\centering
+\caption{Estado de los objetivos específicos.}
+\label{tab:res_objetivos}
 \small
-\begin{longtable}{@{}p{1.1cm}p{2.8cm}p{4.2cm}p{1.8cm}p{1.5cm}@{}}
-\caption{Duis aute irure dolor in reprehenderit in voluptate.}\label{tab:atam_risks}\\
+\begin{tabular}{@{}p{0.6cm}p{5.2cm}p{8.2cm}@{}}
 \toprule
-\textbf{ID} & \textbf{Tipo} & \textbf{\textit{Gap} o decisión sin especificar} & \textbf{Atributo} & \textbf{QAS} \\
+\textbf{Obj.} & \textbf{Descripción} & \textbf{Estado} \\
 \midrule
-\endfirsthead
-\multicolumn{5}{l}{\small\itshape Continuación de la Tabla~\thetable}\\[2pt]
-\toprule
-\textbf{ID} & \textbf{Tipo} & \textbf{\textit{Gap} o decisión sin especificar} & \textbf{Atributo} & \textbf{QAS} \\
-\midrule
-\endhead
+1 & Dataset estructurado y clasificado por tipos & \textit{Ground truth} por \textit{batch} completo (4{,}463 \textit{batches}, 130 errores); falta la clasificación por tipos de error. \\
+2 & SLM adaptados al contexto & Ocho SLM comparados con \textit{prompt} adaptado al dominio; el ajuste fino LoRA no está evaluado sobre datos de la DTIC. \\
+3 & Validación con Accuracy, F1 y ROC & Completa para $N=50$ contra consenso y contra el GT final (recálculo propio); falta recálculo oficial y $N=20$ parcial. \\
+4 & Pipeline integrado en tiempo real con interfaz gráfica & Implementado (\textit{pipeline}, alertas, recomendador, \textit{dashboard}); sin prueba documentada en flujo en vivo. \\
+5 & Simulación de errores en el pipeline & Mecanismo implementado; sin protocolo ni resultados. \\
 \bottomrule
-\endlastfoot
-Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
-\midrule
-Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
-\midrule
-Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
-\midrule
-Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
-\end{longtable}
+\end{tabular}
 \normalsize
+\end{table}
 
-Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam eaque ipsa quae ab illo inventore veritatis.
+\textbf{Qué muestran los resultados.} (i) El criterio de error es la fuente principal de incertidumbre: el acuerdo entre LLM es alto ($\kappa=0.886$) y aun así solo el 12.5\,\% de los \textit{batches} de error unánime son errores según los expertos. (ii) La mejor métrica contra el consenso no es la mejor contra el \textit{ground truth} final: granite lidera con $F_1=0.951$ contra el consenso y 0.179 contra el GT final, donde Qwen3.5-9B lidera con 0.295. (iii) Los SLM tienen \textit{recall} alto pero precisión baja con el criterio final, de modo que en uso real se requeriría un umbral sobre $P(\text{error})$, un mejor \textit{prompt} o un ajuste fino con el criterio de la DTIC para evitar fatiga de alertas. % TODO: evaluar el efecto de un umbral sobre error_probability (curva precisión-recall contra el GT final) antes de afirmar la viabilidad operativa.
 
-\subsubsection*{\textit{Non-Risks} Documentados}
-Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam eaque ipsa quae ab illo inventore veritatis. Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt. Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit, sed quia non numquam eius modi tempora incidunt ut labore et dolore magnam aliquam quaerat voluptatem.
-
-\small
-\begin{longtable}{@{}p{0.8cm}p{4.5cm}p{1.4cm}p{4.5cm}@{}}
-\caption{At vero eos et accusamus et iusto odio.}\label{tab:atam_nonrisks}\\
-\toprule
-\textbf{ID} & \textbf{Decisión arquitectónica} & \textbf{QAS} & \textbf{Supuesto de vigencia} \\
-\midrule
-\endfirsthead
-\multicolumn{4}{l}{\small\itshape Continuación de la Tabla~\thetable}\\[2pt]
-\toprule
-\textbf{ID} & \textbf{Decisión arquitectónica} & \textbf{QAS} & \textbf{Supuesto de vigencia} \\
-\midrule
-\endhead
-\bottomrule
-\endlastfoot
-Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
-\midrule
-Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor & Lorem ipsum dolor \\
-\end{longtable}
-\normalsize
-
-Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam eaque ipsa quae ab illo inventore veritatis. Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt.
-
-\subsubsection*{Interpretación de Hallazgos}
-
-Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
-
-Ut enim ad minima veniam, quis nostrum exercitationem ullam corporis suscipit laboriosam, nisi ut aliquid ex ea commodi consequatur. Quis autem vel eum iure reprehenderit qui in ea voluptate velit esse quam nihil molestiae consequatur, vel illum qui dolorem eum fugiat quo voluptas nulla pariatur. At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis praesentium voluptatum deleniti atque corrupti quos dolores et quas molestias excepturi sint occaecati cupiditate non provident.
+\textbf{Amenazas a la validez.} Cada mitad de la muestra experta la revisó una sola persona; el criterio se fijó observando los datos; los 4{,}134 \textit{batches} no revisados se apoyan en reglas y similitud con validación optimista; la clase positiva del GT final es pequeña (130), por lo que las métricas de precisión son sensibles a pocos \textit{batches}; hubo una sola corrida por modelo; los modelos se ejecutaron en máquinas y motores distintos; y el texto de la votación no estuvo enmascarado mientras que el de los SLM sí lo estuvo. % TODO: añadir intervalos de confianza (p. ej. Wilson/bootstrap) a las métricas de las Tablas \ref{tab:res_n50} y \ref{tab:res_n50_final}.
