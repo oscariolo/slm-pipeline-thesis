@@ -1,65 +1,63 @@
 \chapter{Antecedentes} \label{cap:antecedentes}
 
-Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam eaque ipsa quae ab illo inventore veritatis. Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt. Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit, sed quia non numquam eius modi tempora incidunt ut labore et dolore magnam aliquam quaerat voluptatem.
+Este capítulo describe el contexto técnico e institucional que motiva el trabajo: el crecimiento de la telemetría en arquitecturas de microservicios, la transición del monitoreo tradicional a la observabilidad, la evolución de las técnicas de análisis automático de logs y la situación del servicio estudiado en la DTIC. La base teórica de los conceptos se desarrolla en el Capítulo~\ref{cap:marco_teorico} y la revisión de trabajos específicos en el Capítulo~\ref{cap:trabajos_relacionados}.
 
-% ─────────────────────────────────────────────────────────────────────────────
+\section{Microservicios y volumen de telemetría}\label{sec:ant_microservicios}
 
-\section{Evolución de la Infraestructura de Clave Pública}
+Las aplicaciones modernas se descomponen en servicios pequeños, desplegables de forma independiente y que se comunican mediante interfaces de red, generalmente sobre plataformas de contenedores como Kubernetes. Esta arquitectura mejora la escalabilidad y la agilidad de entrega, pero aumenta la complejidad operativa: una sola solicitud de usuario puede atravesar muchos servicios, y un fallo en uno de ellos puede propagarse al resto~\cite{wang2024_rca, uddin2026_microservice_logs}. Cada servicio emite además su propia telemetría, de modo que el volumen total crece con el número de componentes y se vuelve inviable de revisar manualmente~\cite{he2021_survey, uddin2026_microservice_logs}.
 
-Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit, sed quia non numquam eius modi tempora incidunt ut labore et dolore magnam aliquam quaerat voluptatem. Ut enim ad minima veniam, quis nostrum exercitationem ullam corporis suscipit laboriosam, nisi ut aliquid ex ea commodi consequatur. Quis autem vel eum iure reprehenderit qui in ea voluptate velit esse quam nihil molestiae consequatur, vel illum qui dolorem eum fugiat quo voluptas nulla pariatur.
+\subsection{El caso del corpus \texttt{ms-users}}\label{subsec:ant_corpus}
 
-\subsection{Modelo de CA simple y PKI jerárquica}
+El servicio \texttt{ms-users} de la DTIC ilustra ese problema a escala institucional. Los datos disponibles para este trabajo son 309 archivos Logback/Spring Boot (\texttt{logFile.YYYY-MM-DD.HH.log}) con un total aproximado de 15.8~GB y 27{,}752{,}836 eventos. El peso del corpus se debe principalmente a:
 
-Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam eaque ipsa quae ab illo inventore veritatis.
+\begin{itemize}
+  \item Registro de Spring Security en nivel \texttt{TRACE}.
+  \item Sondeos de Kubernetes a \texttt{/actuator/health} y \texttt{/actuator/prometheus} cada 5 a 15 segundos, con trazas de pila de alrededor de 115 líneas.
+  \item Redirecciones a \texttt{/login} y recursos estáticos.
+\end{itemize}
 
-Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit, sed quia non numquam eius modi tempora incidunt ut labore et dolore magnam aliquam quaerat voluptatem. Quis autem vel eum iure reprehenderit qui in ea voluptate velit esse quam nihil molestiae consequatur, vel illum qui dolorem eum fugiat quo voluptas nulla pariatur. At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis praesentium voluptatum deleniti atque corrupti quos dolores et quas molestias excepturi sint occaecati cupiditate non provident. Temporibus autem quibusdam et aut officiis debitis aut rerum necessitatibus saepe eveniet ut et voluptates repudiandae sint et molestiae non recusandae. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+Los eventos con valor de negocio provienen de los adaptadores del servicio hacia sistemas externos (por ejemplo, \texttt{AdUserOutAdappter}, \texttt{UsuarioAs400Service}, \texttt{UsuarioOracleService}, \texttt{GoogleUserOutAdapter} y \texttt{LdapEstudianteOutAdapter}) y registran situaciones como rechazos por política de contraseñas, usuarios no encontrados o fallos de conectividad. % TODO: confirmar con la DTIC la descripción funcional de cada adaptador y el período exacto que cubre el corpus (fechas de inicio y fin).
 
-\subsection{Modelos de confianza distribuida: PKI de Malla y CA Puente}
+\section{Del monitoreo tradicional a la observabilidad}\label{sec:ant_observabilidad}
 
-At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis praesentium voluptatum deleniti atque corrupti quos dolores et quas molestias excepturi sint occaecati cupiditate non provident.
+El monitoreo tradicional se diseñó para infraestructuras relativamente estáticas: se vigilan indicadores como CPU, memoria, disco y red, y se configuran reglas y umbrales fijos que disparan alertas. Este enfoque indica \emph{cuándo} un parámetro supera un límite, pero no explica \emph{por qué} falla un sistema, y se adapta mal a entornos con contenedores efímeros y despliegues frecuentes. % TODO: respaldar con \cite{} de fuente de observabilidad (candidatos en notes/02_observabilidad_antecedentes.md: Allam 2023; Nellutla 2026). Agregar entradas al .bib tras verificar.
 
-Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam eaque ipsa quae ab illo inventore veritatis. Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit, sed quia non numquam eius modi tempora incidunt ut labore et dolore magnam aliquam quaerat voluptatem. Ut enim ad minima veniam, quis nostrum exercitationem ullam corporis suscipit laboriosam, nisi ut aliquid ex ea commodi consequatur. Quis autem vel eum iure reprehenderit qui in ea voluptate velit esse quam nihil molestiae consequatur, vel illum qui dolorem eum fugiat quo voluptas nulla pariatur.
+La observabilidad se plantea como la capacidad de inferir el estado interno de un sistema a partir de las señales que emite, sin suponer de antemano los modos de falla. Se apoya en tres tipos de señal, que deben analizarse de forma correlacionada:
 
-Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam eaque ipsa quae ab illo inventore veritatis. Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt. Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit, sed quia non numquam eius modi tempora incidunt ut labore et dolore magnam aliquam quaerat voluptatem.
+\begin{description}
+  \item[Logs.] Registros textuales con marca de tiempo que describen eventos, advertencias y excepciones.
+  \item[Métricas.] Series temporales de indicadores agregados (latencia, tasa de peticiones, uso de recursos).
+  \item[Trazas distribuidas.] Recorridos causales de una petición a través de los servicios, compuestos por \textit{spans} con identificadores de traza y de span.
+\end{description}
 
-\subsection{Incidentes históricos: el colapso de la confianza centralizada}
+OpenTelemetry, promovido por la \textit{Cloud Native Computing Foundation}, se ha consolidado como estándar neutral para instrumentar, recolectar y exportar estas tres señales. % TODO: \cite{TODO} para OpenTelemetry (documentación oficial/CNCF); no hay clave en el .bib.
 
-Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam eaque ipsa quae ab illo inventore veritatis. Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt. Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit, sed quia non numquam eius modi tempora incidunt ut labore et dolore magnam aliquam quaerat voluptatem. Ut enim ad minima veniam, quis nostrum exercitationem ullam corporis suscipit laboriosam, nisi ut aliquid ex ea commodi consequatur.
+\section{Fatiga de alertas y carga operativa}\label{sec:ant_fatiga}
 
-% ─────────────────────────────────────────────────────────────────────────────
+Los umbrales fijos en sistemas distribuidos tienden a producir un gran número de alertas ruidosas y redundantes; ante una falla en cascada, además, varios detectores disparan alertas simultáneas sobre síntomas secundarios. Esa saturación (\textit{alert fatigue}) aumenta la carga cognitiva de los equipos de operación, alarga el tiempo medio de resolución y puede llevar a ignorar fallas sutiles. % TODO: \cite{TODO} (fuentes del notebook que tratan fatiga de alertas: ver notes/02_observabilidad_antecedentes.md sección 3; falta mapear a una ficha concreta).
 
-\section{Problemas estructurales de las PKI tradicionales y sus modelos de confianza}
+En el corpus de \texttt{ms-users} el fenómeno análogo es la dominancia del ruido: el 99.2\,\% de los eventos no aporta información de negocio y, aun entre los eventos relevantes, muchos son condiciones funcionales correctamente manejadas (usuario no encontrado, política de contraseñas) y no fallas. Un mecanismo de alerta que no distinga ambas categorías reproduciría la fatiga de alertas (véase el Capítulo~\ref{cap:resultados}).
 
-Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam eaque ipsa quae ab illo inventore veritatis. Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit, sed quia non numquam eius modi tempora incidunt ut labore et dolore magnam aliquam quaerat voluptatem.
+\section{Evolución del análisis automático de logs}\label{sec:ant_evolucion_logs}
 
-\subsection{Punto Único de Fallo y monopolio de revocación}
+La literatura distingue varias etapas en el análisis automático de logs~\cite{he2021_survey, jiang2021_aiops, uddin2026_microservice_logs}:
 
-Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam eaque ipsa quae ab illo inventore veritatis. Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt. Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit, sed quia non numquam eius modi tempora incidunt ut labore et dolore magnam aliquam quaerat voluptatem.
+\begin{enumerate}
+  \item \textbf{Reglas y \textit{parsing}.} Expresiones regulares y reglas escritas por expertos, y analizadores que convierten mensajes en plantillas abstrayendo las variables (p.\,ej., Drain, Spell). Requieren mantenimiento continuo y no capturan la semántica del texto.
+  \item \textbf{Aprendizaje automático clásico.} Representaciones de frecuencia de eventos con métodos como PCA, SVM o \textit{Isolation Forest}, que ignoran en gran medida el orden y el significado de los mensajes.
+  \item \textbf{Aprendizaje profundo.} Modelos secuenciales (LSTM/GRU, \textit{autoencoders}), como DeepLog, LogAnomaly o LogRobust, que aprenden patrones normales y marcan desviaciones.
+  \item \textbf{Modelos de lenguaje.} Modelos basados en \textit{Transformer} que procesan el log como lenguaje natural, con \textit{embeddings} semánticos más robustos ante vocabulario nuevo y cambios en el formato~\cite{murphy2024_embeddings, liu2024_logprompt, karlsen2024_benchmark}.
+\end{enumerate}
 
-\subsection{Ineficiencia de los mecanismos de revocación: CRL y OCSP}
+% TODO: DeepLog, LogAnomaly, LogRobust, Drain y Spell se mencionan en las respuestas de NotebookLM pero no tienen entrada .bib; agregar tras verificar con el notebook o con fuente primaria. Hasta entonces no se cita cada uno individualmente.
 
-Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.
+Dentro de la cuarta etapa se abre una línea que prioriza los modelos pequeños, ajustados localmente con técnicas de \textit{fine-tuning} eficiente en parámetros, como alternativa a los modelos masivos en la nube~\cite{wang2025_slm_survey, lim2025_logadreft, liu2025_lineadapter, saha2025_slm_minimal}. Esa línea es la base del presente trabajo y se desarrolla en los capítulos siguientes.
 
-Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam eaque ipsa quae ab illo inventore veritatis. Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit, sed quia non numquam eius modi tempora incidunt ut labore et dolore magnam aliquam quaerat voluptatem.
+\section{Situación previa en la DTIC y propuesta de titulación}\label{sec:ant_dtic}
 
-Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt. Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit, sed quia non numquam eius modi tempora incidunt ut labore et dolore magnam aliquam quaerat voluptatem. Ut enim ad minima veniam, quis nostrum exercitationem ullam corporis suscipit laboriosam, nisi ut aliquid ex ea commodi consequatur. Quis autem vel eum iure reprehenderit qui in ea voluptate velit esse quam nihil molestiae consequatur, vel illum qui dolorem eum fugiat quo voluptas nulla pariatur. Et harum quidem rerum facilis est et expedita distinctio, nam libero tempore, cum soluta nobis est eligendi optio cumque nihil impedit quo minus id quod maxime placeat facere possimus.
+La propuesta de titulación que origina este trabajo~\cite{orellana2026_propuesta} plantea desarrollar un \textit{pipeline} de observabilidad \textit{on-premise} basado en SLM para el análisis de logs de servidores. % TODO: describir cómo se monitorean hoy los servicios de la DTIC (Grafana en el puerto 3000 aparece como servicio externo en la documentación técnica; confirmar herramientas, alertas existentes y responsables de operación).
+El proyecto técnico cuenta con dos entornos de ejecución, uno con GPU NVIDIA/CUDA y otro con GPU AMD/ROCm, y con servicios locales de inferencia (Ollama y Hugging Face Transformers) y de base vectorial (Milvus Lite).
 
-\subsection{Vulnerabilidad a ataques MITM y falta de transparencia}
+\section{Síntesis}\label{sec:ant_sintesis}
 
-Quis autem vel eum iure reprehenderit qui in ea voluptate velit esse quam nihil molestiae consequatur, vel illum qui dolorem eum fugiat quo voluptas nulla pariatur. At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis praesentium voluptatum deleniti atque corrupti quos dolores et quas molestias excepturi sint occaecati cupiditate non provident. Et harum quidem rerum facilis est et expedita distinctio, nam libero tempore, cum soluta nobis est eligendi optio cumque nihil impedit quo minus id quod maxime placeat facere possimus.
-
-Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit, sed quia non numquam eius modi tempora incidunt ut labore et dolore magnam aliquam quaerat voluptatem.
-
-\subsection{Limitaciones de escalabilidad e inflexibilidad arquitectónica}
-
-Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam eaque ipsa quae ab illo inventore veritatis. Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt. Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit, sed quia non numquam eius modi tempora incidunt ut labore et dolore magnam aliquam quaerat voluptatem.
-
-% ─────────────────────────────────────────────────────────────────────────────
-
-\section{Contexto normativo ecuatoriano y la brecha tecnológica}
-
-At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis praesentium voluptatum deleniti atque corrupti quos dolores et quas molestias excepturi sint occaecati cupiditate non provident. Et harum quidem rerum facilis est et expedita distinctio, nam libero tempore, cum soluta nobis est eligendi optio cumque nihil impedit quo minus id quod maxime placeat facere possimus. Temporibus autem quibusdam et aut officiis debitis aut rerum necessitatibus saepe eveniet ut et voluptates repudiandae sint et molestiae non recusandae. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
-
-Quis autem vel eum iure reprehenderit qui in ea voluptate velit esse quam nihil molestiae consequatur, vel illum qui dolorem eum fugiat quo voluptas nulla pariatur. At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis praesentium voluptatum deleniti atque corrupti quos dolores et quas molestias excepturi sint occaecati cupiditate non provident. Temporibus autem quibusdam et aut officiis debitis aut rerum necessitatibus saepe eveniet ut et voluptates repudiandae sint et molestiae non recusandae. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
-
-Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam eaque ipsa quae ab illo inventore veritatis. Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt. Ut enim ad minima veniam, quis nostrum exercitationem ullam corporis suscipit laboriosam, nisi ut aliquid ex ea commodi consequatur. Quis autem vel eum iure reprehenderit qui in ea voluptate velit esse quam nihil molestiae consequatur, vel illum qui dolorem eum fugiat quo voluptas nulla pariatur.
+El volumen y el ruido de la telemetría, la insuficiencia de las reglas y umbrales fijos, y la disponibilidad de modelos de lenguaje compactos que pueden ejecutarse localmente definen el espacio del problema. Los capítulos siguientes formalizan los conceptos (Capítulo~\ref{cap:marco_teorico}), revisan lo que la literatura ha hecho en este espacio (Capítulo~\ref{cap:trabajos_relacionados}) y describen cómo se construyó y evaluó el \textit{pipeline} para la DTIC (Capítulos~\ref{cap:metodologia} y~\ref{cap:resultados}).
