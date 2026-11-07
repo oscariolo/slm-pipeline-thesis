@@ -1,0 +1,52 @@
+{
+  "permissions": {
+    "defaultMode": "acceptEdits",
+    "additionalDirectories": [
+      "/home/santiago/Desktop/Santi/universidad/Tesis/TesisPipelineDev",
+      "/home/santiago/.claude/skills/notebooklm"
+    ],
+    "allow": [
+      "Read",
+      "Glob",
+      "Grep",
+      "Edit(/sections/**)",
+      "Write(/sections/**)",
+      "Write(/notes/**)",
+      "Write(/PROGRESS.md)",
+      "Edit(/PROGRESS.md)",
+      "Skill(notebooklm)",
+      "Bash(latexmk:*)",
+      "Bash(pdflatex:*)",
+      "Bash(bibtex:*)",
+      "Bash(biber:*)",
+      "Bash(python:*)",
+      "Bash(python3:*)",
+      "Bash(cd:*)",
+      "Bash(ls:*)",
+      "Bash(wc:*)",
+      "Bash(head:*)",
+      "Bash(tail:*)",
+      "Bash(mkdir:*)",
+      "Bash(grep:*)",
+      "Bash(git status:*)",
+      "Bash(git diff:*)",
+      "Bash(git log:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)"
+    ],
+    "deny": [
+      "Edit(//home/santiago/Desktop/Santi/universidad/Tesis/**)",
+      "Write(//home/santiago/Desktop/Santi/universidad/Tesis/**)",
+      "Edit(/etc/**)",
+      "Edit(/TFG.tex)",
+      "Read(**/.env)",
+      "Read(**/auth/**)",
+      "Bash(git push:*)",
+      "Bash(git reset:*)",
+      "Bash(git checkout:*)",
+      "Bash(git branch:*)",
+      "Bash(rm:*)",
+      "Bash(sudo:*)"
+    ]
+  }
+}
