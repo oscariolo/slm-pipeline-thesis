@@ -69,7 +69,7 @@ Un modelo compacto puede ejecutarse dentro de la infraestructura de la organizac
 
 El ajuste fino (\textit{fine-tuning}) continúa el entrenamiento de un modelo preentrenado con datos de una tarea específica para que su comportamiento se ajuste a ella. Ajustar todos los parámetros de un modelo de miles de millones de parámetros es costoso en memoria y en tiempo, y obliga a guardar una copia completa del modelo por cada tarea. Los métodos de ajuste fino eficiente en parámetros (PEFT) resuelven este problema entrenando solo una fracción pequeña de parámetros adicionales mientras el modelo base permanece congelado; se agrupan en métodos aditivos, que añaden módulos nuevos, selectivos, que entrenan un subconjunto de los parámetros existentes, y reparametrizados, que expresan la actualización de los pesos en una forma de menor dimensión \cite{han2024_peft_survey}.
 
-\subsubsection{LoRA}\label{sec:mt_lora}
+\tema{LoRA}
 
 La adaptación de bajo rango (\textit{Low-Rank Adaptation}) parte de la hipótesis de que el cambio que necesitan los pesos para adaptarse a una tarea tiene un rango intrínseco bajo. En lugar de modificar una matriz de pesos preentrenada $W_0 \in \mathbb{R}^{d \times k}$, la mantiene congelada y aprende dos matrices pequeñas $B \in \mathbb{R}^{d \times r}$ y $A \in \mathbb{R}^{r \times k}$, con un rango $r$ mucho menor que $d$ y que $k$, de modo que
 \begin{equation}
@@ -77,7 +77,7 @@ W = W_0 + \Delta W = W_0 + BA.
 \end{equation}
 Durante el entrenamiento solo se actualizan $A$ y $B$, y al terminar el producto $BA$ puede sumarse a $W_0$, por lo que la inferencia no tiene latencia adicional \cite{hu2022_lora}. Como ejemplo conceptual, una matriz de proyección de $4\,096 \times 4\,096$ tiene $16\,777\,216$ parámetros; con un rango $r = 8$, las matrices $A$ y $B$ suman $2 \times 8 \times 4\,096 = 65\,536$ parámetros entrenables, es decir, alrededor del 0.39\,\% de los originales.
 
-\subsubsection{QLoRA}\label{sec:mt_qlora}
+\tema{QLoRA}
 
 Combina LoRA con la cuantización. El modelo base se carga congelado y cuantizado a 4 bits, y los gradientes se propagan a través de él hacia los adaptadores LoRA, que sí se entrenan en mayor precisión. Para reducir la memoria sin perder rendimiento introduce un tipo de dato de 4 bits ajustado a pesos con distribución normal (NormalFloat de 4 bits, NF4), una doble cuantización de las constantes de escala y optimizadores paginados que absorben los picos de memoria \cite{dettmers2023_qlora}. Con esta técnica es posible ajustar en una sola GPU modelos que, en 16 bits, no cabrían en su memoria.
 
@@ -85,20 +85,19 @@ Combina LoRA con la cuantización. El modelo base se carga congelado y cuantizad
 
 Hasta este punto se ha descrito cómo se reduce y organiza un registro de eventos en ventanas, por qué una alerta mal emitida tiene un costo para los equipos de operación, cómo han evolucionado las técnicas de análisis de logs y qué modelos de lenguaje pueden ejecutarse y adaptarse con pocos recursos. Estos elementos convergen en la tarea central del análisis de logs, la detección de anomalías: las ventanas que produce el preprocesamiento son su unidad de análisis, los modelos de lenguaje pequeños son una forma de resolverla y la fatiga de alertas fija el precio de equivocarse. Una anomalía es un comportamiento del sistema que se aparta de lo esperado y que suele indicar una falla; en los logs se manifiesta como mensajes inusuales, secuencias de eventos fuera de lo habitual o frecuencias atípicas de ciertos eventos, y detectarla a tiempo es el primer paso para resolver un incidente \cite{he2021_survey}.
 
-\subsubsection{Formulación}\label{sec:mt_formulacion}
+\tema{Formulación}
 
 Sea $x = (e_1, e_2, \ldots, e_n)$ una ventana de $n$ eventos de log consecutivos. La detección de anomalías consiste en aprender una función $f(x) \in \{0, 1\}$ que asigne la etiqueta 1 si la ventana contiene un comportamiento anómalo o una falla y 0 en caso contrario \cite{he2021_survey}. Cuando el detector produce además una puntuación continua $s(x) \in [0, 1]$, la decisión se toma comparándola con un umbral $\tau$, de modo que $f(x) = 1$ si $s(x) \geq \tau$. La elección de $\tau$ fija el equilibrio entre detectar más errores y emitir más falsas alarmas.
 
-\subsubsection{Enfoques}\label{sec:mt_enfoques}
+\tema{Enfoques de aprendizaje}
 
 Los enfoques supervisados aprenden $f$ a partir de ventanas etiquetadas como normales o anómalas, y suelen ser los más precisos cuando las etiquetas existen y son fiables. Los no supervisados modelan solo el comportamiento normal y marcan como anómalo lo que se aparta de él, sin necesidad de etiquetas. Los semisupervisados combinan pocos ejemplos etiquetados con muchos sin etiquetar. Los enfoques secuenciales consideran el orden de los eventos y aprenden qué evento es esperable después de otro, mientras que los enfoques semánticos representan el significado del texto de cada mensaje, de modo que dos mensajes redactados de forma distinta pero equivalentes se tratan igual \cite{jiang2021_aiops} \cite{he2021_survey}.
 
-\subsubsection{Detección con modelos de lenguaje pequeños}\label{sec:mt_deteccion_slm}
+\tema{Modelos de lenguaje como detectores}
 
 Un modelo de lenguaje generativo puede actuar como clasificador sin una cabeza de clasificación propia. Recibe una instrucción que describe la tarea y el criterio de error, seguida del texto de la ventana, y genera una respuesta con la etiqueta, a menudo en un formato estructurado. El modelo puede usarse sin entrenamiento adicional (\textit{zero-shot}), con algunos ejemplos dentro de la instrucción (\textit{few-shot}) o tras un ajuste fino con ventanas etiquetadas \cite{liu2024_logprompt}. Como el texto completo del mensaje entra al modelo, la detección aprovecha el significado de los mensajes y no solo su frecuencia, y el mismo modelo puede generar además una explicación en lenguaje natural de su decisión \cite{lim2025_logadreft}.
 
-\subsubsection{Análisis de causa raíz (RCA)}\label{sec:mt_rca}
-
+\tema{Análisis de causa raíz}
 Detectar que algo falla no basta para resolverlo: el análisis de causa raíz busca identificar el componente o el evento que originó la falla. En una arquitectura de microservicios, los servicios forman una red de llamadas y dependencias jerárquicas, de modo que una falla en un servicio base se propaga a los servicios que dependen de él y puede desencadenar fallas en cascada o ``tormentas de anomalías'' \cite{wang2024_rca}. Por ejemplo, si falla el servicio de envíos de una tienda en línea, el servicio de pedidos que lo invoca empieza a mostrar síntomas leves, como respuestas lentas o reintentos, pero sigue funcionando, lo que oculta la causa real \cite{pedroso2025_maia}.
 
 Estas propagaciones tienen consecuencias operativas directas. Una falla que no se localiza a tiempo produce degradación o caída total del servicio, incumplimiento de los acuerdos de nivel de servicio, pérdidas económicas y daño a la reputación de la organización \cite{wang2024_rca}. El tiempo medio de reparación crece con el tiempo que se tarda en pasar del síntoma a la causa, y por ello el RCA suele apoyarse en la correlación de logs, métricas y trazas.
