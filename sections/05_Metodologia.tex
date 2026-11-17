@@ -19,7 +19,12 @@ El flujo completo consta de cuatro bloques (Figura~\ref{fig:arquitectura}): (1) 
 
 \subsection{Origen y características}
 
-El corpus se compone de 309 archivos Logback/Spring Boot del microservicio \texttt{ms-users}, con 27{,}752{,}836 eventos y 15.8~GB (véase la Sección~\ref{subsec:ant_corpus}). El \textit{pipeline} lee los archivos en orden alfabético, de modo que el orden de los eventos es reproducible.
+El corpus se compone de 309 archivos Logback/Spring Boot del microservicio \texttt{ms-users}, con 27{,}752{,}836 eventos y 15.8~GB. El \textit{pipeline} lee los archivos en orden alfabético, de modo que el orden de los eventos es reproducible.
+% MOVIDO desde el Cap. 2 (2026-11-17), pendiente de integrar al reescribir el Cap. 3:
+El servicio \texttt{ms-users} de la DTIC ilustra ese problema a escala institucional. Los datos disponibles para este trabajo son 309 archivos Logback/Spring Boot (\texttt{logFile.YYYY-MM-DD.HH.log}) con un total aproximado de 15.8~GB y 27{,}752{,}836 eventos. El peso del corpus se debe principalmente al registro de Spring Security en nivel \texttt{TRACE}, a los sondeos de Kubernetes a \texttt{/actuator/health} y \texttt{/actuator/prometheus} cada 5 a 15 segundos, que dejan trazas de pila de alrededor de 115 líneas, y a las redirecciones a \texttt{/login} y a los recursos estáticos.
+
+Los eventos con valor de negocio provienen de los adaptadores del servicio hacia sistemas externos (por ejemplo, \texttt{AdUserOutAdappter}, \texttt{UsuarioAs400Service}, \texttt{UsuarioOracleService}, \texttt{GoogleUserOutAdapter} y \texttt{LdapEstudianteOutAdapter}) y registran situaciones como rechazos por política de contraseñas, usuarios no encontrados o fallos de conectividad. % TODO: confirmar con la DTIC la descripción funcional de cada adaptador y el período exacto que cubre el corpus (fechas de inicio y fin).
+
 % TODO: período temporal cubierto, entorno (producción/pruebas) y autorización/anonimización de datos personales presentes en los logs (correos, identificadores): confirmar con la DTIC.
 
 \subsection{Prefiltrado}\label{subsec:met_prefiltro}

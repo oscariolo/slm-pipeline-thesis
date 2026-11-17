@@ -1,0 +1,68 @@
+\chapter{Introducción}\label{cap:introduccion}
+
+\section{Contexto del estudio}\label{sec:contexto}
+
+Los servicios informáticos de una universidad moderna (gestión de identidades, correo, plataformas académicas, sistemas administrativos) se ejecutan sobre arquitecturas de microservicios y contenedores que generan, de forma continua, grandes volúmenes de telemetría: registros de eventos (\textit{logs}), métricas y trazas distribuidas~\cite{uddin2026_microservice_logs, he2021_survey}. Cuando algo falla, el equipo de operaciones debe localizar el evento relevante entre miles de líneas de texto semiestructurado, un trabajo manual, lento y propenso a pasar por alto fallas sutiles.
+
+En la Universidad de Cuenca, la Dirección de Tecnologías de la Información y Comunicación (DTIC) opera servicios de este tipo. Uno de ellos es \texttt{ms-users}, un microservicio Spring Boot (Logback) que administra cuentas de usuario frente a Active Directory, LDAP, Google Workspace, Oracle y AS400. El corpus de \texttt{ms-users} disponible para este trabajo contiene 309 archivos de registro, aproximadamente 15.8~GB y 27{,}752{,}836 eventos. La mayor parte de ese volumen es ruido operativo: trazas de Spring Security en nivel \texttt{TRACE}, sondeos periódicos de Kubernetes a los \textit{endpoints} de salud y redirecciones a la página de ingreso. Tras un prefiltrado, solo el 0.804\,\% de los eventos (223{,}104) resulta relevante para el análisis.
+
+Los modelos de lenguaje de gran tamaño (LLM) han mostrado capacidad para interpretar logs como lenguaje natural~\cite{liu2024_logprompt, karlsen2024_benchmark}, pero su uso mediante servicios en la nube implica costos recurrentes, latencia y, sobre todo, el envío de telemetría institucional a terceros. Los modelos de lenguaje pequeños (\textit{Small Language Models}, SLM), con entre cientos de millones y pocos miles de millones de parámetros, ofrecen una alternativa que puede ejecutarse localmente (\textit{on-premise}) sobre hardware acotado~\cite{wang2025_slm_survey, saha2025_slm_minimal, pardeshi2026_smartllm}. Este trabajo estudia si esa alternativa es viable en el contexto concreto de la DTIC.
+
+
+\subsection{Planteamiento del problema}\label{sec:problema}
+
+La DTIC carece de un mecanismo automático que analice sus logs, identifique los eventos que constituyen fallas del sistema, notifique al responsable y le sugiera una causa y una acción correctiva. Las dificultades específicas son:
+
+\begin{itemize}
+  \item \textbf{Volumen y ruido.} Menos del 1\,\% de los eventos del corpus es relevante, y solo unos 7.4 mil de los 223 mil eventos filtrados son únicos.
+  \item \textbf{Ausencia de etiquetas.} No existe un conjunto de datos etiquetado con el criterio operativo de la DTIC; etiquetar manualmente millones de eventos no es viable.
+  \item \textbf{Criterio de dominio.} Condiciones como un usuario no encontrado en el directorio, una política de contraseñas incumplida o una respuesta HTTP 4xx son comportamiento funcional correcto y no fallas, lo que los modelos de lenguaje genéricos tienden a confundir (véase el Capítulo~\ref{cap:resultados}).
+  \item \textbf{Privacidad y recursos.} Los datos no deben salir de la infraestructura institucional, y el hardware disponible limita el tamaño de los modelos.
+\end{itemize}
+
+Pregunta de investigación: ¿es posible implementar, con SLM ejecutados localmente, un pipeline que identifique errores en los logs de la DTIC con una calidad medible, los notifique y recomiende acciones al desarrollador?
+
+
+\subsection{Justificación}\label{sec:justificacion}
+
+% TODO: reforzar con datos de incidentes reales de la DTIC (tiempos de detección actuales, número de incidentes) si el equipo puede proveerlos.
+Una solución local reduce la dependencia de proveedores externos, protege la información institucional y permite adaptar los modelos al vocabulario y a los componentes propios de la universidad (AS400, Oracle, Active Directory). Además, los resultados comparativos entre SLM sobre un corpus real y con un criterio de error validado por expertos aportan evidencia para decisiones de adopción tecnológicas en entornos con recursos limitados.
+
+
+\subsection{Alcance y limitaciones}\label{sec:alcance}
+
+El trabajo se centra en el microservicio \texttt{ms-users}, de modo que los resultados no se generalizan a otros servicios sin nueva evidencia. La unidad de análisis es el \textit{batch} de eventos consecutivos y la tarea es clasificatoria (error / no error); el pipeline también produce una descripción y una acción recomendada. Del conjunto de señales de observabilidad se explotan los logs; las métricas y trazas se discuten como extensión (véase la Sección~\ref{sec:trabajo_futuro}).
+% TODO: confirmar con el tutor si se declara explícitamente que métricas y trazas quedan fuera del alcance experimental.
+Las limitaciones metodológicas del ground truth (revisión por una sola persona por mitad de muestra, criterio fijado tras observar los datos) se discuten en los Capítulos~\ref{cap:metodologia} y~\ref{cap:resultados}.
+
+
+\subsection{Contribuciones}\label{sec:contribuciones}
+
+\begin{itemize}
+  \item Un procedimiento reproducible para construir un \textit{ground truth} de logs por \textit{batch}: preetiquetado con tres LLM, validación experta, propagación determinista del criterio y trazabilidad del origen de cada etiqueta.
+  \item La evidencia de que el consenso entre LLM, aun con alto acuerdo (Fleiss' $\kappa=0.886$), sobreestima el error respecto al criterio de los expertos.
+  \item Una comparación de ocho SLM en tres tamaños de \textit{batch}, evaluada de forma semántica con \textit{embeddings}.
+  \item Un pipeline integrado con prefiltrado, clasificación, caché semántico, notificación, recomendador, inyección de errores y \textit{dashboard}.
+\end{itemize}
+
+
+\section{Objetivos}\label{sec:objetivos}
+
+\subsection{Objetivo general}
+
+Implementar un pipeline basado en modelos SLM capaz de identificar errores, notificar y recomendar al desarrollador en el contexto del DTIC de la Universidad de Cuenca, utilizando logs, trazas y métricas.
+
+\subsection{Objetivos específicos}
+
+\begin{enumerate}
+  \item Construir un dataset estructurado, a partir de registros históricos de telemetría y logs de errores de los servidores del DTIC, clasificados por tipos.
+  \item Implementar SLM adaptados al contexto de la infraestructura universitaria para el análisis de logs.
+  \item Validar los SLM en su capacidad de identificación de errores mediante métricas de precisión (\textit{accuracy}, \textit{F1-score} y curva ROC).
+  \item Implementar el pipeline que integra los modelos SLM con los diferentes servidores, capaz de analizar el flujo de logs en tiempo real, identificar anomalías y sugerir soluciones mostrándolas en una interfaz gráfica.
+  \item Comprobar los resultados del modelo aplicado en el entorno del DTIC mediante simulaciones de errores dentro del pipeline.
+\end{enumerate}
+
+
+\section{Estructura del documento}\label{sec:organizacion}
+
+El presente documento se organiza de la siguiente manera. En el Capítulo~\ref{cap:antecedentes} se presentan los antecedentes y los conceptos fundamentales, junto con los trabajos relacionados más relevantes. En el Capítulo~\ref{cap:metodologia} se describe el proceso de construcción y evaluación del \textit{pipeline}: el conjunto de datos, el \textit{ground truth}, los modelos, el ajuste fino y los métodos de evaluación. En el Capítulo~\ref{cap:resultados} se exponen los resultados obtenidos. Finalmente, en el Capítulo~\ref{cap:conclusiones} se presentan las discusiones y las conclusiones de la investigación, además de los trabajos futuros propuestos, seguidos de los anexos y las referencias bibliográficas.

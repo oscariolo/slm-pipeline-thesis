@@ -9,6 +9,10 @@ En la Universidad de Cuenca, la Dirección de Tecnologías de la Información y 
 Los modelos de lenguaje de gran tamaño (LLM) han mostrado capacidad para interpretar logs como lenguaje natural~\cite{liu2024_logprompt, karlsen2024_benchmark}, pero su uso mediante servicios en la nube implica costos recurrentes, latencia y, sobre todo, el envío de telemetría institucional a terceros. Los modelos de lenguaje pequeños (\textit{Small Language Models}, SLM), con entre cientos de millones y pocos miles de millones de parámetros, ofrecen una alternativa que puede ejecutarse localmente (\textit{on-premise}) sobre hardware acotado~\cite{wang2025_slm_survey, saha2025_slm_minimal, pardeshi2026_smartllm}. Este trabajo estudia si esa alternativa es viable en el contexto concreto de la DTIC.
 
 
+% MOVIDO desde el Cap. 2 (2026-11-17), pendiente de integrar al revisar el Cap. 1:
+La propuesta de titulación que origina este trabajo~\cite{orellana2026_propuesta} plantea desarrollar un \textit{pipeline} de observabilidad \textit{on-premise} basado en SLM para el análisis de logs de servidores. % TODO: describir cómo se monitorean hoy los servicios de la DTIC (Grafana en el puerto 3000 aparece como servicio externo en la documentación técnica; confirmar herramientas, alertas existentes y responsables de operación).
+El proyecto técnico cuenta con dos entornos de ejecución, uno con GPU NVIDIA/CUDA y otro con GPU AMD/ROCm, y con servicios locales de inferencia (Ollama y Hugging Face Transformers) y de base vectorial (Milvus Lite).
+
 \subsection{Planteamiento del problema}\label{sec:problema}
 
 La DTIC carece de un mecanismo automático que analice sus logs, identifique los eventos que constituyen fallas del sistema, notifique al responsable y le sugiera una causa y una acción correctiva. Las dificultades específicas son:
