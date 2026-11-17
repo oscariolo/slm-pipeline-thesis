@@ -1,0 +1,82 @@
+\chapter{Trabajos Relacionados} \label{cap:trabajos_relacionados}
+
+Este capítulo revisa trabajos que aplican modelos de lenguaje al análisis de logs y a la observabilidad. Se agrupan por enfoque y se cierra con una comparación y la posición del presente trabajo. Las cifras provienen de los artículos tal como los resume el notebook de fuentes (\texttt{notes/04\_trabajos\_relacionados.md}); no son comparables directamente entre sí ni con las de esta tesis, pues usan conjuntos de datos y protocolos distintos. % TODO: verificar cada cifra contra el PDF original antes de la versión final.
+
+\section{Revisiones sistemáticas}\label{sec:tr_revisiones}
+
+He et al.~\cite{he2021_survey} y Jiang et al.~\cite{jiang2021_aiops} sintetizan el análisis automático de logs (\textit{parsing}, detección de anomalías, diagnóstico de fallas) y su papel en AIOps. Uddin et al.~\cite{uddin2026_microservice_logs} revisan específicamente el análisis de logs de microservicios con inteligencia artificial, y Wang y Qi~\cite{wang2024_rca} el análisis de causa raíz en (micro)servicios. Wang et al.~\cite{wang2025_slm_survey} y Chen et al.~\cite{chen2025_collab_survey} cubren los SLM y los mecanismos de colaboración entre modelos grandes y pequeños, respectivamente. Estas revisiones fundamentan el marco del Capítulo~\ref{cap:marco_teorico}.
+
+\section{LLM con \textit{prompting} para análisis de logs}\label{sec:tr_prompting}
+
+LogPrompt~\cite{liu2024_logprompt} propone estrategias de \textit{prompting} (\textit{self-prompt}, \textit{chain-of-thought} e \textit{in-context learning}) para analizar logs en línea sin entrenamiento, evaluado sobre ChatGPT y sobre un modelo abierto local (Vicuna-13B). Reporta un $F_1$ promedio de 0.797 en \textit{parsing} y valores de 0.384 (BGL) y 0.450 (Spirit) en detección de anomalías, además de explicaciones valoradas por expertos. Sus límites son la baja precisión absoluta en detección y la dependencia de la API en la nube para el mejor rendimiento.
+
+Karlsen et al.~\cite{karlsen2024_benchmark} ajustan de forma supervisada 60 modelos (BERT, RoBERTa, DistilRoBERTa, GPT-2 y GPT-Neo) para clasificar líneas de log en seis conjuntos públicos etiquetados (Apache Access, CSIC 2010, PKDD 2007, BGL, Thunderbird y Spirit). El mejor, DistilRoBERTa, alcanza un $F_1$ promedio de 0.998 y clasifica unos 135 logs por segundo. Son codificadores supervisados que clasifican líneas con las etiquetas del propio \textit{benchmark}; no son modelos generativos pequeños ni evalúan lotes, y con un $F_1$ cercano a 1 sobre conjuntos públicos su resultado contrasta con los obtenidos aquí sobre un corpus real con 2.9\,\% de lotes con error (Capítulo~\ref{cap:resultados}).
+
+Zhang et al. (LogX)~\cite{zhang2024_logx} atacan la adaptación en línea sin reentrenar: indican al LLM pares entrada-etiqueta para corregir errores nuevos, con ChatGPT y con modelos abiertos locales (Llama3.1-8B, Qwen1.5). Reportan un $F_1$ promedio cercano a 0.80 sobre cinco conjuntos públicos (HDFS 0.842, Hadoop 0.840, OpenStack 0.747, BGL 0.830 y Thunderbird 0.813) sin datos del propio dominio, y señalan que un contexto demasiado largo en el \textit{prompt} degrada el desempeño. Anastasiadis et al. (Red Flags)~\cite{anastasiadis2026_redflags} evalúan tres LLM abiertos con cuatro estrategias de \textit{prompting} sobre una muestra balanceada de 10\,000 logs de BGL; la mejor configuración (LLaMA3.2-3B con pocos ejemplos) obtiene \textit{precision} de 89\,\%, \textit{recall} de 97\,\% y $F_1$ de 93\,\%, con 11\,\% de falsos positivos. Una muestra balanceada no refleja una prevalencia baja de errores como la de este trabajo, donde la \textit{precision} es el límite principal.
+
+Masri et al.~\cite{masri2026_slm_severity} es el trabajo más cercano en datos y en tipo de modelo: evalúan nueve SLM y modelos pequeños de razonamiento (de 0.6B a 4B) sobre 50\,000 logs muestreados de 7.3 millones de entradas reales de \texttt{journalctl} de servidores Linux, con \textit{prompting} \textit{zero-shot}, \textit{few-shot} y recuperación aumentada (RAG, con FAISS). Qwen3-4B con RAG alcanza 95.6\,\% de exactitud, Gemma3-1B pasa de 20.25\,\% a 85.28\,\% y varios modelos de razonamiento se degradan con RAG (Phi-4-mini-reasoning supera los 228 s por log). La tarea es clasificar la severidad del log, una etiqueta de metadatos que los propios autores consideran ruidosa, y no detectar fallos por lote, y las pruebas se hicieron en lotes estáticos y no en un flujo continuo. Sus resultados con RAG sugieren la hipótesis, que esta tesis no prueba, de que ejemplos recuperados con etiqueta experta podrían subir la \textit{precision} de los SLM (véase el trabajo futuro).
+
+\section{Ajuste fino eficiente en parámetros para logs}\label{sec:tr_peft}
+
+Lim et al.~\cite{lim2025_logadreft} comparan ReFT y LoRA sobre RoBERTa, GPT-2 y Llama-3 (8B) con los conjuntos HDFS, BGL, Spirit y Thunderbird. Llama3-ReFT alcanza $F_1$ de 0.9690 (BGL), 0.9950 (HDFS), 0.9192 (Spirit) y 0.9149 (Thunderbird), y supera a LoRA en 9 de 12 comparaciones; en generalización cruzada ReFT conserva un $F_1$ cercano a 0.50 mientras LoRA cae a valores cercanos a 0. El entrenamiento de ReFT es más lento que el de LoRA a rangos altos.
+
+LINEADAPTER~\cite{liu2025_lineadapter} inserta un adaptador convolucional 1D tras la capa \textit{feed-forward} de bloques congelados (BERT, Llama-3.2-1B, Bloom-3B) y reporta $F_1$ de 0.988 (BGL), 0.980 (HDFS) y 0.953 (Hadoop) en detección, y similitud semántica de 0.959 a 0.977 con la causa raíz real, con unas cuatro veces menos parámetros y FLOPs entrenables que LoRA. Su evaluación se limita a un solo nodo de cómputo.
+
+LogLLM~\cite{guan2024_logllm} combina un codificador BERT, que comprime cada mensaje en un vector, con un Llama-3-8B ajustado con QLoRA en tres etapas, y alcanza un $F_1$ promedio de 0.959 en HDFS (0.997), BGL (0.916), Liberty (0.958) y Thunderbird (0.966), con 150 ms por muestra; los propios autores señalan que los \textit{benchmarks} públicos no reflejan la evolución de plantillas de la industria. HiPELog~\cite{devi2026_hipelog} ajusta con LoRA un \textit{Transformer} jerárquico de dos niveles y reporta $F_1$ de 99.50\,\% en HDFS y 99.58\,\% en BGL entrenando 8\,192 parámetros, probado en lotes sin flujo continuo.
+
+Dos trabajos generales de bajos recursos completan el panorama, sin tratar logs: Yang y Pan~\cite{yang2025_lightweight} estudian la destilación para modelos de lenguaje en entornos restringidos, y Nallabollu et al.~\cite{nallabollu2026_peft_cloud} comparan técnicas PEFT para datos en la nube. Sus resultados provienen de tareas de referencia y no de logs, por lo que solo se usan como contexto de la Sección~\ref{sec:mt_peft}.
+
+Estos trabajos usan conjuntos públicos de benchmark (HDFS, BGL, Spirit, Thunderbird, Liberty) con etiquetas ya disponibles; el presente trabajo, en cambio, parte de un corpus real sin etiquetas y dedica un esfuerzo central a construirlas.
+
+\section{Colaboración entre SLM y LLM}\label{sec:tr_colaboracion}
+
+AdaptiveLog~\cite{ma2026_adaptivelog} combina un SLM local con un LLM: el SLM resuelve las muestras de baja incertidumbre y deriva las difíciles (alrededor del 27\,\%) al LLM, con lo que reduce los costos de API en un 73\,\% respecto de usar siempre el LLM. Reporta $F_1$ de 98.91\,\% en Thunderbird y 94.99\,\% en BGL. Mantiene la dependencia de un LLM externo o de servidores locales de gran capacidad.
+
+LogRAG~\cite{zhang2024_lograg} propone una cascada en dos etapas: un clasificador \textit{Deep One-Class} sobre \textit{tokens} marca candidatos y un LLM (ChatGPT o Mistral-7B) los reevalúa con plantillas normales históricas recuperadas de una base vectorial. Reporta $F_1$ de 0.888 con ChatGPT y de 0.898 con Mistral en BGL, y de 0.927 en Spirit, frente a PLELog y DeepLog. Es el antecedente más cercano a la idea de reducir las llamadas al modelo con un filtro barato y una base vectorial, que en esta tesis se implementa con la caché semántica; difiere en que su detector previo se entrena con datos del sistema y requiere reentrenamiento periódico, y se evalúa sobre \textit{benchmarks} públicos.
+
+\section{Observabilidad, RCA y detección con LLM en microservicios}\label{sec:tr_observabilidad}
+
+MAIA~\cite{pedroso2025_maia} combina un Llama-3 8B ajustado de forma no supervisada, similitud coseno entre bloques de logs y una red bayesiana para RCA, y se evalúa en Kubernetes (Sock-Shop) con inyección de fallos mediante Chaos Mesh; los $F_1$ por tipo de fallo van de 0.83 a 0.997, con menor desempeño en fallos de E/S de base de datos no relacional. TRIDENT~\cite{dutta2025_trident} integra fusión multimodal de telemetría y ranking de causa raíz con atención sobre grafos; reporta reducciones de 25\,\% en MTTR y de 30\,\% en falsos positivos diarios, pero requiere instrumentación completa de trazas. AetherLog~\cite{cui2025_aetherlog} integra un LLM con un grafo de conocimiento para el análisis de causa raíz a partir de logs, y reporta $F_1$ de 0.93 en datos de Alibaba (2\,671 fallas) y de 0.97 en China Mobile (93 fallas), con 4.83 a 4.91 s por caso; sus autores declaran como limitación que la recuperación no recorre relaciones de varios saltos. El recomendador de este trabajo no usa grafos de conocimiento ni se evalúa aún con una referencia, por lo que AetherLog se cita como contexto y no como comparación.
+% TODO: otros trabajos del notebook sin entrada .bib (Wang et al. 2025 Preprints.org; TraceAI; Zhou et al. 2025; Mhatre y Shaikh 2024; Nellutla 2026; Awodele et al. 2026; LEMON). Agregar al .bib tras verificar si se desean citar.
+
+\section{Modelos pequeños y despliegue local}\label{sec:tr_local}
+
+Saha et al.~\cite{saha2025_slm_minimal} estudian el análisis de logs con SLM en entornos de recursos mínimos. SmartLLM~\cite{pardeshi2026_smartllm} propone un sistema \textit{on-premise} de modelos compactos con gobernanza y RAG, con latencia de 2 a 5 segundos y costo de API nulo, pero es una plataforma genérica sin especialización en observabilidad. Murphy et al.~\cite{murphy2024_embeddings} estudian \textit{embeddings} automáticos de mensajes de log, base del enfoque semántico usado aquí. % TODO: ampliar la descripción de Saha et al. con resultados concretos (modelos y métricas).
+
+\section{Anotación con LLM y construcción de \textit{ground truth}}\label{sec:tr_anotacion}
+
+Tseng et al.~\cite{tseng2025_expert_annotators} evalúan si LLM de gran tamaño pueden sustituir a anotadores humanos expertos en finanzas, derecho y biomedicina (1\,000 instancias de cinco conjuntos etiquetados por expertos). Las técnicas de inferencia no mejoran el desempeño (con \textit{chain-of-thought}, Claude 3 Opus baja de 64.2\,\% a 62.6\,\% de exactitud promedio y Gemini 1.5 Pro de 65.3\,\% a 63.6\,\%), los modelos de razonamiento superan solo marginalmente a los demás, y una discusión multiagente mejora la exactitud y el acuerdo entre anotadores. Los autores declaran que su evaluación es \textit{zero-shot}, limitada a tareas de clasificación con etiquetas fijas. Respalda la decisión de esta tesis de no confiar solo en el voto de modelos, aunque no trata logs ni modelos pequeños y no permite deducir cómo configurar los SLM (por ejemplo, si conviene activar el razonamiento).
+
+Sun et al.~\cite{sun2026_parsing} estudian 16 conjuntos públicos de LogHub y cuatro conjuntos industriales propietarios, con seis \textit{parsers} (de reglas y basados en LLM) y cinco detectores. Su protocolo de etiquetado para los datos sin anotaciones usa cuatro expertos en dos equipos independientes, validación cruzada y arbitraje, con $\kappa$ de Cohen de 0.84 a 0.90. Corregir los errores de \textit{parsing} mejora el $F_1$ de forma significativa (+3.61\,\% en promedio global y +7.0\,\% relativo en los industriales), y la aumentación con logs públicos ayuda de forma dependiente del modelo y puede producir transferencia negativa; además, once ingenieros entrevistados confirman que los logs industriales son más heterogéneos que los públicos. Este trabajo comparte con ellos el uso de logs reales y de revisión experta, pero no mide el acuerdo entre revisores, y enmascara en lugar de parsear (Sección~\ref{subsec:met_prefiltro}).
+
+Mudgal~\cite{mudgal2025_reflex} propone REFLEX, una métrica sin referencias basada en un LLM como juez para evaluar resúmenes de logs, validada con una muestra cualitativa pequeña (50 entradas) y con las limitaciones de costo y de sesgo de los \textit{embeddings} que declara el autor. Evalúa resúmenes, no recomendaciones, así que se considera solo una opción para evaluar el recomendador de esta tesis (Sección~\ref{sec:mt_reaccion}).
+
+\section{Comparación y posición del presente trabajo}\label{sec:tr_comparacion}
+
+\begin{table}[H]
+\centering
+\caption{Comparación cualitativa con trabajos relacionados. Los símbolos son una síntesis del autor a partir de lo descrito en las secciones anteriores.}
+\label{tab:tr_comparacion}
+\small
+\begin{tabular}{@{}p{3.2cm}p{2.2cm}p{2.4cm}p{3.4cm}p{3.2cm}@{}}
+\toprule
+\textbf{Trabajo} & \textbf{Solo modelos locales} & \textbf{Datos} & \textbf{Método} & \textbf{Alerta y recomendación} \\
+\midrule
+LogPrompt~\cite{liu2024_logprompt} & No (API en la nube) & Benchmarks públicos & \textit{Prompting} & Explicaciones \\
+AdaptiveLog~\cite{ma2026_adaptivelog} & No (híbrido) & Benchmarks públicos & SLM + LLM por incertidumbre & No \\
+LogADReft~\cite{lim2025_logadreft} & Sí (ajuste local) & Benchmarks públicos & ReFT / LoRA & No \\
+LINEADAPTER~\cite{liu2025_lineadapter} & Sí (ajuste local) & Benchmarks públicos & Adaptador Conv1D & RCA \\
+MAIA~\cite{pedroso2025_maia} & Sí (Llama-3 8B) & Sock-Shop (sintético) & Autorregresivo + Bayes & RCA \\
+LogLLM~\cite{guan2024_logllm} & No especificado & Benchmarks públicos & BERT + Llama-3-8B (QLoRA), supervisado & No \\
+Masri et al.~\cite{masri2026_slm_severity} & Sí (SLM de 0.6B a 4B) & \texttt{journalctl} real de servidores Linux & \textit{Zero-shot}, \textit{few-shot} y RAG & No \\
+Red Flags~\cite{anastasiadis2026_redflags} & LLM abiertos (3B a 8B) & BGL, muestra balanceada & \textit{Prompting} con pocos ejemplos & No documentado \\
+LogRAG~\cite{zhang2024_lograg} & No (ChatGPT o Mistral-7B) & Benchmarks públicos (BGL, Spirit) & Detector barato + LLM con RAG & No \\
+\textbf{Esta tesis} & Sí (Ollama / HF) & Corpus real DTIC & SLM + embeddings, \textit{prompt} y LoRA & Slack, recomendador, \textit{dashboard} \\
+\bottomrule
+\end{tabular}
+\normalsize
+\end{table}
+
+% TODO: validar la tabla (columnas "Solo modelos locales" y "Datos") contra los artículos originales; la clasificación proviene del resumen del notebook.
+
+Frente a la literatura, el presente trabajo se diferencia en cuatro puntos: (i) trabaja sobre un corpus operativo real de la universidad, sin etiquetas previas, y documenta cómo se construyó el \textit{ground truth}; (ii) compara varios SLM de distintas familias y tamaños con la misma tarea, sin depender de servicios en la nube; (iii) evalúa de forma semántica con \textit{embeddings} y permite comparar tamaños de \textit{batch}; (iv) integra alerta, recomendación e inyección de errores en un mismo \textit{pipeline} con interfaz gráfica. Frente a los trabajos más cercanos, Masri et al.~\cite{masri2026_slm_severity} usan SLM sobre logs reales pero clasifican severidad y no fallos por lote, y Tseng et al.~\cite{tseng2025_expert_annotators} y Sun et al.~\cite{sun2026_parsing} informan sobre la anotación con LLM y la revisión experta, que aquí se combinan para construir el \textit{ground truth} de un único servicio.

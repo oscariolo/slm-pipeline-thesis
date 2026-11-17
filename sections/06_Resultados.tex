@@ -178,30 +178,3 @@ El \textit{pipeline} cuenta con notificación a Slack, recomendador local, inyec
 
 % TODO: no existen resultados de simulación. Las plantillas de inyección son placeholders y el protocolo no está definido. Una vez definidos, reportar por tipo de error inyectado: tasa de detección, latencia hasta la alerta y calidad de la recomendación; con al menos el modelo de mayor F1 contra el GT final (Qwen3.5-9B) y uno de los más rápidos (granite-4.1-3b).
 Para el objetivo 5 no se dispone todavía de evidencia experimental; este resultado queda pendiente.
-
-\section{Discusión}\label{sec:res_discusion}
-
-\textbf{Cumplimiento de los objetivos.} La Tabla~\ref{tab:res_objetivos} resume el estado de cada objetivo específico a la fecha.
-
-\begin{table}[H]
-\centering
-\caption{Estado de los objetivos específicos.}
-\label{tab:res_objetivos}
-\small
-\begin{tabular}{@{}p{0.6cm}p{5.2cm}p{8.2cm}@{}}
-\toprule
-\textbf{Obj.} & \textbf{Descripción} & \textbf{Estado} \\
-\midrule
-1 & Dataset estructurado y clasificado por tipos & \textit{Ground truth} por \textit{batch} completo (4{,}463 \textit{batches}, 130 errores); falta la clasificación por tipos de error. \\
-2 & SLM adaptados al contexto & Ocho SLM comparados con \textit{prompt} adaptado al dominio; el ajuste fino LoRA no está evaluado sobre datos de la DTIC. \\
-3 & Validación con Accuracy, F1 y ROC & Completa para $N=50$ contra consenso y contra el GT final (recálculo propio); falta recálculo oficial y $N=20$ parcial. \\
-4 & Pipeline integrado en tiempo real con interfaz gráfica & Implementado (\textit{pipeline}, alertas, recomendador, \textit{dashboard}); sin prueba documentada en flujo en vivo. \\
-5 & Simulación de errores en el pipeline & Mecanismo implementado; sin protocolo ni resultados. \\
-\bottomrule
-\end{tabular}
-\normalsize
-\end{table}
-
-\textbf{Qué muestran los resultados.} (i) El criterio de error es la fuente principal de incertidumbre: el acuerdo entre LLM es alto ($\kappa=0.886$) y aun así solo el 12.5\,\% de los \textit{batches} de error unánime son errores según los expertos. (ii) La mejor métrica contra el consenso no es la mejor contra el \textit{ground truth} final: granite lidera con $F_1=0.951$ contra el consenso y 0.179 contra el GT final, donde Qwen3.5-9B lidera con 0.295. (iii) Los SLM tienen \textit{recall} alto pero precisión baja con el criterio final, de modo que en uso real se requeriría un umbral sobre $P(\text{error})$, un mejor \textit{prompt} o un ajuste fino con el criterio de la DTIC para evitar fatiga de alertas. % TODO: evaluar el efecto de un umbral sobre error_probability (curva precisión-recall contra el GT final) antes de afirmar la viabilidad operativa.
-
-\textbf{Amenazas a la validez.} Cada mitad de la muestra experta la revisó una sola persona; el criterio se fijó observando los datos; los 4{,}134 \textit{batches} no revisados se apoyan en reglas y similitud con validación optimista; la clase positiva del GT final es pequeña (130), por lo que las métricas de precisión son sensibles a pocos \textit{batches}; hubo una sola corrida por modelo; los modelos se ejecutaron en máquinas y motores distintos; y el texto de la votación no estuvo enmascarado mientras que el de los SLM sí lo estuvo. % TODO: añadir intervalos de confianza (p. ej. Wilson/bootstrap) a las métricas de las Tablas \ref{tab:res_n50} y \ref{tab:res_n50_final}.

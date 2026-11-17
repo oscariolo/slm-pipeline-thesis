@@ -1,0 +1,191 @@
+\chapter{Metodología} \label{cap:metodologia}
+
+Este capítulo describe cómo se construyó el conjunto de datos y su \textit{ground truth}, qué modelos se evaluaron y cómo, el ajuste fino con LoRA, la arquitectura del \textit{pipeline} y los mecanismos de notificación, recomendación e inyección de errores. Todo el código se ejecuta desde la carpeta \texttt{scripts/} del proyecto técnico; las cifras citadas provienen de sus reportes y de la documentación del repositorio.
+
+\section{Visión general}\label{sec:met_vision}
+
+El flujo completo consta de cuatro bloques (Figura~\ref{fig:arquitectura}): (1) \textbf{datos}: prefiltrado del corpus y agrupación en \textit{batches}; (2) \textbf{ground truth}: preetiquetado con tres LLM, revisión experta y propagación; (3) \textbf{SLM}: clasificación de cada \textit{batch} y evaluación semántica contra el \textit{ground truth}; (4) \textbf{reacción}: notificación, recomendación, inyección de errores y \textit{dashboard}.
+
+\begin{figure}[H]
+\centering
+% TODO: convertir arquitectura_pipeline_simplificado_v3.svg (raíz del proyecto técnico) a PDF, copiarlo a figs/metodologia/ y reemplazar el recuadro por:
+% \includegraphics[width=\textwidth]{figs/metodologia/arquitectura_pipeline_simplificado_v3.pdf}
+\fbox{\parbox{0.85\textwidth}{\centering\vspace{2cm}Figura pendiente: arquitectura del \textit{pipeline}\vspace{2cm}}}
+\caption{Arquitectura del \textit{pipeline} (figura pendiente de conversión).}
+\label{fig:arquitectura}
+\end{figure}
+
+\section{Conjunto de datos: corpus \texttt{ms-users} de la DTIC}\label{sec:met_dataset}
+
+\subsection{Origen y características}
+
+El corpus se compone de 309 archivos Logback/Spring Boot del microservicio \texttt{ms-users}, con 27{,}752{,}836 eventos y 15.8~GB (véase la Sección~\ref{subsec:ant_corpus}). El \textit{pipeline} lee los archivos en orden alfabético, de modo que el orden de los eventos es reproducible.
+% TODO: período temporal cubierto, entorno (producción/pruebas) y autorización/anonimización de datos personales presentes en los logs (correos, identificadores): confirmar con la DTIC.
+
+\subsection{Prefiltrado}\label{subsec:met_prefiltro}
+
+El prefiltro (\texttt{--log-filter logback}) analiza cada evento Logback y conserva únicamente los de interés según el \textit{logger}, el nivel de severidad y el mensaje: \textit{loggers} de negocio, eventos \texttt{WARN}/\texttt{ERROR}/\texttt{FATAL} y eventos de solicitud del \textit{framework}. Se descartan las trazas de \textit{framework}, las redirecciones de \textit{actuator} y de \textit{login}, y los recursos estáticos. El filtro \textbf{nunca} decide por dirección IP, porque la subred 10.16.0.x es el \textit{ingress} del clúster y también transporta tráfico legítimo.
+
+Cada evento conservado forma una entrada cuyo texto es la línea original más su traza de pila (limitada a 15 líneas por defecto). El resultado son \textbf{223{,}104 eventos (0.804\,\% del corpus)}, de los cuales solo unos 7.4 mil son únicos. Con el filtro activo, el tamaño de \textit{batch} cuenta eventos conservados. Antes de que cualquier modelo vea el texto, las direcciones IP, los UUID y los números se sustituyen por marcadores; así no se filtran identificadores y los eventos repetidos quedan idénticos. Se enmascara en lugar de convertir cada mensaje en una plantilla con un \textit{parser}, porque los errores de \textit{parsing} se propagan a la detección posterior~\cite{sun2026_parsing}; otros trabajos también prescinden del \textit{parser} y preprocesan con expresiones regulares~\cite{guan2024_logllm}. Este trabajo no mide cuánto afecta el enmascarado a la detección. % TODO: esta descripción del enmascarado proviene de RESUMEN_TESIS.md; confirmar contra el código antes de la versión final.
+
+\subsection{Agrupación en \textit{batches}}\label{subsec:met_batches}
+
+La unidad de evaluación es el \textit{batch} de eventos consecutivos. Por indicación del tutor se fijó $N=50$, que genera 4{,}463 \textit{batches} (4{,}462 de 50 eventos y uno final de 4). El \textit{batch} $k$ del \textit{ground truth} es el mismo \textit{batch} $k$ que procesa un SLM con \textit{batch size} 50, y se verifica su alineación por identificador de evento. Los tamaños $N=20$ y $N=30$ se usan como experimentos de sensibilidad, comparados semánticamente contra el \textit{ground truth} de 50.
+% TODO: el análisis de sensibilidad al tamaño del batch (porcentaje de batches con error, ráfagas partidas entre batches) se calculó con las etiquetas por log previas y debe recalcularse con el ground truth final (ver GROUND_TRUTH_BATCHES.md, sección 3).
+
+\subsection{Tipos de error}\label{subsec:met_tipos}
+
+El primer objetivo específico pide un conjunto de datos clasificado por tipos. El criterio operativo (Sección~\ref{sec:met_criterio}) define las categorías que se consideran fallas; el \textit{ground truth} registra, para cada \textit{batch}, la etiqueta binaria y la regla que la originó (\texttt{http\_5xx}, \texttt{request\_exception}, \texttt{account\_error}, \texttt{ad\_api\_error}). % TODO: no existe aún una clasificación de errores por tipo más fina que estas reglas (por ejemplo: base de datos, conectividad con AD, excepción no controlada). Definir la taxonomía y contar los batches de error por tipo a partir de rule_hits/error_lines_union del GT final.
+
+\section{Ground truth por consenso de tres modelos y revisión experta}\label{sec:met_gt}
+
+\subsection{Decisión de diseño}
+
+En una primera fase se etiquetó cada evento por separado. Tras la reunión con el tutor (29 de octubre de 2026) se decidió que el \textit{ground truth} sea por \textit{batch}, de modo que un SLM evalúe un \textit{batch} completo, y que la evaluación sea semántica por \textit{embeddings}. Las etiquetas por evento se conservan como referencia auxiliar, pero no se reutilizan como \textit{ground truth}, porque se aplicaron con un criterio anterior a la calibración de expertos.
+
+\subsection{Preetiquetado con tres LLM}\label{subsec:met_votacion}
+
+Tres LLM de distintas familias (\texttt{qwen2.5:7b}, \texttt{llama3.1:8b} y \texttt{mistral:7b}, cuantización Q4\_K\_M en Ollama) reciben cada \textit{batch} completo y responden un veredicto único en JSON: \texttt{is\_error}, \texttt{error\_lines} (índices que lo justifican) y \texttt{reasoning}. El \textit{batch} es error si al menos un evento lo es. Parámetros: temperatura 0, ventana de contexto de 12{,}288 \textit{tokens}, hasta 300 \textit{tokens} de salida y 3 reintentos; la mediana de \textit{tokens} del \textit{prompt} por \textit{batch} va de 3.7 mil a 5.5 mil según el modelo y ninguno se truncó. Un \textit{batch} sin respuesta válida no se guarda ni se asume normal.
+
+\begin{table}[H]
+\centering
+\caption{Votación de los tres LLM sobre los 4{,}463 \textit{batches}.}
+\label{tab:met_votos}
+\small
+\begin{tabular}{@{}lrrr@{}}
+\toprule
+\textbf{Modelo} & \textbf{\textit{Batches} con voto error} & \textbf{Tiempo total (h)} & \textbf{\textit{Tokens} de prompt (mediana / máx.)} \\
+\midrule
+qwen2.5:7b & 1{,}304 & 3.7 & 4{,}595 / 5{,}767 \\
+llama3.1:8b & 1{,}396 & 2.3 & 3{,}716 / 4{,}836 \\
+mistral:7b & 1{,}400 & 4.5 & 5{,}544 / 6{,}942 \\
+\bottomrule
+\end{tabular}
+\normalsize
+\end{table}
+
+Un incidente de \texttt{mistral:7b} dejó 23 \textit{batches} sin voto porque cortaba el JSON sin cerrar comillas ni llave; como la salida es determinista, los reintentos repetían el fallo. Se agregó al \textit{parser} un rescate por expresiones regulares y los 23 \textit{batches} se reprocesaron. El \textit{prompt} completo se incluye en el Apéndice~\ref{ap:prompt_votacion}.
+
+\subsection{Consenso y $\kappa$ de Fleiss}\label{subsec:met_kappa}
+
+El consenso es la mayoría estricta sobre los votos válidos (al menos 2 de 3). El resultado preliminar es de 1{,}370 \textit{batches} error (30.70\,\%) y 3{,}093 normales. El acuerdo entre modelos es alto: $\kappa$ de Fleiss $=0.886$, con $\kappa$ de Cohen por pares de 0.935 (qwen--llama), 0.847 (qwen--mistral) y 0.876 (llama--mistral). Según los votos, los \textit{batches} se clasifican en tres estratos: error unánime (1{,}203), desacuerdo (324) y normal unánime (2{,}936). En la fase previa por evento, el $\kappa$ fue 0.8924.
+
+\subsection{Criterio operativo de error}\label{sec:met_criterio}
+
+El \textit{prompt} de la votación incluye como error situaciones como la política de contraseñas, usuarios no encontrados y respuestas HTTP 4xx. La revisión de expertos mostró que esa definición no coincide con el criterio de la DTIC, y en la reunión de calibración del 1 de noviembre de 2026 los dos revisores acordaron el criterio de la Tabla~\ref{tab:met_criterio}. La formulación proviene de las etiquetas y notas de los revisores. % TODO: que los revisores confirmen la redacción de la tabla antes de la versión final (así lo indica GROUND_TRUTH_BATCHES.md, sección 6.3).
+
+\begin{table}[H]
+\centering
+\caption{Criterio operativo acordado por los revisores.}
+\label{tab:met_criterio}
+\small
+\begin{tabular}{@{}p{7.2cm}p{7.2cm}@{}}
+\toprule
+\textbf{Es error (falla del sistema)} & \textbf{Es normal (condición funcional manejada)} \\
+\midrule
+Respuesta HTTP 5xx & Respuestas 4xx del cliente (400, 404, 406, 409) \\
+Excepciones no controladas (\texttt{ArrayIndexOutOfBounds}, \texttt{NullPointer}) & Usuario no encontrado en AD, Google, LDAP u Oracle \\
+Fallo al crear o actualizar cuentas por causa interna & AS400: usuario no encontrado siempre normal (decisión explícita) \\
+Falla de la API de AD o de conectividad (error de API, \textit{timeout}, conexión rechazada) & Rechazo por política de contraseñas \\
+Errores de base de datos (\texttt{ORA-02291}), pool de conexiones, fallo al iniciar el servicio, correo no enviado & ``Ya existe'' (duplicado), usuario ya habilitado, operaciones exitosas \\
+\bottomrule
+\end{tabular}
+\normalsize
+\end{table}
+
+\subsection{Revisión por expertos}\label{subsec:met_expertos}
+
+Se extrajo una muestra aleatoria estratificada (semilla 42) de 220 \textit{batches} (aproximadamente 5\,\%): 88 de error unánime, 88 de desacuerdo y 44 de normal unánime, dividida en dos mitades de 110 sin solapamiento, una por revisor. Cada \textit{batch} se entregó con las líneas señaladas por los modelos, los votos, su razonamiento y el texto completo; el revisor marca si el \textit{batch} contiene un error. Tras acordar el criterio, los 220 \textit{batches} se re-etiquetaron. Luego de la primera propagación, quedaron casos indecidibles que se agruparon por firma idéntica y se revisaron mediante un representante por grupo en tres rondas dirigidas (91, 17 y 1 representantes). En total, los expertos revisaron \textbf{329 \textit{batches}} (7.4\,\%): 39 error y 290 normales. Cada mitad de la muestra la revisó una sola persona, por lo que no se midió el acuerdo entre revisores; la literatura que construye etiquetas sobre logs con revisión experta sí lo mide, por ejemplo con dos equipos independientes y arbitraje, con $\kappa$ de Cohen de 0.84 a 0.90~\cite{sun2026_parsing}.
+
+\subsection{Propagación del criterio experto}\label{subsec:met_propagacion}
+
+Como revisar los 4{,}463 \textit{batches} no es viable, el criterio se propaga de forma determinista y con la procedencia de cada etiqueta registrada. Para cada \textit{batch}, la primera regla que aplique decide:
+
+\begin{enumerate}
+  \item \textbf{Revisado por un experto}: se usa su etiqueta.
+  \item \textbf{Ningún LLM votó error}: normal.
+  \item \textbf{Regla de error} sobre cualquier evento (\texttt{http\_5xx}, \texttt{request\_exception}, \texttt{account\_error}, \texttt{ad\_api\_error}, con exclusiones definidas a partir de las notas de los revisores): error.
+  \item \textbf{Solo hay ``usuario no encontrado de AS400''}: normal.
+  \item \textbf{Similitud con \textit{batches} revisados}: hereda la etiqueta si hay mayoría clara. La firma de un \textit{batch} es el conjunto de tipos de evento (nivel, \textit{logger} y mensaje normalizado) de las líneas señaladas por los LLM, la similitud es el índice de Jaccard con umbral $\tau=0.5$ y pureza de 0.8. Si no hay mayoría clara, o si los parecidos dicen error sin regla, no se inventa la etiqueta y el \textit{batch} va a revisión.
+\end{enumerate}
+
+La similitud solo asigna normal; un error solo proviene de revisión directa o de una regla. Las cifras resultantes se presentan en el Capítulo~\ref{cap:resultados}.
+
+\subsection{Reproducibilidad}
+
+El proceso se ejecuta con \texttt{batch\_builder.py}, \texttt{batch\_voter.py}, \texttt{batch\_consensus.py}, \texttt{apply\_expert\_batch\_labels.py} y \texttt{propagate\_batch\_labels.py}. Los CSV de los expertos son la fuente de verdad humana; el resto se regenera, y la regeneración reproduce un archivo idéntico (sha256 del archivo final registrado en el repositorio). El código incluye 44 pruebas unitarias para esta fase.
+
+\section{Modelos de lenguaje pequeños evaluados}\label{sec:met_slm}
+
+\subsection{Selección}
+
+Se evaluaron ocho SLM de familias y tamaños distintos, a los que se suman otros dos usados en fases previas.
+
+\begin{table}[H]
+\centering
+\caption{SLM evaluados y su origen de ejecución.}
+\label{tab:met_modelos}
+\small
+\begin{tabular}{@{}p{5.2cm}p{4.2cm}p{4.6cm}@{}}
+\toprule
+\textbf{Modelo} & \textbf{Formato / motor} & \textbf{Nota} \\
+\midrule
+ibm-granite/granite-4.1-3b & Transformers/Ollama (según corrida) & \\
+microsoft/Phi-3.5-mini-instruct & Transformers/Ollama (según corrida) & \\
+google/gemma-3-4b-it & Transformers/Ollama (según corrida) & \\
+Qwen3.5-9B (unsloth) & GGUF Q6\_K, Ollama & el de mayor tamaño \\
+Ling-3.0-tiny (inclusionAI) & GGUF Q4\_K\_M, Ollama & \\
+Ministral-3-3B-Instruct-2512 (Mistral AI) & GGUF BF16, Ollama & \\
+llama-3.2-1B-log-analyzer (mradermacher) & GGUF Q4\_K\_M, Ollama & especializado en logs \\
+HuggingFaceTB/SmolLM2-1.7B & Transformers & \\
+Qwen3-0.6B, DeepSeek-R1-Distill-Qwen-1.5B & Transformers & solo en fases previas \\
+\bottomrule
+\end{tabular}
+\normalsize
+\end{table}
+% TODO: confirmar para cada corrida del matrix qué backend (Ollama o HF) y precisión se usó (campo config de run_<id>.json); la tabla indica el formato del identificador de modelo. Justificar la selección de cada modelo (criterio de elección, licencias, tamaño en VRAM).
+
+\subsection{Clasificación por \textit{batch}}
+
+El \textit{batch} se envía como líneas numeradas en un único mensaje de sistema y usuario, y el modelo responde un objeto JSON con \texttt{is\_error}, \texttt{error\_description} y \texttt{recommended\_action}. El mensaje de sistema indica que se trata de un asistente de análisis de logs, fija el formato de salida y declara como \emph{no error} las solicitudes erróneas (4xx), las excepciones de validación de contraseña y los usuarios no encontrados en Oracle, AS400 o AD; es decir, el criterio de la Tabla~\ref{tab:met_criterio} se comunica a los SLM, a diferencia del \textit{prompt} de la votación. Antes de llegar al modelo, el texto puede enmascararse (direcciones IP, UUID y números) con \texttt{--mask-ips}, \texttt{--mask-uuids} y \texttt{--mask-numbers}; las corridas de la matriz usan los tres (\texttt{mask\_iun}).
+
+El \textit{parser} es tolerante: recupera respuestas con saltos de línea crudos, comillas sin escapar o truncadas, y marca el caso con \texttt{parse\_repair}. Los \textit{batches} que no se pueden procesar se registran en \texttt{failed\_batches.jsonl} sin detener la corrida, y \texttt{--resume} permite continuar una corrida interrumpida. La probabilidad $P(\text{error})$ se obtiene de los \textit{logits} (Transformers) o de los \textit{logprobs} (Ollama), y alimenta la curva ROC.
+
+\subsection{Modo con caché semántico}
+
+En modo \texttt{embedding}, antes de invocar el LLM se busca en Milvus Lite un \textit{batch} ya clasificado con similitud coseno mayor o igual a 0.8 (\texttt{all-MiniLM-L6-v2}); si existe, se reutiliza su clasificación y su probabilidad. Las fases tempranas del proyecto compararon el \textit{prompt} con y sin caché (Sección~\ref{sec:res_previos}).
+
+\section{Ajuste fino con LoRA}\label{sec:met_finetuning}
+
+El script \texttt{training/training.py} aplica LoRA con Hugging Face PEFT: rango $r=8$, $\alpha=32$, \textit{dropout} 0.1, \textit{task type} \texttt{CAUSAL\_LM}, tres épocas, \textit{batch} por dispositivo de 4, 20\,\% de los datos para evaluación y longitud máxima de 512 \textit{tokens}. El modelo base fue \texttt{mradermacher/llama-3.2-1B-log-analyzer-GGUF}. El conjunto de entrenamiento (\texttt{dataset\_slm\_procesado\_web.json}) contiene 10{,}001 registros, de los cuales solo 39 tienen etiqueta de error; el contenido muestra registros de acceso web con formato Apache y una envoltura de servicio genérica (``university-service''), por lo que \textbf{no} parece provenir del corpus \texttt{ms-users}.
+% TODO: confirmar el origen del dataset de fine-tuning (parece un log público de acceso web de 2019) y declararlo. Si no son datos de la DTIC, no cubre el objetivo 2 de "adaptado al contexto universitario"; decidir si se reentrena con el GT final de ms-users (pendiente 5 en RESUMEN_CONTEXTO_TESIS.md).
+% TODO: el modelo "llama-3.2-1B-log-analyzer" evaluado en la matriz es el GGUF de mradermacher servido por Ollama, no necesariamente el adaptador entrenado aquí (fine_tuned_model/checkpoint-*). Aclarar y, si se evalúa el adaptador propio, ejecutar la comparación contra el GT final.
+
+\section{Evaluación}\label{sec:met_evaluacion}
+
+\subsection{Evaluación semántica}
+
+Como los tamaños de \textit{batch} del SLM y del \textit{ground truth} pueden diferir, la evaluación no es posicional. Cada \textit{batch} del SLM y cada \textit{batch} del \textit{ground truth} se convierte en un \textit{embedding} (mismo modelo y mismo enmascarado) y se almacena en una colección de Milvus. Para cada \textit{batch} del SLM se recuperan sus $k$ vecinos más cercanos del \textit{ground truth} ($k=1$ en los resultados presentados) y se toma como etiqueta de referencia la del vecino. Se calculan \textit{accuracy}, exactitud balanceada, \textit{precision}, \textit{recall}, especificidad, $F_1$, coeficiente de Matthews y ROC AUC; también se reporta la proporción de veces que el vecino más cercano es el mismo \textit{batch} (\texttt{same\_batch\_top1\_rate}). % TODO: reportar same_batch_top1_rate por modelo (campo disponible en cada report.json) y discutir la fiabilidad de la recuperación; el documento del GT señala que MiniLM trunca a ~256 tokens (~3-4 eventos de 50).
+
+\subsection{Referencia utilizada}
+
+Las comparaciones disponibles al momento de redactar usan la colección \texttt{gt\_\_final\_\_consensus\_is\_error\_\_n50\_\_mask\_iun}, derivada del consenso por evento (con $\approx$31\,\% de \textit{batches} positivos) y \textbf{no} la colección del \textit{ground truth} por \textit{batch} corregido por expertos (\texttt{final\_is\_error}, 2.91\,\% positivos). Esta limitación se declara en el Capítulo~\ref{cap:resultados}.
+% TODO: construir la colección desde ground_truth_batches_final.jsonl (evaluation/build_collections.py --ground-truth ...) y re-ejecutar collection_comparison.py con --reference gt__final_is_error__n50__mask_iun --all.
+
+\section{Notificación y recomendación}\label{sec:met_notificacion}
+
+Con \texttt{--notify-errors}, un proceso en segundo plano (\texttt{ErrorAlerter}) actúa solo sobre los \textit{batches} de error válidos: envía una alerta a Slack (modelo, corrida, \textit{batch}, $P(\text{error})$ y archivos fuente) y, con \texttt{--recommend}, solicita a un modelo local servido por Ollama (por defecto \texttt{qwen2.5:7b}) una causa probable y una acción correctiva. Las recomendaciones se guardan en \texttt{recommendations.jsonl} y se muestran únicamente en el \textit{dashboard}; la alerta de Slack no incluye texto de recomendación. El notificador falla de forma suave: sin \textit{webhook} solo emite una advertencia. Un banco de pruebas independiente (\texttt{recommender/try\_recommender.py}) permite probar el recomendador sin SLM.
+
+\section{Inyección de errores}\label{sec:met_inyeccion}
+
+Con \texttt{--enable-injection}, la tarjeta de inyección del \textit{dashboard} encola errores simulados; antes de cada \textit{batch}, el \textit{pipeline} agrega los errores pendientes (con marca de tiempo e hilo tomados de un evento vecino) y registra la solicitud en \texttt{injections.jsonl}. Un error inyectado se considera detectado si el \textit{batch} que lo contiene se devuelve como \texttt{error\_found} válido. Estas corridas no se evalúan contra el \textit{ground truth}. Las plantillas disponibles (\texttt{injection\_templates.json}) son \textit{placeholders}.
+% TODO: definir el catálogo de errores a inyectar (tipos, cantidad, momentos), el protocolo (modelo, N, repeticiones) y la métrica (tasa de detección por tipo, latencia hasta la alerta) para el objetivo 5. Aún no hay resultados de simulación en el repositorio.
+
+\section{\textit{Dashboard} y ejecución}\label{sec:met_dashboard}
+
+El \textit{dashboard} (Plotly Dash, puerto 8050) sigue la corrida más reciente de una carpeta de análisis y muestra el estado de la corrida, las alertas, las recomendaciones y la tarjeta de inyección. Los servicios se pueden ejecutar con Docker Compose en CPU o con GPU (CUDA o ROCm). Las dos máquinas de desarrollo tienen GPU NVIDIA/CUDA y AMD/ROCm, respectivamente. % TODO: captura de pantalla del dashboard (no hay figura en el repositorio); especificar modelos de GPU, VRAM y RAM.
+% TODO: objetivo 4 pide "flujo de logs en tiempo real": el código incluye un ingestor de flujo HTTP (--stream-url, --poll-interval) pero no hay prueba documentada con un servidor real de la DTIC; documentar si se hizo.
+
+\section{Pruebas del software}\label{sec:met_pruebas}
+
+El proyecto incluye 24 suites de pruebas unitarias (216 pruebas según la documentación) que cubren el \textit{parser} de respuestas, el prefiltro, el cálculo de probabilidades, las alertas, la inyección, la reanudación de corridas y la construcción y propagación de etiquetas. % TODO: ejecutar las suites y reportar el resultado real (en esta redacción no se ejecutó nada del proyecto técnico).

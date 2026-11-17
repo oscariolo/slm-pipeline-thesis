@@ -1,4 +1,35 @@
-\chapter{Conclusiones y Trabajo Futuro} \label{cap:conclusiones}
+\chapter{Discusiones y Conclusiones} \label{cap:conclusiones}
+
+\section{Discusiones}\label{sec:discusion}\label{sec:res_discusion}
+
+\textbf{Cumplimiento de los objetivos.} La Tabla~\ref{tab:res_objetivos} resume el estado de cada objetivo específico a la fecha.
+
+\begin{table}[H]
+\centering
+\caption{Estado de los objetivos específicos.}
+\label{tab:res_objetivos}
+\small
+\begin{tabular}{@{}p{0.6cm}p{5.2cm}p{8.2cm}@{}}
+\toprule
+\textbf{Obj.} & \textbf{Descripción} & \textbf{Estado} \\
+\midrule
+1 & Dataset estructurado y clasificado por tipos & \textit{Ground truth} por \textit{batch} completo (4{,}463 \textit{batches}, 130 errores); falta la clasificación por tipos de error. \\
+2 & SLM adaptados al contexto & Ocho SLM comparados con \textit{prompt} adaptado al dominio; el ajuste fino LoRA no está evaluado sobre datos de la DTIC. \\
+3 & Validación con Accuracy, F1 y ROC & Completa para $N=50$ contra consenso y contra el GT final (recálculo propio); falta recálculo oficial y $N=20$ parcial. \\
+4 & Pipeline integrado en tiempo real con interfaz gráfica & Implementado (\textit{pipeline}, alertas, recomendador, \textit{dashboard}); sin prueba documentada en flujo en vivo. \\
+5 & Simulación de errores en el pipeline & Mecanismo implementado; sin protocolo ni resultados. \\
+\bottomrule
+\end{tabular}
+\normalsize
+\end{table}
+
+\textbf{Qué muestran los resultados.} (i) El criterio de error es la fuente principal de incertidumbre: el acuerdo entre LLM es alto ($\kappa=0.886$) y aun así solo el 12.5\,\% de los \textit{batches} de error unánime son errores según los expertos. (ii) La mejor métrica contra el consenso no es la mejor contra el \textit{ground truth} final: granite lidera con $F_1=0.951$ contra el consenso y 0.179 contra el GT final, donde Qwen3.5-9B lidera con 0.295. (iii) Los SLM tienen \textit{recall} alto pero precisión baja con el criterio final, de modo que en uso real se requeriría un umbral sobre $P(\text{error})$, un mejor \textit{prompt} o un ajuste fino con el criterio de la DTIC para evitar fatiga de alertas. % TODO: evaluar el efecto de un umbral sobre error_probability (curva precisión-recall contra el GT final) antes de afirmar la viabilidad operativa.
+
+\textbf{Amenazas a la validez.} Cada mitad de la muestra experta la revisó una sola persona; el criterio se fijó observando los datos; los 4{,}134 \textit{batches} no revisados se apoyan en reglas y similitud con validación optimista; la clase positiva del GT final es pequeña (130), por lo que las métricas de precisión son sensibles a pocos \textit{batches}; hubo una sola corrida por modelo; los modelos se ejecutaron en máquinas y motores distintos; y el texto de la votación no estuvo enmascarado mientras que el de los SLM sí lo estuvo. % TODO: añadir intervalos de confianza (p. ej. Wilson/bootstrap) a las métricas de las Tablas \ref{tab:res_n50} y \ref{tab:res_n50_final}.
+
+\subsection{Limitaciones}\label{sec:limitaciones}
+
+Las principales limitaciones son: revisión experta por una sola persona en cada mitad de la muestra y sin acuerdo entre expertos medido; criterio fijado tras observar los datos; ausencia de una muestra independiente que compruebe las etiquetas propagadas (4{,}134 \textit{batches}); clase positiva pequeña (130); una sola corrida por modelo; ejecución en dos máquinas distintas; y un único microservicio como fuente de datos. Además, las evaluaciones oficiales de la matriz aún usan la referencia por consenso.
 
 \section{Conclusiones}\label{sec:conclusiones}
 
@@ -20,17 +51,13 @@ Además de los objetivos, el trabajo deja tres hallazgos:
   \item Con $N=20$ y $N=30$, y comparados contra una referencia de 50, el rendimiento de los modelos evaluados cae respecto de $N=50$, aunque en parte por el método de comparación.
 \end{itemize}
 
-\section{Limitaciones}\label{sec:limitaciones}
-
-Las principales limitaciones son: revisión experta por una sola persona en cada mitad de la muestra y sin acuerdo entre expertos medido; criterio fijado tras observar los datos; ausencia de una muestra independiente que compruebe las etiquetas propagadas (4{,}134 \textit{batches}); clase positiva pequeña (130); una sola corrida por modelo; ejecución en dos máquinas distintas; y un único microservicio como fuente de datos. Además, las evaluaciones oficiales de la matriz aún usan la referencia por consenso.
-
-\section{Trabajo futuro}\label{sec:trabajo_futuro}
+\section{Trabajos futuros}\label{sec:trabajo_futuro}
 
 \begin{itemize}
   \item Re-evaluar la matriz completa contra el \textit{ground truth} final con el procedimiento oficial de colecciones y completar las corridas pendientes ($N=20$ de gemma, Qwen3.5 y Ministral; SmolLM2).
   \item Calibrar el umbral sobre $P(\text{error})$ y mejorar el \textit{prompt} para reducir los falsos positivos.
   \item Ajustar con LoRA un SLM con el \textit{ground truth} de \texttt{ms-users} y compararlo con los modelos base.
-  \item Medir el acuerdo entre expertos con doble etiquetado de una submuestra y revisar una muestra independiente de lo propagado.
+  \item Medir el acuerdo entre expertos con doble etiquetado de una submuestra y revisar una muestra independiente de lo propagado, siguiendo el esquema de dos equipos y arbitraje de~\cite{sun2026_parsing}.
   \item Definir y ejecutar el protocolo de inyección de errores y medir la tasa de detección, la latencia de alerta y la calidad de las recomendaciones.
   \item Incorporar métricas y trazas, además de logs, para cubrir la observabilidad completa, y evaluar el esquema colaborativo SLM--LLM para los casos inciertos~\cite{ma2026_adaptivelog}.
   \item Probar el \textit{pipeline} en un flujo en vivo de la DTIC y en otros servicios.

@@ -1,0 +1,65 @@
+% Plantilla para TFG - Universidad de Cuenca
+% Diseño original: Agustín Borrego / Inma Hernández
+
+\documentclass[11pt, oneside]{book}
+\setlength{\marginparwidth}{2cm}
+\setlength\headheight{48pt}
+
+% \newcommand\todo[1]{\textcolor{red}{#1}}
+
+\input{etc/pkgs}
+\input{etc/style}
+
+\begin{document}
+
+    \renewcommand{\tablename}{TABLA}
+    \renewcommand{\figurename}{Fig.}
+    \renewcommand{\listtablename}{Índice de tablas}
+    \renewcommand{\contentsname}{Índice de contenido}
+    \renewcommand{\listfigurename}{Índice de figuras}
+    \renewcommand{\bibname}{Referencias}
+    
+    % Portada y preliminares
+    \input{sections/00_portada}
+    \input{sections/00_resumen}
+    \input{sections/00_abstract}
+    
+    % Índices
+    \hypersetup{linkcolor=black}
+    
+    \cleardoublepage
+    \phantomsection
+    \tableofcontents
+
+    \cleardoublepage
+    \phantomsection
+    \listoffigures
+
+    \cleardoublepage
+    \phantomsection
+    \listoftables
+
+    % Cláusulas legales
+    % \input{sections/00_clausula02}
+    % \input{sections/00_clausula01}
+    % \input{sections/00_certifico_tutor}
+    \input{sections/00_agradecimientos}
+  
+    % Capítulos principales
+    \input{sections/01_Introduccion}
+    \input{sections/02_Antecedentes}
+    \input{sections/03_Marco_Teorico}
+    \input{sections/04_Trabajos_Relacionados}
+    \input{sections/05_Metodologia}
+    \input{sections/06_Resultados}
+    \input{sections/07_Conclusiones}
+
+    % Bibliografía
+    \cleardoublepage
+    \bibliographystyle{etc/IEEEtranEC}
+    % \nocite{*}  % Muestra TODAS las referencias (quitar cuando uses \cite{})
+    \bibliography{sections/bibliografia}
+
+    \input{sections/XX_Apendices}
+
+\end{document}
