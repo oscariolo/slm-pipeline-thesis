@@ -52,6 +52,32 @@ $N$ & \textbf{Lotes} & \textbf{Lotes con error} & \textbf{Ráfagas de errores pa
 
 Se eligió $N = 50$ como compromiso entre cuatro factores. El primero es la integridad de los errores: con lotes más pequeños, una ráfaga de errores queda partida entre dos lotes con más frecuencia (11.3\,\% con $N = 10$ frente a 2.3\,\% con $N = 50$), y el modelo ve solo una parte del incidente. El segundo es el costo computacional: un lote de 50 eventos ocupa una mediana de 4\,069 \textit{tokens} y un máximo de 5\,229 con el tokenizador del modelo de \textit{embeddings}, de modo que cabe holgadamente en la ventana de contexto de los modelos, mientras que con $N = 100$ la mediana sube a unos 8\,140 \textit{tokens} y el máximo a unos 9\,360, de modo que 524 de los 2\,232 lotes (23.5\,\%) superan el límite de 8\,192 \textit{tokens} del modelo de \textit{embeddings}, y con el tokenizador de Qwen3.5-9B lo superan 1\,377 lotes (61.7\,\%). En la práctica, los equipos de desarrollo no lograron procesar lotes de ese tamaño. El tercero es la latencia: al ritmo real del servicio, de unos 0.2 eventos por segundo (223\,104 eventos en 309 horas), un lote de 50 eventos tarda unos 250 segundos en llenarse, y un error que aparece en una posición al azar espera en promedio la mitad de ese tiempo antes de poder analizarse; con $N = 100$ esa espera se duplicaría. El cuarto es el número de llamadas al modelo, que crece al reducir el lote: con $N = 20$ se necesitan 2.5 veces más llamadas que con $N = 50$, y la evaluación de la sección~\ref{sec:met_evaluacion} no mostró una ventaja que lo compense (Capítulo~\ref{cap:resultados}). Con $N = 50$ el corpus se divide en 4\,463 lotes, 4\,462 de 50 eventos y uno final de 4. Los tamaños $N = 30$ y $N = 20$ se usaron después para medir el efecto del tamaño de lote sobre los modelos (sección~\ref{sec:met_evaluacion}).
 
+La comparación anterior no incluía un tamaño intermedio entre 50 y 100, de modo que se hizo además una prueba de viabilidad con $N = 70$. Sobre los mismos 7\,000 primeros eventos del corpus, con $N = 50$ (140 lotes) y $N = 70$ (100 lotes), se ejecutaron tres modelos de la matriz en el equipo con 8~GB de memoria de GPU. La prueba midió si los modelos podían responder, y no la calidad de su detección. En la tabla~\ref{tab:met_n70} se muestran los resultados; los \textit{tokens} incluyen la entrada y la salida de cada llamada.
+
+\begin{table}[H]
+\centering
+\caption{Prueba de viabilidad con $N = 50$ y $N = 70$ sobre los primeros 7\,000 eventos.}
+\label{tab:met_n70}
+\small
+\begin{tabular}{@{}p{3.3cm}cp{1.8cm}p{2.6cm}p{1.6cm}p{1.6cm}@{}}
+\toprule
+\textbf{Modelo} & $N$ & \textbf{Respuestas válidas} & \textbf{\textit{Tokens} por lote (mediana / máx.)} & \textbf{\textit{Tokens} por evento} & \textbf{s por lote (mediana)} \\
+\midrule
+SmolLM2-1.7B-Instruct & 50 & 130 / 140 & 5\,380 / 5\,888 & 108.0 & 2.0 \\
+ & 70 & 1 / 100 & 7\,625 / 8\,269 & 109.1 & 8.5 \\
+Ministral-3-3B (BF16) & 50 & 140 / 140 & 4\,488 / 4\,757 & 89.7 & 13.8 \\
+ & 70 & 100 / 100 & 6\,172 / 6\,692 & 87.9 & 16.0 \\
+Qwen3.5-9B (Q6\_K) & 50 & 140 / 140 & 4\,327 / 4\,609 & 86.7 & 5.2 \\
+ & 70 & 100 / 100 & 6\,005 / 6\,502 & 85.9 & 6.7 \\
+\bottomrule
+\end{tabular}
+\normalsize
+\end{table}
+
+De la prueba se desprenden cuatro argumentos. El primero es que el tamaño de lote lo limita el modelo con la ventana de contexto más pequeña, y una matriz comparable exige el mismo $N$ para todos los modelos. Ese modelo es SmolLM2-1.7B, con una ventana de 8\,192 \textit{tokens}, que es además el modelo con el que se desarrolló y probó el \textit{pipeline} desde el inicio y que se usa como referencia. Con $N = 50$ cabe en su ventana (en el corpus completo, el lote más largo ocupa 7\,648 \textit{tokens} y solo el 2.9\,\% de sus respuestas son inválidas), pero con $N = 70$ el lote mediano ya ocupa 7\,625 \textit{tokens}, el 93\,\% de la ventana, y 99 de 100 respuestas salieron en prosa y no en JSON; con ellas desapareció también la acción recomendada, que el modelo devolvió en 130 de los 140 lotes con $N = 50$ y en ninguno con $N = 70$. El segundo es que la degradación empieza antes de llegar al límite: la mediana con $N = 70$ queda por debajo de 8\,192 \textit{tokens} y aun así casi todas las respuestas fallaron, y en la ejecución completa con $N = 50$ los lotes con respuesta inválida son más largos (mediana de 6\,356 \textit{tokens} frente a 5\,645 del total), lo que indica que la tasa de fallos crece con la longitud del lote. El tercero es que $N = 70$ no ahorra \textit{tokens}: el total por evento es casi igual en ambos tamaños, y solo se reduce el número de llamadas, a cambio de que cada una sea unas 1.4 veces más grande y más lenta (16\,\% más en Ministral, 29\,\% más en Qwen3.5-9B y unas cuatro veces más en SmolLM2). El cuarto es que $N = 70$ no encaja con el \textit{ground truth}: la revisión experta, las reglas y la propagación se hicieron por lotes de 50, y como 70 no es múltiplo de 50, evaluarlo con etiquetas exactas exigiría bloques de 350 eventos o rehacer la votación y la revisión.
+
+Ministral-3-3B y Qwen3.5-9B sí respondieron sin fallos con $N = 70$, y no se midió si ese tamaño mejora o empeora su detección. La prueba respalda, por tanto, que $N = 70$ no es viable para toda la matriz de modelos, y no que $N = 50$ sea mejor para cada modelo. Su alcance es limitado: usa 7\,000 eventos y un solo equipo, y no considera la memoria de GPU como evidencia, porque Ollama reserva la misma memoria con ambos tamaños.
+
 \section{Construcción del \textit{ground truth}}\label{sec:met_gt}
 
 No existían etiquetas que indicaran qué eventos del corpus eran errores, de modo que la referencia se construyó por etapas que combinaron el pseudoetiquetado con modelos de lenguaje y la revisión de expertos. Se decidió que el \textit{ground truth} fuera por lote y no por evento, porque un SLM evalúa un lote completo y su respuesta debe compararse con una etiqueta del mismo nivel. En la figura~\ref{fig:met_gt} se resume el proceso.
@@ -206,7 +232,7 @@ El desarrollo y la experimentación se repartieron entre dos equipos con tarjeta
 \caption{Equipos utilizados en el desarrollo y la experimentación.}
 \label{tab:met_equipos}
 \small
-\begin{tabular}{@{}lll@{}}
+\begin{tabular}{@{}p{3cm}p{5.4cm}p{5.4cm}@{}}
 \toprule
  & \textbf{Equipo 1} & \textbf{Equipo 2} \\
 \midrule
