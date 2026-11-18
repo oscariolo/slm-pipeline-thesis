@@ -70,3 +70,5 @@
 \newcommand{\falta}[1]{\textcolor{red}{\textbf{[?]}}\footnote{\textcolor{red}{BUSCAR: #1}}}
 % Encabezado en negrita sin numerar, en su propia línea (temas breves dentro de una subsección)
 \newcommand{\tema}[1]{\par\medskip\noindent\textbf{#1}\par\nopagebreak\smallskip}
+% Espacio reservado para una figura aún no elaborada: \figpendiente{etiqueta}{leyenda}{qué debe mostrar}
+\newcommand{\figpendiente}[3]{\begin{figure}[H]\centering\fbox{\parbox{0.85\textwidth}{\centering\vspace{1.2cm}\textcolor{red}{\textbf{FIGURA PENDIENTE}}\\[0.3cm]\small #3\vspace{1.2cm}}}\caption{#2}\label{#1}\end{figure}}
