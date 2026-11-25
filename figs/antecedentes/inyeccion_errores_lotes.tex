@@ -1,0 +1,35 @@
+% Ejemplo genérico (lotes de eventos): una falla inyectada en un flujo de logs, su detección y la latencia.
+% Variante de inyeccion_errores.tex con lotes de 3 eventos en lugar de ventanas de 5 s.
+% Se incluye con \input{figs/antecedentes/inyeccion_errores_lotes} dentro de un entorno figure.
+\begin{tikzpicture}[
+    font=\footnotesize,
+    linea/.style={anchor=west,font=\ttfamily\scriptsize,inner sep=2pt},
+    caja/.style={draw,rounded corners=2pt,minimum width=1.5cm,minimum height=0.55cm,font=\footnotesize},
+    flecha/.style={-{Stealth[length=2mm]}}
+  ]
+  \colorlet{falla}{red!75!black}
+  % Flujo de logs
+  \node[anchor=west,font=\bfseries\footnotesize] at (0,0.75) {Flujo de logs};
+  \node[linea] at (0,0.1)  {10:00:01 INFO  Sesión iniciada};
+  \node[linea] at (0,-0.4) {10:00:03 INFO  Perfil consultado};
+  \node[linea] at (0,-0.9) {10:00:04 INFO  Perfil consultado};
+  \node[linea] at (0,-1.8) {10:00:06 INFO  Sesión iniciada};
+  \node[linea,text=falla,fill=red!8] (l5) at (0,-2.3) {10:00:08 ERROR Base de datos caída};
+  \node[linea] at (0,-2.8) {10:00:09 INFO  Sesión cerrada};
+  \node[anchor=west,font=\scriptsize\itshape,text=falla] at (l5.east) {$\leftarrow$ falla inyectada};
+  % Lotes y decisión del detector
+  \node[anchor=west,font=\bfseries\footnotesize] at (8.3,0.75) {Detector};
+  \draw[decorate,decoration={brace,amplitude=5pt}] (8.0,0.3) -- (8.0,-1.1);
+  \node[anchor=west,align=left] (v1) at (8.3,-0.4) {Lote 1\\[-1pt]{\scriptsize eventos 1 a 3}};
+  \node[caja,fill=green!20] (d1) at (12.2,-0.4) {normal};
+  \draw[flecha] (v1.east) -- (d1.west);
+  \draw[decorate,decoration={brace,amplitude=5pt}] (8.0,-1.6) -- (8.0,-3.0);
+  \node[anchor=west,align=left] (v2) at (8.3,-2.3) {Lote 2\\[-1pt]{\scriptsize eventos 4 a 6}};
+  \node[caja,fill=red!20] (d2) at (12.2,-2.3) {error};
+  \draw[flecha] (v2.east) -- (d2.west);
+  \node[circle,fill=falla,inner sep=2pt] (al) at (14.0,-2.3) {};
+  \node[below,align=center,font=\scriptsize] at (al.south) {alerta\\10:00:09.5};
+  \draw[flecha] (d2.east) -- (al.west);
+  % Latencia de detección
+  \node[anchor=north west,font=\scriptsize,text=falla] at (8.3,-3.4) {latencia de detección = 10:00:09.5 $-$ 10:00:08 = 1.5\,s};
+\end{tikzpicture}

@@ -1,0 +1,33 @@
+% Ejemplo genérico (ventanas de tiempo): una falla inyectada en un flujo de logs, su detección y la latencia.
+% Se incluye con \input{figs/antecedentes/inyeccion_errores} dentro de un entorno figure.
+\begin{tikzpicture}[
+    font=\footnotesize,
+    linea/.style={anchor=west,font=\ttfamily\scriptsize,inner sep=2pt},
+    caja/.style={draw,rounded corners=2pt,minimum width=1.5cm,minimum height=0.55cm,font=\footnotesize},
+    flecha/.style={-{Stealth[length=2mm]}}
+  ]
+  \colorlet{falla}{red!75!black}
+  % Flujo de logs
+  \node[anchor=west,font=\bfseries\footnotesize] at (0,0.75) {Flujo de logs};
+  \node[linea] (l1) at (0,0.1)  {10:00:01 INFO  Sesión iniciada};
+  \node[linea] (l2) at (0,-0.4) {10:00:03 INFO  Perfil consultado};
+  \node[linea] (l3) at (0,-1.3) {10:00:06 INFO  Perfil consultado};
+  \node[linea,text=falla,fill=red!8] (l4) at (0,-1.8) {10:00:08 ERROR Base de datos caída};
+  \node[linea] (l5) at (0,-2.3) {10:00:09 INFO  Sesión cerrada};
+  \node[anchor=west,font=\scriptsize\itshape,text=falla] at (l4.east) {$\leftarrow$ falla inyectada};
+  % Ventanas y decisión del detector
+  \node[anchor=west,font=\bfseries\footnotesize] at (8.3,0.75) {Detector};
+  \draw[decorate,decoration={brace,amplitude=5pt}] (8.0,0.3) -- (8.0,-0.6);
+  \node[anchor=west,align=left] (v1) at (8.3,-0.15) {Ventana 1\\[-1pt]{\scriptsize 10:00:00 a 10:00:05}};
+  \node[caja,fill=green!20] (d1) at (12.2,-0.15) {normal};
+  \draw[flecha] (v1.east) -- (d1.west);
+  \draw[decorate,decoration={brace,amplitude=5pt}] (8.0,-1.1) -- (8.0,-2.5);
+  \node[anchor=west,align=left] (v2) at (8.3,-1.8) {Ventana 2\\[-1pt]{\scriptsize 10:00:05 a 10:00:10}};
+  \node[caja,fill=red!20] (d2) at (12.2,-1.8) {error};
+  \draw[flecha] (v2.east) -- (d2.west);
+  \node[circle,fill=falla,inner sep=2pt] (al) at (14.0,-1.8) {};
+  \node[below,align=center,font=\scriptsize] at (al.south) {alerta\\10:00:10.5};
+  \draw[flecha] (d2.east) -- (al.west);
+  % Latencia de detección
+  \node[anchor=north west,font=\scriptsize,text=falla] at (8.3,-2.9) {latencia de detección = 10:00:10.5 $-$ 10:00:08 = 2.5\,s};
+\end{tikzpicture}
