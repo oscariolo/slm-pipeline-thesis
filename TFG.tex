@@ -21,8 +21,8 @@
     
     % Portada y preliminares
     \input{sections/00_portada}
-    % [Copia para el ingeniero] \input{sections/00_resumen}
-    % [Copia para el ingeniero] \input{sections/00_abstract}
+    \input{sections/00_resumen}
+    \input{sections/00_abstract}
     
     % Índices
     \hypersetup{linkcolor=black}
@@ -46,14 +46,11 @@
     \input{sections/00_agradecimientos}
   
     % Capítulos principales
-    % [Copia para el ingeniero] \input{sections/01_Introduccion}
-    \setcounter{chapter}{1} % [Copia para el ingeniero] conserva la numeración real (Cap. 2 y 3); BORRAR al volver a incluir la introducción
+    \input{sections/01_Introduccion}
     \input{sections/02_Antecedentes_y_Trabajos_Relacionados}
     \input{sections/05_Metodologia}
-    % [Copia para el ingeniero] \input{sections/06_Resultados}
-    % [Copia para el ingeniero] marcador para que las referencias al Cap. 4 salgan como "Capítulo 4" y no "??"; BORRAR al volver a incluir 06_Resultados
-    \refstepcounter{chapter}\label{cap:resultados}
-    % [Copia para el ingeniero] \input{sections/07_Conclusiones}
+    \input{sections/06_Resultados}
+    \input{sections/07_Conclusiones}
 
     % Bibliografía
     \cleardoublepage

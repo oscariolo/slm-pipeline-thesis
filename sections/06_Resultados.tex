@@ -62,7 +62,7 @@ Regla de error sobre similitud & 5 & 5 & 0 \\
 \end{table}
 
 La estimación por muestreo aleatorio extrapola unos 172 errores (3.9\,\%) con un intervalo muy amplio (96--534), de modo que el valor final de 130 cae dentro del intervalo pero por debajo de la estimación puntual: el \textit{ground truth} podría subestimar algunos errores. La validación \textit{leave-one-out} de las reglas sobre los 285 \textit{batches} revisados con voto de error da TP $=17$, FP $=0$, FN $=8$, TN $=174$ y 86 sin resolver (precisión 1.00, \textit{recall} 0.44), pero es optimista porque los patrones salen de las mismas etiquetas.
-% TODO: tabla de tipos de error del GT final (por regla/tipo de evento) para cerrar el objetivo 1 "clasificados por tipos".
+% TODO: tabla de tipos de error del \textit{ground truth} final (por regla/tipo de evento) para cerrar el objetivo 1 "clasificados por tipos".
 % TODO: acuerdo entre expertos (no se midió) y muestra independiente de comprobación de lo propagado: están pendientes (GROUND_TRUTH_BATCHES.md, sección 10).
 
 \section{Evaluación de los SLM (objetivo específico 3)}\label{sec:res_slm}
@@ -73,7 +73,7 @@ La Tabla~\ref{tab:res_n50} presenta las métricas de los ocho SLM con $N=50$ fre
 
 \begin{table}[H]
 \centering
-\caption{Métricas de los SLM con $N=50$ contra la referencia por consenso (kNN, $k=1$). \textit{Batches}: número evaluado (válidos).}
+\caption{Métricas de los SLM con $N=50$ contra la referencia por consenso (vecino más cercano, $k=1$). \textit{Batches}: número evaluado (válidos).}
 \label{tab:res_n50}
 \small
 \begin{tabular}{@{}lrrrrrr@{}}
@@ -125,7 +125,7 @@ SmolLM2-1.7B (parcial) & 2{,}200 & 0.957 & 0.000 & 0.000 & 0.000 & 0.361 & 0 & 0
 
 El cambio de referencia modifica sustancialmente la lectura. Casi todos los modelos detectan más del 86\,\% de los 130 errores reales (\textit{recall} de 0.868 a 0.984), pero su precisión es muy baja (0.032 a 0.174): señalan como error muchos \textit{batches} que los expertos consideran normales. Para granite, por ejemplo, de 1{,}267 \textit{batches} señalados solo 125 son errores según el \textit{ground truth} final, de modo que su precisión no puede superar 0.103. El mejor $F_1$ pasa a ser el de Qwen3.5-9B (0.295), que es también el de mayor AUC (0.987). SmolLM2 y llama-3.2-1B-log-analyzer logran \textit{accuracy} alta (0.957 y 0.943) solo porque casi nunca predicen error, lo que ilustra por qué \textit{accuracy} es insuficiente con 2.91\,\% de positivos. Los SLM de mejor rendimiento contra el consenso de LLM (granite, Phi) reproducen el criterio de los LLM de votación, que los expertos corrigieron; esto sugiere que la elevada concordancia con el consenso no implica concordancia con el criterio del dominio, en línea con el hallazgo de la sección anterior.
 % TODO: verificar este recálculo con collection_comparison.py contra una colección construida desde ground_truth_batches_final.jsonl (build_collections.py --ground-truth ...), que es el procedimiento oficial; las cifras deberían coincidir en N=50 por ser top-1 = mismo batch.
-% TODO: añadir curvas ROC y matrices de confusión contra el GT final; analizar los 1,142 falsos positivos de granite por tipo de evento (¿4xx, contraseñas, usuario no encontrado?) para verificar si el prompt no logra transmitir el criterio.
+% TODO: añadir curvas ROC y matrices de confusión contra el \textit{ground truth} final; analizar los 1,142 falsos positivos de granite por tipo de evento (¿4xx, contraseñas, usuario no encontrado?) para verificar si el prompt no logra transmitir el criterio.
 
 \subsection{Sensibilidad al tamaño de \textit{batch}}\label{subsec:res_tamano}
 
@@ -133,7 +133,7 @@ Los modelos se ejecutaron también con $N=30$ y $N=20$ y se compararon contra la
 
 \begin{table}[H]
 \centering
-\caption{$F_1$ por tamaño de \textit{batch} contra la referencia de consenso de 50 (primera cifra: kNN $k=1$; entre paréntesis: solapamiento de índices). ``--'': corrida pendiente.}
+\caption{$F_1$ por tamaño de \textit{batch} contra la referencia de consenso de 50 (primera cifra: vecino más cercano, $k=1$; entre paréntesis: solapamiento de índices). ``--'': corrida pendiente.}
 \label{tab:res_tamano}
 \small
 \begin{tabular}{@{}lccc@{}}
@@ -152,7 +152,7 @@ llama-3.2-1B-log-analyzer & 0.085 (0.085) & 0.124 (0.140) & 0.298 (0.335) \\
 \normalsize
 \end{table}
 
-Para los dos mejores modelos el $F_1$ cae de forma marcada al reducir el \textit{batch} (granite: 0.951, 0.553, 0.487), por lo que no hay evidencia de que \textit{batches} menores a 50 mejoren la detección. La interpretación debe ser cautelosa: al comparar \textit{batches} de tamaño distinto con una referencia de 50, la alineación semántica cambia (la similitud media del vecino más cercano es 0.994 y la mínima 0.441) y la proporción de positivos de la referencia efectiva cambia (por ejemplo, 2{,}242 positivos en $N=30$ y 3{,}338 en $N=20$ para granite), de modo que la caída refleja en parte el método de comparación y no solo el modelo. % TODO: SmolLM2 N=30/N=20 y gemma/Qwen/Ministral N=20 siguen pendientes (RESUMEN_CONTEXTO_TESIS.md, sección 5); completar la tabla. Recalcular con el GT final.
+Para los dos mejores modelos el $F_1$ cae de forma marcada al reducir el \textit{batch} (granite: 0.951, 0.553, 0.487), por lo que no hay evidencia de que \textit{batches} menores a 50 mejoren la detección. La interpretación debe ser cautelosa: al comparar \textit{batches} de tamaño distinto con una referencia de 50, la alineación semántica cambia (la similitud media del vecino más cercano es 0.994 y la mínima 0.441) y la proporción de positivos de la referencia efectiva cambia (por ejemplo, 2{,}242 positivos en $N=30$ y 3{,}338 en $N=20$ para granite), de modo que la caída refleja en parte el método de comparación y no solo el modelo. % TODO: SmolLM2 N=30/N=20 y gemma/Qwen/Ministral N=20 siguen pendientes (RESUMEN_CONTEXTO_TESIS.md, sección 5); completar la tabla. Recalcular con el \textit{ground truth} final.
 
 \subsection{Fiabilidad de ejecución y tiempo}\label{subsec:res_fiabilidad}
 
@@ -166,7 +166,7 @@ Antes de la matriz actual se compararon variantes del \textit{prompt} y del cach
 
 \section{Ajuste fino LoRA (objetivo específico 2)}\label{sec:res_lora}
 
-El entrenamiento LoRA ($r=8$, $\alpha=32$, 3 épocas, 1{,}200 pasos) registró una pérdida de evaluación de 0.0071 al final de la primera época y de 0.0096 al final de la segunda, con pérdida de entrenamiento de 0.518 (paso 500) a 0.0037 (paso 1{,}000). Los \textit{checkpoints} existentes (500, 1{,}200) se entrenaron sobre un conjunto de 10{,}001 registros con solo 39 positivos, que no parece provenir de \texttt{ms-users} (Sección~\ref{sec:met_finetuning}). % TODO: no existe evaluación del adaptador ajustado contra el GT por batch; ejecutarla (y compararla con el modelo base) o declarar el ajuste fino como trabajo futuro. La pérdida de evaluación de 0.0096 con 39 positivos de 10,001 sugiere que el modelo aprendió la clase mayoritaria; verificar con métricas por clase.
+El entrenamiento LoRA ($r=8$, $\alpha=32$, 3 épocas, 1{,}200 pasos) registró una pérdida de evaluación de 0.0071 al final de la primera época y de 0.0096 al final de la segunda, con pérdida de entrenamiento de 0.518 (paso 500) a 0.0037 (paso 1{,}000). Los \textit{checkpoints} existentes (500, 1{,}200) se entrenaron sobre un conjunto de 10{,}001 registros con solo 39 positivos, que no parece provenir de \texttt{ms-users} (Sección~\ref{sec:met_finetuning}). % TODO: no existe evaluación del adaptador ajustado contra el \textit{ground truth} por batch; ejecutarla (y compararla con el modelo base) o declarar el ajuste fino como trabajo futuro. La pérdida de evaluación de 0.0096 con 39 positivos de 10,001 sugiere que el modelo aprendió la clase mayoritaria; verificar con métricas por clase.
 
 \section{Notificación, recomendación e inyección de errores (objetivos 4 y 5)}\label{sec:res_reaccion}
 
@@ -176,5 +176,5 @@ El \textit{pipeline} cuenta con notificación a Slack, recomendador local, inyec
 
 \subsection{Simulación de errores}
 
-% TODO: no existen resultados de simulación. Las plantillas de inyección son placeholders y el protocolo no está definido. Una vez definidos, reportar por tipo de error inyectado: tasa de detección, latencia hasta la alerta y calidad de la recomendación; con al menos el modelo de mayor F1 contra el GT final (Qwen3.5-9B) y uno de los más rápidos (granite-4.1-3b).
+% TODO: no existen resultados de simulación. Las plantillas de inyección son placeholders y el protocolo no está definido. Una vez definidos, reportar por tipo de error inyectado: tasa de detección, latencia hasta la alerta y calidad de la recomendación; con al menos el modelo de mayor F1 contra el \textit{ground truth} final (Qwen3.5-9B) y uno de los más rápidos (granite-4.1-3b).
 Para el objetivo 5 no se dispone todavía de evidencia experimental; este resultado queda pendiente.
