@@ -65,7 +65,7 @@ Con $N = 70$, el lote mediano de SmolLM2-1.7B-Instruct ocupó 7\,625 \textit{tok
 
 No existían etiquetas que indicaran qué lotes del corpus contenían errores, de modo que la referencia se construyó por etapas que combinaron el pseudoetiquetado con modelos de lenguaje y la revisión de expertos. El \textit{ground truth} asigna una etiqueta a cada lote, porque un SLM evalúa un lote completo y su respuesta debe compararse con una etiqueta del mismo nivel. En la figura~\ref{fig:met_gt} se resume el proceso.
 
-\figpendiente{fig:met_gt}{Etapas de la construcción del \textit{ground truth}.}{Diagrama de flujo: etiquetado por evento con tres LLM $\rightarrow$ votación por lote $\rightarrow$ muestra estratificada de 220 lotes $\rightarrow$ revisión experta y criterio operativo $\rightarrow$ propagación por reglas y similitud $\rightarrow$ rondas dirigidas $\rightarrow$ \textit{ground truth} final (130 lotes con error).}
+\figpendiente{fig:met_gt}{Etapas de la construcción del \textit{ground truth}.}{Diagrama de flujo: votación de tres LLM sobre cada lote $\rightarrow$ consenso entre modelos $\rightarrow$ muestra estratificada de 220 lotes $\rightarrow$ revisión experta y criterio operativo $\rightarrow$ propagación por reglas y similitud $\rightarrow$ rondas dirigidas $\rightarrow$ \textit{ground truth} final (130 lotes con error).}
 
 \subsection{Votación por lote}\label{subsec:met_votacion}
 
