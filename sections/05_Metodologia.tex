@@ -8,7 +8,7 @@ Este capítulo comienza describiendo el diseño general del sistema. Luego detal
 
 El sistema se concibió como una cadena de etapas por la que pasa cada evento de log desde que el servicio lo escribe hasta que, si corresponde, llega una alerta a los responsables. En la figura~\ref{fig:arquitectura} se muestra el diseño general, que se organiza en cuatro bloques.
 
-El primer bloque corresponde a los datos: los archivos o el flujo de logs del servicio se leen, se filtran para conservar solo los eventos con valor diagnóstico, se enmascaran sus partes variables y se agrupan en lotes de $N$ eventos consecutivos. El segundo bloque es el \textit{ground truth}, la referencia de qué lotes contienen un error, que se construyó una sola vez con tres LLM, revisión experta y reglas de propagación. El tercer bloque es la clasificación: cada lote se envía a un SLM, que responde si contiene un error, y opcionalmente una caché semántica evita consultar al modelo cuando el lote o sus eventos ya se conocen. El cuarto bloque es la reacción: los lotes con error disparan una alerta, un modelo separado redacta una recomendación, y un \textit{dashboard} muestra el estado de la ejecución y permite inyectar errores simulados.
+El primer bloque corresponde a los datos: los archivos o el flujo de logs del servicio se leen, se filtran para conservar solo los eventos con valor diagnóstico, se enmascaran sus partes variables y se agrupan en lotes de $N$ eventos consecutivos. El segundo bloque es el \textit{ground truth}, la referencia de qué lotes contienen un error, que se construyó una sola vez con tres LLM, revisión experta y reglas de propagación. El tercer bloque es la clasificación: cada lote se envía a un SLM, que responde si contiene un error, y opcionalmente una caché semántica evita consultar al modelo cuando el lote o sus eventos fueron analizados previamente. El cuarto bloque es la reacción: los lotes con error disparan una alerta, un modelo separado redacta una recomendación, y un \textit{dashboard} muestra el estado de la ejecución y permite inyectar errores simulados.
 
 \begin{figure}[H]
 \centering
@@ -21,7 +21,7 @@ El sistema se usó de dos maneras. En la evaluación por lotes, el \textit{pipel
 
 \section{Conjunto de datos}\label{sec:met_dataset}
 
-Los datos del trabajo provienen de \texttt{ms-users}, un microservicio Spring Boot de la DTIC que gestiona las cuentas de usuario de la universidad frente a Active Directory, LDAP, Oracle, AS400 y Google Workspace. Se dispuso de 309 archivos en formato Logback, con unos 16~GB y 27\,752\,836 eventos, que cubren del 23 de septiembre al 7 de octubre de 2026. El servicio rota su archivo de log al alcanzar unos 50~MB, lo que en la práctica equivale a un archivo por hora aproximadamente: cada día tiene entre 21 y 22 archivos numerados desde \texttt{logFile.AAAA-MM-DD.0.log}, salvo el 7 de octubre, que llega hasta el archivo \texttt{.7}, y el conjunto se completa con el archivo activo \texttt{logFile.log}, que termina a las 09:37 de ese día. Estos registros, generados por el servicio entre el 23 de septiembre y el 7 de octubre, fueron entregados para su uso en este trabajo por el director de la DTIC el 13 de octubre de 2026; a partir de esa fecha, la construcción del conjunto de datos y de su \textit{ground truth} se extendió hasta el 4 de noviembre.
+Los datos del trabajo provienen de \texttt{ms-users}, un microservicio Spring Boot de la DTIC que gestiona las cuentas de usuario de la universidad frente a Active Directory, LDAP, Oracle, AS400 y Google Workspace. Se dispuso de 309 archivos en formato Logback, con unos 16~GB y 27\,752\,836 eventos, que cubren del 23 de septiembre al 7 de octubre de 2026. Cada día tiene entre 21 y 22 archivos numerados desde \texttt{logFile.AAAA-MM-DD.0.log}, salvo el 7 de octubre, que llega hasta el archivo \texttt{.7}, y el conjunto se completa con el archivo activo \texttt{logFile.log}, que termina a las 09:37 de ese día. Estos registros, generados por el servicio entre el 23 de septiembre y el 7 de octubre, fueron por entregados por el departamento de la DTIC el 13 de octubre de 2026; a partir de esa fecha, la construcción del conjunto de datos y de su \textit{ground truth} se extendió hasta el 4 de noviembre.
 
 \subsection{Características del corpus}
 
@@ -92,7 +92,7 @@ mistral:7b & 1\,400 & 4.5 & 5\,544 / 6\,942 \\
 \normalsize
 \end{table}
 
-Durante la votación, Mistral dejó 23 lotes sin voto porque cortaba el JSON sin cerrar la comilla ni la llave final, y como la salida con temperatura 0 es determinista, los reintentos repetían el mismo fallo. Se agregó al analizador de respuestas un rescate mediante expresiones regulares y los 23 lotes se reprocesaron.
+Durante la votación, Mistral dejó 23 lotes sin voto porque cortaba el JSON sin cerrar la comilla ni la llave final, y la temperatura de la generación en 0 para procurar consistencia en la respuestas del modelo. Se agregó al analizador de respuestas un rescate mediante expresiones regulares y los 23 lotes se reprocesaron.
 
 \subsection{Consenso entre modelos}\label{subsec:met_kappa}
 
@@ -100,7 +100,7 @@ El consenso se definió como la mayoría estricta sobre los votos válidos, es d
 
 \subsection{Revisión experta y criterio operativo}\label{subsec:met_expertos}\label{sec:met_criterio}
 
-El consenso de los LLM podía equivocarse, de modo que se comparó con el juicio de dos revisores humanos [?: indicar quiénes son los dos revisores y qué relación tienen con el servicio]. Como revisar los 4\,463 lotes no era viable, se revisó una muestra de 220, alrededor del 5\,\% del total, elegida de forma que incluyera lotes de los tres resultados posibles de la votación. Para ello, los lotes se separaron primero en tres grupos, llamados estratos, según cuántos modelos los habían marcado como error: error unánime, si los tres votaron error (1\,203 lotes); desacuerdo, si lo hicieron uno o dos (324), y normal unánime, si no lo hizo ninguno (2\,936). Después se sortearon 88 lotes del primer estrato, 88 del segundo y 44 del tercero, con un generador de números aleatorios de semilla fija (42), de modo que la misma muestra puede volver a obtenerse. El reparto no es proporcional al tamaño de los estratos: si lo fuera, la muestra tendría solo unos 16 lotes de desacuerdo, el estrato en el que los modelos no coinciden, y 145 de los 220 serían lotes que ningún modelo marcó. En la figura~\ref{fig:met_muestra} se muestra cómo se formó la muestra.
+El consenso de los LLM podía equivocarse, de modo que se comparó con el juicio de dos desarrolladores de la DTIC. Como revisar los 4\,463 lotes no era viable, se revisó una muestra de 220, alrededor del 5\,\% del total, elegida de forma que incluyera lotes de los tres resultados posibles de la votación. Para ello, los lotes se separaron primero en tres grupos, llamados estratos, según cuántos modelos los habían marcado como error: error unánime, si los tres votaron error (1\,203 lotes); desacuerdo, si lo hicieron uno o dos (324), y normal unánime, si no lo hizo ninguno (2\,936). Después se sortearon 88 lotes del primer estrato, 88 del segundo y 44 del tercero, con un generador de números aleatorios de semilla fija (42), de modo que la misma muestra puede volver a obtenerse. El reparto no es proporcional al tamaño de los estratos: si lo fuera, la muestra tendría solo unos 16 lotes de desacuerdo, el estrato en el que los modelos no coinciden, y 145 de los 220 serían lotes que ningún modelo marcó. En la figura~\ref{fig:met_muestra} se muestra cómo se formó la muestra.
 
 \begin{figure}[H]
 \centering
@@ -111,7 +111,7 @@ El consenso de los LLM podía equivocarse, de modo que se comparó con el juicio
 
 Cada revisor recibió la mitad de la muestra, 110 lotes con 44 de error unánime, 44 de desacuerdo y 22 de normal unánime, sin lotes en común con el otro. Los lotes se entregaron en un archivo CSV con una fila por lote, que contenía el texto completo de sus 50 eventos, las líneas que los modelos habían señalado como error, sus votos y el razonamiento de cada uno. El revisor leía el lote, decidía si contenía una falla del servicio y anotaba 1 (error) o 0 (normal), con una nota opcional que justificara su decisión. Por ejemplo, en un lote que dos de los tres modelos marcaron como error, el revisor anotó 0 con la nota ``son logs de información cuando un enlace está vencido o validaciones de usuario''.
 
-En esta primera revisión no existía todavía una definición común de error, y cada revisor decidió según su propio juicio. Entre los dos contradijeron al consenso en 33 de los 88 lotes de error unánime (37.5\,\%), en 24 de los 88 de desacuerdo (27.3\,\%) y en ninguno de los 44 de normal unánime, con el mismo patrón en ambas mitades (16 y 17 de sus 44 lotes de error unánime): los modelos marcaban como error condiciones que la institución considera normales, como el rechazo de una contraseña por la política de seguridad o la búsqueda de un usuario que no existe. Por ello, los revisores se reunieron y acordaron el criterio operativo de la tabla~\ref{tab:met_criterio}, que distingue las fallas del sistema de las condiciones funcionales que el servicio maneja correctamente.
+Entre los dos contradijeron al consenso en 33 de los 88 lotes de error unánime (37.5\,\%), en 24 de los 88 de desacuerdo (27.3\,\%) y en ninguno de los 44 de normal unánime, con el mismo patrón en ambas mitades (16 y 17 de sus 44 lotes de error unánime): los modelos marcaban como error condiciones que la institución considera normales, como el rechazo de una contraseña por la política de seguridad o la búsqueda de un usuario que no existe. Por ello, los revisores proporcionaron el criterio operativo de la tabla~\ref{tab:met_criterio}, que distingue las fallas del sistema de las condiciones funcionales que el servicio maneja correctamente.
 
 \begin{table}[H]
 \centering
@@ -132,7 +132,7 @@ Errores de base de datos o del \textit{pool} de conexiones, fallo al iniciar el 
 \normalsize
 \end{table}
 
-Con este criterio, cada revisor volvió a etiquetar sus 110 lotes: 63 etiquetas pasaron de error a normal y ninguna de normal a error. Solo el 12.5\,\% de los lotes de error unánime (11 de 88) resultaron error según los expertos, es decir, los revisores contradijeron ahora al consenso en 77 de esos 88 lotes, frente al 6.8\,\% de error en los de desacuerdo y al 0\,\% en los de normal unánime. Como esta es la única muestra aleatoria del proceso, es la que permite estimar la tasa de error de cada estrato en el corpus completo.
+Con este criterio solo el 12.5\,\% de los lotes de error unánime (11 de 88) resultaron error según los desarrolladores, es decir, los revisores contradijeron ahora al consenso en 77 de esos 88 lotes, frente al 6.8\,\% de error en los de desacuerdo y al 0\,\% en los de normal unánime. Como esta es la única muestra aleatoria del proceso, es la que permite estimar la tasa de error de cada estrato en el corpus completo.
 
 \subsection{Propagación del criterio experto}\label{subsec:met_propagacion}
 
@@ -144,7 +144,7 @@ Si ninguna regla aplicaba, el lote no se completó con el voto de los LLM, sino 
 
 \subsection{\textit{Ground truth} final}
 
-El resultado es una etiqueta para cada uno de los 4\,463 lotes, sin ninguno pendiente. En la tabla~\ref{tab:met_origen} se muestra el origen de las etiquetas. Los 130 lotes con error (2.9\,\%) provienen solo de la revisión directa (39) y de las reglas de error (91); la similitud con lotes revisados únicamente asignó etiquetas normales. Frente al consenso de los LLM, los expertos eliminaron 1\,241 de sus 1\,370 positivos y añadieron un error nuevo, y ambas referencias coinciden solo en el 72.2\,\% de los lotes. Esta etiqueta, denominada \texttt{final\_is\_error}, es la referencia de todas las evaluaciones del trabajo.
+El resultado es una etiqueta para cada uno de los 4\,463 lotes, en la tabla~\ref{tab:met_origen} se muestra el origen de las etiquetas. Los 130 lotes con error (2.9\,\%) provienen solo de la revisión directa (39) y de las reglas de error (91); la similitud con lotes revisados únicamente asignó etiquetas normales. Frente al consenso de los LLM, los expertos eliminaron 1\,241 de sus 1\,370 positivos y añadieron un error nuevo, y ambas referencias coinciden solo en el 72.2\,\% de los lotes. Esta etiqueta, denominada \texttt{final\_is\_error}, es la referencia de todas las evaluaciones del trabajo.
 
 \begin{table}[H]
 \centering
@@ -171,15 +171,15 @@ La diferencia entre el voto de los LLM y el criterio experto muestra la dificult
 
 \section{Arquitectura del \textit{pipeline}}\label{sec:met_arquitectura}
 
-Sobre los datos ya preparados, el \textit{pipeline} se implementó en Python como una cadena de componentes intercambiables: un lector que entrega los eventos, un modelo que analiza cada lote y un escritor que registra cada resultado. Esta organización permitió usar el mismo flujo tanto sobre los archivos históricos como sobre un flujo HTTP en vivo, y cambiar el modelo o el tipo de caché sin modificar el resto.
+El \textit{pipeline} se compone de los siguientes módulos: un lector que entrega los eventos, un modelo que analiza cada lote, un escritor que registra cada resultado y un servicio de notificaciones. Esta organización permitió usar el mismo flujo tanto sobre los archivos históricos como sobre un flujo HTTP en vivo, y cambiar el modelo o el tipo de caché sin modificar el resto.
 
 \tema{Ingesta}
 
-El lector obtiene los eventos de los archivos de log, en orden alfabético para que el orden sea reproducible, o de un flujo HTTP que simula la operación en vivo. A cada evento le aplica el prefiltro y el enmascarado descritos en la sección~\ref{subsec:met_prefiltro} y los agrupa en lotes de $N$ eventos conservados.
+El lector obtiene los eventos de los archivos de log, en orden cronológico para su reproducibilidad, o de un flujo HTTP que simula la operación en vivo. A cada evento le aplica el prefiltro y el enmascarado descritos en la sección~\ref{subsec:met_prefiltro} y los agrupa en lotes de $N$ eventos filtrados.
 
 \tema{Clasificación}
 
-Cada lote se envía al SLM como una lista numerada de eventos, acompañada de un mensaje de sistema fijo que define la tarea, el formato de respuesta y las condiciones que no deben considerarse error, como las solicitudes erróneas, las excepciones de validación de contraseñas o los usuarios no encontrados. El modelo responde un objeto JSON corto con tres campos: si hay error, una descripción breve y una acción recomendada. El mensaje de sistema completo se incluye en el Anexo~\ref{ap:prompt_slm}. Se implementaron dos motores de inferencia intercambiables: Ollama, para los modelos cuantizados en formato GGUF, y Hugging Face Transformers, para los modelos en su formato original. En ambos casos la decodificación fue determinista (temperatura 0 en Ollama y decodificación voraz en Transformers), con el razonamiento extendido de los modelos desactivado y un máximo de 512 \textit{tokens} de respuesta.
+Cada lote se envía al SLM como una lista numerada de eventos, acompañada de un mensaje de sistema fijo que define la tarea, el formato de respuesta y las condiciones que no deben considerarse error, como las solicitudes erróneas, las excepciones de validación de contraseñas o los usuarios no encontrados. El modelo responde un objeto JSON corto con tres campos: si hay error, una descripción breve y una acción recomendada. El mensaje de sistema completo se incluye en el Anexo~\ref{ap:prompt_slm}. Se implementaron dos motores de inferencia intercambiables: Ollama, para los modelos cuantizados en formato GGUF, y Hugging Face Transformers, para los modelos en su formato original. En ambos casos se configuró con temperatura 0 y decodificación voraz para clasificaciones consistentes, con el razonamiento extendido de los modelos desactivado y un máximo de 512 \textit{tokens} de respuesta.
 
 \tema{Probabilidad de error}
 
@@ -187,11 +187,11 @@ Además de la respuesta binaria, el \textit{pipeline} registra la probabilidad d
 
 \tema{Robustez}
 
-Los modelos pequeños no siempre respetan el formato pedido, de modo que se implementaron varias protecciones. Un analizador tolerante repara las respuestas mal formadas, como saltos de línea sin escapar, comillas sin cerrar, claves sin comillas o un JSON cortado, y en algunos modelos recuperó el 100\,\% de las respuestas que de otro modo se habrían perdido. Un registro de fallos guarda la entrada y la respuesta cruda de cada lote que no se puede procesar, sin detener la ejecución. Un límite de \textit{tokens} de salida y un tiempo máximo por petición detienen las generaciones descontroladas; en una ocasión, un modelo llegó a generar 141\,000 \textit{tokens} para un solo lote. Por último, una ejecución interrumpida se reanuda exactamente desde el primer lote que no llegó a escribirse.
+Los modelos pequeños no siempre respetan el formato pedido, de modo que se implementaron varias protecciones. El primero es un analizador que repara las respuestas mal formadas, como saltos de línea sin escapar, comillas sin cerrar, claves sin comillas o un JSON cortado, y en algunos modelos recuperó el 100\,\% de las respuestas que de otro modo se habrían perdido, la segunda protección consiste en un registro de fallos que guarda la entrada y la respuesta cruda de cada lote que no se puede procesar, sin detener la ejecución, finalmente se agregó un límite de \textit{tokens} de salida y un tiempo máximo por petición que detienen las generaciones descontroladas; en una ocasión, un modelo llegó a generar 141\,000 \textit{tokens} para un solo lote.
 
 \section{Modelos de lenguaje pequeños evaluados}\label{sec:met_slm}
 
-Para el clasificador se seleccionaron ocho SLM, de 1\,000 a 9\,000 millones de parámetros y de familias y desarrolladores distintos. El criterio de selección fue que se tratara de SLM capaces de ejecutarse de forma local con requerimientos acotados de memoria de video (VRAM), de modo que pudieran funcionar en equipos con una sola tarjeta gráfica. En la tabla~\ref{tab:met_modelos} se listan los modelos, el motor con que se ejecutó cada uno, su formato y la memoria de video que requirieron; se incluye también la versión de Qwen3.5-9B con el adaptador obtenido en el ajuste fino descrito en la sección~\ref{sec:met_finetuning}.
+Para el clasificador se seleccionaron ocho SLM, de 1\,000 a 9\,000 millones de parámetros y de familias y desarrolladores distintos. El criterio de selección fue que se tratara de SLM capaces de ejecutarse de forma local con requerimientos acotados de memoria de video (VRAM), de modo que pudieran funcionar en equipos con una sola tarjeta gráfica. En la tabla~\ref{tab:met_modelos} se listan los modelos, el motor con que se ejecutó cada uno, su formato y la memoria de video que requirieron.
 
 \begin{table}[H]
 \centering
@@ -205,7 +205,6 @@ Para el clasificador se seleccionaron ocho SLM, de 1\,000 a 9\,000 millones de p
 Phi-3.5-mini (3.8B) & Transformers & Pesos originales & 10.6 \\
 Gemma-3-4B & Transformers & Pesos originales & 9.6 \\
 Ministral-3-3B & Ollama & BF16 & 9.3 \\
-Qwen3.5-9B + LoRA (ajustado) & Ollama & Q6\_K + adaptador & 8.5 \\
 Qwen3.5-9B & Ollama & Q6\_K & 8.4 \\
 Granite-4.1-3B & Transformers & Pesos originales & 6.9 \\
 Ling-3.0-tiny & Ollama & Q4\_K\_M & 5.0 \\
@@ -216,9 +215,9 @@ Llama-3.2-1B \textit{log-analyzer} & Ollama & Q4\_K\_M & 1.7 \\
 \normalsize
 \end{table}
 
-Todos los modelos recibieron el mismo \textit{prompt}, el mismo enmascarado, el mismo presupuesto de salida y decodificación determinista, de modo que las diferencias entre ellos se deben solo al modelo. Dos modelos requirieron un tratamiento especial. El Llama-3.2-1B \textit{log-analyzer}, un ajuste público orientado a logs, solo funcionó a través de Ollama con su propia plantilla de conversación, porque con Transformers repetía los logs en lugar de responder. El modelo base SmolLM2-1.7B, sin ajuste para seguir instrucciones, solo respondió de forma válida en el 49\,\% de los lotes y se conservó únicamente como referencia.
+Todos los modelos recibieron el mismo \textit{prompt}, el mismo enmascarado, el mismo limite de tokens de salida y decodificación codiciosa, es decir, cuando el modelo toma siempre el siguiente token con mayor probabilidad, de modo que las diferencias entre ellos se deben solo al modelo. Dos modelos requirieron un tratamiento especial. El Llama-3.2-1B \textit{log-analyzer}, un ajuste público orientado a logs, solo funcionó a través de Ollama con su propia plantilla de conversación, porque con Transformers repetía los logs en lugar de responder. El modelo base SmolLM2-1.7B, sin ajuste para seguir instrucciones, solo respondió de forma válida en el 49\,\% de los lotes y se conservó únicamente como referencia.
 
-\subsection{Entorno de desarrollo}\label{subsec:met_entorno}
+\section{Entorno de desarrollo}\label{subsec:met_entorno}
 
 El desarrollo y la experimentación se repartieron entre dos equipos con tarjetas gráficas de fabricantes distintos, por lo que el \textit{pipeline} admite tanto la plataforma ROCm de AMD como CUDA de NVIDIA. Únicamente el ajuste fino se ejecutó en un servidor facilitado por la DTIC, debido al alto costo computacional que implica reentrenar un modelo en equipos personales. En la tabla~\ref{tab:met_equipos} se describen los tres equipos.
 
@@ -226,33 +225,28 @@ El desarrollo y la experimentación se repartieron entre dos equipos con tarjeta
 \centering
 \caption{Equipos utilizados en el desarrollo y la experimentación.}
 \label{tab:met_equipos}
-\small
-\begin{tabular}{@{}p{2.4cm}p{3.7cm}p{3.4cm}p{4.6cm}@{}}
+\footnotesize\linespread{1}\selectfont
+\setlength{\tabcolsep}{4pt}
+\begin{tabularx}{\textwidth}{@{}>{\raggedright\arraybackslash}p{2.1cm}>{\raggedright\arraybackslash}X>{\raggedright\arraybackslash}p{1.6cm}>{\raggedright\arraybackslash}X>{\raggedright\arraybackslash}p{1.4cm}>{\raggedright\arraybackslash}X>{\raggedright\arraybackslash}p{1.9cm}@{}}
 \toprule
- & \textbf{Equipo 1} & \textbf{Equipo 2} & \textbf{Servidor de la DTIC} \\
+\textbf{Equipo} & \textbf{Rol en el estudio} & \textbf{Sistema operativo} & \textbf{CPU} & \textbf{RAM} & \textbf{GPU (VRAM)} & \textbf{Aceleración} \\
 \midrule
-Rol en el estudio & Mayoría de clasificaciones y simulación & Qwen3.5-9B y Ministral-3-3B con $N=30$; SmolLM2-1.7B con $N=50$ & Ajuste fino del modelo \\
-Entorno & Equipo personal & Equipo personal & Instancia virtualizada en Google Compute Engine (\textit{kernel} 6.8.0-1070-gcp) \\
-Sistema operativo & Debian & Ubuntu & Ubuntu 22.04.5 LTS (x86\_64) \\
-CPU & AMD Ryzen 7 3700X (16 hilos, hasta 4.43~GHz) & Intel Core i7-13620H de 13.ª generación (16 hilos, hasta 4.90~GHz) & Intel Xeon, 32 núcleos virtuales a 2.20~GHz \\
-RAM & 24~GB & 16~GB & 128\,804~MiB ($\approx$125.8~GiB) \\
-GPU & AMD Radeon RX 7900 XT & NVIDIA GeForce RTX 4060 & NVIDIA L4 \\
-VRAM & 20~GB & 8~GB & 23\,034~MiB ($\approx$22.5~GiB) \\
-Aceleración & ROCm 7.2 (PyTorch 2.13) & CUDA & \textit{Driver} 580.178.04, CUDA 13.0 \\
+Equipo 1 (personal) & Mayoría de las clasificaciones y la simulación & Debian & AMD Ryzen 7 3700X, 16 hilos, hasta 4.43~GHz & 24~GB & AMD Radeon RX 7900 XT (20~GB) & ROCm 7.2, PyTorch 2.13 \\
+\addlinespace
+Equipo 2 (personal) & Qwen3.5-9B y Ministral-3-3B con $N=30$; SmolLM2-1.7B con $N=50$ & Ubuntu & Intel Core i7-13620H, 16 hilos, hasta 4.90~GHz & 16~GB & NVIDIA GeForce RTX 4060 (8~GB) & CUDA \\
+\addlinespace
+Servidor de la DTIC (Google Compute Engine) & Ajuste fino del modelo & Ubuntu 22.04.5 LTS & Intel Xeon, 32 núcleos virtuales a 2.20~GHz & 125.8~GiB & NVIDIA L4 (22.5~GiB) & CUDA 13.0, \textit{driver} 580.178.04 \\
 \bottomrule
-\end{tabular}
+\end{tabularx}
 \normalsize
 \end{table}
 
 El \textit{pipeline} se escribió en Python 3.13, con Pydantic para las estructuras de logs, lotes y resultados. Los modelos se sirvieron con Ollama, ejecutado en un contenedor Docker, y con Hugging Face Transformers sobre PyTorch. Los \textit{embeddings} se generaron con Sentence-Transformers y se almacenaron en Milvus Lite. Las métricas se calcularon con scikit-learn, las pruebas estadísticas con NumPy y SciPy, y las gráficas con Matplotlib. El ajuste fino usó las bibliotecas PEFT y bitsandbytes, y llama.cpp para convertir el adaptador al formato de Ollama. El código se versionó con Git.
 
-\subsection{Pruebas del software}\label{sec:met_pruebas}
-
-Para asegurar que cada componente se comportara como se esperaba, el proyecto incluye 380 pruebas unitarias agrupadas en 39 conjuntos, todas superadas al cierre de este trabajo. Cubren, entre otros aspectos, el análisis de las respuestas de los modelos, el prefiltro, el cálculo de la probabilidad de error, la caché por evento, la construcción del \textit{ground truth} por lote, la reanudación de ejecuciones interrumpidas, las pruebas de significancia, el ajuste fino y la simulación.
 
 \section{Caché semántica}\label{sec:met_cache}
 
-Los logs del servicio se repiten mucho: entre los 223\,104 eventos conservados hay solo unos 7\,400 distintos. Esto sugiere que muchas consultas al modelo podrían evitarse reutilizando respuestas ya obtenidas, y para comprobarlo se implementó una caché opcional con tres variantes, que se compararon en la simulación descrita en la sección~\ref{sec:met_simulacion}.
+Los logs del servicio se repiten mucho: entre los 223\,104 eventos conservados hay solo unos 7\,400 distintos. Esto sugiere que muchas consultas al modelo podrían evitarse reutilizando respuestas obtenidas, y para comprobarlo se implementó una caché opcional con tres variantes, que se compararon en la simulación descrita en la sección~\ref{sec:met_simulacion}.
 
 \tema{Modelo de \textit{embeddings}}
 
@@ -274,11 +268,11 @@ La vía rápida extiende la caché por evento: si un lote no tiene eventos desco
 
 \tema{Elección de los umbrales}
 
-Los umbrales de similitud se eligieron antes de la simulación, reproduciendo las respuestas de Qwen3.5-9B sobre el corpus original de 4\,463 lotes y 130 errores. Se probaron, para la caché por lote, los umbrales 0.90, 0.95, 0.97, 0.98, 0.99 y 0.995, y para la caché por evento con similitud, 0.85, 0.90, 0.95, 0.97, 0.98, 0.99 y 0.995. El rango cubre desde casi no usar la caché hasta usarla casi siempre, y se descartaron los extremos sin interés: 0.999 en la caché por lote, que ya no evita llamadas, y 0.80 en la caché por evento, que pierde demasiados errores.
+Los umbrales de similitud se eligieron antes de la simulación, reproduciendo las respuestas de Qwen3.5-9B sobre el corpus original de 4\,463 lotes y 130 errores. Para la caché por lote, los umbrales fueron 0.90, 0.95, 0.97, 0.98, 0.99 y 0.995, y para la caché por evento 0.85, 0.90, 0.95, 0.97, 0.98, 0.99 y 0.995. El rango cubre desde casi no usar la caché hasta usarla casi siempre, y se descartaron los extremos sin interés: 0.999 en la caché por lote, que ya no evita llamadas, y 0.80 en la caché por evento, que pierde demasiados errores.
 
-\section{Ajuste fino con LoRA}\label{sec:met_finetuning}
+\section{Ajuste fino con QLoRA}\label{sec:met_finetuning}
 
-Las primeras evaluaciones mostraron que los SLM detectaban los errores reales, pero marcaban como error muchas condiciones que la institución considera normales. Para alinear el criterio del mejor modelo, Qwen3.5-9B, con el del \textit{ground truth} experto y reducir sus falsas alarmas, se le aplicó un ajuste fino con LoRA \cite{hu2022_lora}.
+A partir de una evaluación preliminar de los modelos SLM se observo que estos detectaban los errores reales, pero marcaban como error muchas condiciones que la institución considera normales, por lo tanto para alinear el criterio del modelo seleccionado, Qwen3.5-9B, con el del \textit{ground truth} experto y reducir las falsas alarmas, se le aplicó un ajuste fino mediante QLoRA \cite{dettmers2023_qlora}.
 
 \subsection{Datos de entrenamiento, validación y prueba}
 
@@ -301,7 +295,8 @@ Prueba & 3\,571--4\,462 (20\,\%) & 892 (todos) & 29 \\
 \normalsize
 \end{table}
 
-El conjunto de entrenamiento no incluye todos los lotes de su tramo. Se tomaron los 77 lotes con error, 423 negativos difíciles y 193 negativos fáciles, en una proporción de ocho negativos por cada error. Los negativos difíciles son lotes normales que el modelo sin ajustar marcaba como error, es decir, sus propias falsas alarmas, que son justamente el comportamiento que se buscaba corregir. La validación incluye los 24 errores de su tramo y 200 lotes normales, y la prueba conserva todos los lotes de su tramo para medir el desempeño con la prevalencia real.
+Los negativos difíciles son lotes normales que el modelo sin ajustar marcaba como error, es decir, sus propias falsas alarmas, asi mismo los negativos fáciles corresponden a lotes que el modelo correctamente identificó como normales.
+Dentro del conjunto de entrenamiento se tomaron los 77 lotes con error, 423 negativos difíciles y 193 negativos fáciles, en una proporción de ocho negativos por cada error. La validación incluye los 24 errores de su tramo y 200 lotes normales, y la prueba conserva todos los lotes de su tramo para medir el desempeño con la prevalencia real.
 
 \subsection{Configuración del entrenamiento}
 
@@ -333,11 +328,14 @@ Cada lote del modelo se comparó con el lote correspondiente del \textit{ground 
 \label{fig:met_pr_ejemplo}
 \end{figure}
 
-\subsection{Evaluación por similitud para $N = 30$ y $N = 20$}
 
-El \textit{ground truth} experto existe solo para lotes de 50 eventos, de modo que un lote de 30 o de 20 no tiene una etiqueta propia. Para evaluarlos, cada lote de 30 o de 20 recibió la etiqueta del lote de 50 del \textit{ground truth} más parecido, y la respuesta del SLM se comparó con esa etiqueta prestada. Los lotes se convirtieron en \textit{embeddings} con el mismo modelo de la caché, completos y sin truncar, y se tomó el vecino más cercano por similitud del coseno ($k = 1$). La referencia se calculó con los lotes de Qwen3.5-9B, que respondió a todos, ya que el texto de un lote es el mismo para todos los modelos con el mismo $N$.
+\subsection{Consistencia al reducir el tamaño de lote}
 
-Este procedimiento se validó de dos formas. Aplicado a los propios lotes de 50, el vecino fue siempre el mismo lote, con similitud 1, y se reprodujeron exactamente las métricas de la evaluación directa, lo que confirmó que la alineación y los \textit{embeddings} eran correctos. Además, la etiqueta prestada coincidió en el 97.7\,\% de los lotes con la del lote de 50 que contiene los mismos eventos. Los lotes cuya referencia es error resultaron los menos parecidos a su vecino, porque los errores son el texto menos común, de modo que su etiqueta prestada es la menos segura. Al exigir una similitud mínima, los lotes con error eran los primeros en quedar fuera, por lo que el resultado principal usa todos los lotes y la similitud se reporta solo como control. Las cifras de $N = 30$ y $N = 20$ sirven, por tanto, para comparar modelos dentro de un mismo tamaño de lote y no para compararlas directamente con las de $N = 50$.
+Al reducir el tamaño de lote, el modelo decide con menos contexto, y no hay garantía de que conserve la misma clasificación que con lotes de 50 eventos. Como un lote de 30 o de 20 eventos no coincide con ningún lote de 50, no es posible comparar directamente ambas respuestas sobre el mismo contenido. Para cada lote pequeño se buscó, por ello, el lote de 50 con el contenido más parecido: el texto enmascarado de ambos se convirtió en \textit{embeddings} con el mismo modelo de la caché, completo y sin truncar, y se tomó el vecino más cercano por similitud del coseno ($k = 1$).
+
+La referencia de cada lote pequeño fue la respuesta que el mismo modelo generó, con $N = 50$, a su vecino, así se midió si un modelo repite su propio veredicto ante un contenido equivalente, y no si acierta. La métrica principal fue el kappa de Cohen \falta{cita del kappa de Cohen (Cohen, 1960); no está en Sources}, que mide el acuerdo por encima del esperado por azar, acompañado del MCC y de dos proporciones: la de alertas de $N = 50$ que el modelo repite con el lote pequeño y la de alertas del lote pequeño cuya referencia también era una alerta. Si la respuesta de $N = 50$ falló, el lote quedó sin referencia y se descartó; si falló la del lote pequeño, se contó como desacuerdo.
+
+Para saber si el acuerdo de cada modelo superaba al azar se aplicó una \uline{prueba de permutación} en la que la serie de referencias se desplaza circularmente frente a las respuestas, lo que conserva la correlación entre lotes consecutivos y solo rompe su alineación \cite{good2005_permutation}, con 10,000 permutaciones y corrección de Holm entre los ocho modelos \cite{holm1979_sequential}. Las diferencias de consistencia entre modelos se evaluaron con el mismo procedimiento global y por pares de la sección \ref{subsec:met_significancia}.
 
 \subsection{Significancia estadística}\label{subsec:met_significancia}
 
