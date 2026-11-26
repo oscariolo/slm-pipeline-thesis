@@ -100,9 +100,18 @@ El consenso se definió como la mayoría estricta sobre los votos válidos, es d
 
 \subsection{Revisión experta y criterio operativo}\label{subsec:met_expertos}\label{sec:met_criterio}
 
-Para contrastar el consenso con el criterio humano se extrajo una muestra aleatoria estratificada de 220 lotes, alrededor del 5\,\% del total, con semilla 42 y el reparto de 88 lotes de error unánime, 88 de desacuerdo y 44 de normal unánime. Los dos revisores se dividieron la muestra en dos mitades de 110 lotes sin solapamiento, con la misma mezcla de estratos, y marcaron cada lote como error o normal viendo las líneas señaladas por los modelos, sus razonamientos y el texto completo del lote.
+El consenso de los LLM podía equivocarse, de modo que se comparó con el juicio de dos revisores humanos [?: indicar quiénes son los dos revisores y qué relación tienen con el servicio]. Como revisar los 4\,463 lotes no era viable, se revisó una muestra de 220, alrededor del 5\,\% del total, elegida de forma que incluyera lotes de los tres resultados posibles de la votación. Para ello, los lotes se separaron primero en tres grupos, llamados estratos, según cuántos modelos los habían marcado como error: error unánime, si los tres votaron error (1\,203 lotes); desacuerdo, si lo hicieron uno o dos (324), y normal unánime, si no lo hizo ninguno (2\,936). Después se sortearon 88 lotes del primer estrato, 88 del segundo y 44 del tercero, con un generador de números aleatorios de semilla fija (42), de modo que la misma muestra puede volver a obtenerse. El reparto no es proporcional al tamaño de los estratos: si lo fuera, la muestra tendría solo unos 16 lotes de desacuerdo, el estrato en el que los modelos no coinciden, y 145 de los 220 serían lotes que ningún modelo marcó. En la figura~\ref{fig:met_muestra} se muestra cómo se formó la muestra.
 
-En la primera revisión, cada revisor aplicó su propio criterio y ambos contradijeron al consenso en el 37.5\,\% de los lotes de error unánime y en el 27.3\,\% de los de desacuerdo, y en ninguno de los de normal unánime. Los modelos marcaban como error condiciones que la institución considera normales. Por ello, los revisores se reunieron y acordaron el criterio operativo de la tabla~\ref{tab:met_criterio}, que distingue las fallas del sistema de las condiciones funcionales que el servicio maneja correctamente.
+\begin{figure}[H]
+\centering
+\input{figs/metodologia/muestra_estratificada}
+\caption{Muestra estratificada de 220 lotes para la revisión experta. La altura de cada bloque es proporcional a su número de lotes.}
+\label{fig:met_muestra}
+\end{figure}
+
+Cada revisor recibió la mitad de la muestra, 110 lotes con 44 de error unánime, 44 de desacuerdo y 22 de normal unánime, sin lotes en común con el otro. Los lotes se entregaron en un archivo CSV con una fila por lote, que contenía el texto completo de sus 50 eventos, las líneas que los modelos habían señalado como error, sus votos y el razonamiento de cada uno. El revisor leía el lote, decidía si contenía una falla del servicio y anotaba 1 (error) o 0 (normal), con una nota opcional que justificara su decisión. Por ejemplo, en un lote que dos de los tres modelos marcaron como error, el revisor anotó 0 con la nota ``son logs de información cuando un enlace está vencido o validaciones de usuario''.
+
+En esta primera revisión no existía todavía una definición común de error, y cada revisor decidió según su propio juicio. Entre los dos contradijeron al consenso en 33 de los 88 lotes de error unánime (37.5\,\%), en 24 de los 88 de desacuerdo (27.3\,\%) y en ninguno de los 44 de normal unánime, con el mismo patrón en ambas mitades (16 y 17 de sus 44 lotes de error unánime): los modelos marcaban como error condiciones que la institución considera normales, como el rechazo de una contraseña por la política de seguridad o la búsqueda de un usuario que no existe. Por ello, los revisores se reunieron y acordaron el criterio operativo de la tabla~\ref{tab:met_criterio}, que distingue las fallas del sistema de las condiciones funcionales que el servicio maneja correctamente.
 
 \begin{table}[H]
 \centering
@@ -123,7 +132,7 @@ Errores de base de datos o del \textit{pool} de conexiones, fallo al iniciar el 
 \normalsize
 \end{table}
 
-Con este criterio se volvieron a etiquetar los 220 lotes: 63 etiquetas pasaron de error a normal y ninguna de normal a error. Solo el 12.5\,\% de los lotes de error unánime (11 de 88) resultaron error según los expertos, frente al 6.8\,\% de los de desacuerdo y al 0\,\% de los de normal unánime. Como esta es la única muestra aleatoria del proceso, es la que permite estimar tasas sobre el corpus completo.
+Con este criterio, cada revisor volvió a etiquetar sus 110 lotes: 63 etiquetas pasaron de error a normal y ninguna de normal a error. Solo el 12.5\,\% de los lotes de error unánime (11 de 88) resultaron error según los expertos, es decir, los revisores contradijeron ahora al consenso en 77 de esos 88 lotes, frente al 6.8\,\% de error en los de desacuerdo y al 0\,\% en los de normal unánime. Como esta es la única muestra aleatoria del proceso, es la que permite estimar la tasa de error de cada estrato en el corpus completo.
 
 \subsection{Propagación del criterio experto}\label{subsec:met_propagacion}
 
