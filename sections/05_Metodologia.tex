@@ -63,17 +63,13 @@ Con $N = 70$, el lote mediano de SmolLM2-1.7B-Instruct ocupó 7\,625 \textit{tok
 
 \section{Construcción del \textit{ground truth}}\label{sec:met_gt}
 
-No existían etiquetas que indicaran qué eventos del corpus eran errores, de modo que la referencia se construyó por etapas que combinaron el pseudoetiquetado con modelos de lenguaje y la revisión de expertos. Se decidió que el \textit{ground truth} fuera por lote y no por evento, porque un SLM evalúa un lote completo y su respuesta debe compararse con una etiqueta del mismo nivel. En la figura~\ref{fig:met_gt} se resume el proceso.
+No existían etiquetas que indicaran qué lotes del corpus contenían errores, de modo que la referencia se construyó por etapas que combinaron el pseudoetiquetado con modelos de lenguaje y la revisión de expertos. El \textit{ground truth} asigna una etiqueta a cada lote, porque un SLM evalúa un lote completo y su respuesta debe compararse con una etiqueta del mismo nivel. En la figura~\ref{fig:met_gt} se resume el proceso.
 
 \figpendiente{fig:met_gt}{Etapas de la construcción del \textit{ground truth}.}{Diagrama de flujo: etiquetado por evento con tres LLM $\rightarrow$ votación por lote $\rightarrow$ muestra estratificada de 220 lotes $\rightarrow$ revisión experta y criterio operativo $\rightarrow$ propagación por reglas y similitud $\rightarrow$ rondas dirigidas $\rightarrow$ \textit{ground truth} final (130 lotes con error).}
 
-\subsection{Etiquetado de cada evento}
-
-En una primera etapa, tres LLM locales de 7\,000 a 8\,000 millones de parámetros, de familias distintas (Qwen2.5-7B, Llama3.1-8B y Mistral-7B, servidos con Ollama), etiquetaron por separado cada uno de los 223\,104 eventos en siete categorías: normal, autenticación o política, usuario no encontrado, fallo de \textit{backend}, excepción de aplicación, actividad sospechosa y error genérico. El voto mayoritario marcó como error 4\,738 eventos (2.12\,\%), con un acuerdo alto entre los tres anotadores ($\kappa$ de Fleiss de 0.89) \cite{fleiss1971_kappa}. Estas etiquetas por evento sirvieron para elegir el tamaño de lote, pero no se reutilizaron como referencia final.
-
 \subsection{Votación por lote}\label{subsec:met_votacion}
 
-Los mismos tres modelos votaron después sobre cada lote completo de 50 eventos. Cada uno recibió el lote como una lista numerada y devolvió un veredicto único en JSON con tres campos: si el lote contiene un error, los índices de las líneas que lo justifican y una frase de razonamiento. Un lote se consideró error si contenía al menos un evento erróneo, y un lote sin respuesta válida no se etiquetó, en lugar de asumirlo normal, para no sesgar el voto. Los modelos se ejecutaron con cuantización Q4\_K\_M, temperatura 0, una ventana de contexto de 12\,288 \textit{tokens}, un máximo de 300 \textit{tokens} de respuesta y tres reintentos; ningún lote se truncó. El \textit{prompt} completo se incluye en el Anexo~\ref{ap:prompt_votacion}, y en la tabla~\ref{tab:met_votos} se resume la votación.
+En la primera etapa, tres LLM locales de 7\,000 a 8\,000 millones de parámetros y de familias distintas, Qwen2.5-7B, Llama3.1-8B y Mistral-7B, servidos con Ollama, votaron por separado sobre cada uno de los 4\,463 lotes de 50 eventos. Cada modelo recibió el lote como una lista numerada y devolvió un veredicto único en JSON con tres campos: si el lote contiene un error, los índices de las líneas que lo justifican y una frase de razonamiento. Un lote se consideró error si contenía al menos un evento erróneo, y un lote sin respuesta válida no se etiquetó, en lugar de asumirlo normal, para no sesgar el voto. Los modelos se ejecutaron con cuantización Q4\_K\_M, temperatura 0, una ventana de contexto de 12\,288 \textit{tokens}, un máximo de 300 \textit{tokens} de respuesta y tres reintentos; ningún lote se truncó. El \textit{prompt} completo se incluye en el Anexo~\ref{ap:prompt_votacion}, y en la tabla~\ref{tab:met_votos} se resume la votación.
 
 \begin{table}[H]
 \centering
@@ -92,11 +88,11 @@ mistral:7b & 1\,400 & 4.5 & 5\,544 / 6\,942 \\
 \normalsize
 \end{table}
 
-Durante la votación, Mistral dejó 23 lotes sin voto porque cortaba el JSON sin cerrar la comilla ni la llave final, y la temperatura de la generación en 0 para procurar consistencia en la respuestas del modelo. Se agregó al analizador de respuestas un rescate mediante expresiones regulares y los 23 lotes se reprocesaron.
+Durante la votación, Mistral dejó 23 lotes sin voto porque cortaba el JSON sin cerrar la comilla ni la llave final. Como la temperatura de generación era 0 para que las respuestas fueran consistentes, los reintentos repetían el mismo corte. Se agregó al analizador de respuestas un rescate mediante expresiones regulares y los 23 lotes se reprocesaron.
 
 \subsection{Consenso entre modelos}\label{subsec:met_kappa}
 
-El consenso se definió como la mayoría estricta sobre los votos válidos, es decir, al menos dos de los tres modelos. Con esa regla, 1\,370 lotes (30.7\,\%) resultaron error y 3\,093 normales. El acuerdo entre los modelos fue alto: el $\kappa$ de Fleiss fue 0.886, interpretado como casi perfecto según la escala de Landis y Koch \cite{landis1977_kappa}, con 1\,203 lotes de error unánime, 2\,936 de normal unánime y 324 con desacuerdo. Este consenso se trató solo como una etiqueta preliminar, que sirvió para guiar la revisión experta.
+El consenso se definió como la mayoría estricta sobre los votos válidos, es decir, al menos dos de los tres modelos. Con esa regla, 1\,370 lotes (30.7\,\%) resultaron error y 3\,093 normales. El acuerdo entre los modelos fue alto: el $\kappa$ de Fleiss \cite{fleiss1971_kappa} fue 0.886, interpretado como casi perfecto según la escala de Landis y Koch \cite{landis1977_kappa}, con 1\,203 lotes de error unánime, 2\,936 de normal unánime y 324 con desacuerdo. Este consenso se trató solo como una etiqueta preliminar, que sirvió para guiar la revisión experta.
 
 \subsection{Revisión experta y criterio operativo}\label{subsec:met_expertos}\label{sec:met_criterio}
 
