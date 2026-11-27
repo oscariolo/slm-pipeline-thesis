@@ -29,19 +29,17 @@ SmolLM2-1.7B-Instruct & 0.049 & 0.092 & 0.064 & 0.028 & 0.519 & 0.430 & 0.031 & 
 \normalsize
 \end{table}
 
-La tabla muestra dos comportamientos opuestos. Los seis primeros modelos detectan casi todos los errores, pero emiten muchas falsas alarmas, ya que marcan como error una parte grande de los lotes que el \textit{ground truth} considera normales. Los dos modelos más pequeños hacen lo contrario: casi no emiten alertas y omiten la mayoría de los errores, y aun así obtienen la mayor especificidad (0.968 y 0.946) y la mayor exactitud (0.942 y 0.921) de los ocho modelos. Con un 2.9\,\% de lotes con error, esa exactitud solo refleja que casi no emiten alertas, y por eso la tabla se ordena por MCC.
-
-Las columnas de MCC y de AP miden aspectos distintos: el MCC evalúa la respuesta sí o no del modelo, y la AP, el orden en que su probabilidad de error coloca los lotes. Por eso un modelo puede quedar abajo en MCC y arriba en AP, como ocurre con Ling-3.0-tiny y Ministral-3-3B: su probabilidad separa bien los lotes con error de los normales, pero su respuesta marca como error casi todos los lotes. En la figura~\ref{fig:res_pr_n50} se comparan el valor de AP y su MCC correspondiente.
+En la figura~\ref{fig:res_pr_n50} se comparan el valor de AP y su MCC correspondiente.
 
 \figpendiente{fig:res_pr_n50}{Curvas de precisión-\textit{recall} de los ocho SLM con $N = 50$ frente al \textit{ground truth}.}{Curvas de precisión-\textit{recall} superpuestas de los ocho modelos, con la AP de cada uno en la leyenda y la línea del clasificador al azar (0.029). Ya existe una versión: \texttt{pr\_comparison\_knn\_\_n50.png} (carpeta \texttt{summary\_plots} de \texttt{analysis/batch\_size\_matrix}).}
 
-La prueba global rechazó la igualdad de los ocho modelos en las ocho métricas, con un valor $p$ ajustado menor que 0.001, lo que indica que en cada métrica al menos un modelo difiere de los demás. Las comparaciones por pares muestran, sin embargo, que no todos los modelos se distinguen entre sí. El \textit{recall} es la métrica con menos diferencias: 14 de los 28 pares no fueron significativos, y Qwen3.5-9B no se distinguió en ella de Granite-4.1-3B, Gemma-3-4B, Ling-3.0-tiny ni Ministral-3-3B, con un valor $p$ ajustado de 1.0, ni de Phi-3.5-mini, con 0.057. En precisión, $F_1$, MCC y \textit{balanced accuracy}, los pares no significativos se concentraron entre los modelos de menor desempeño, y Granite-4.1-3B y Phi-3.5-mini tampoco se distinguieron en precisión, $F_1$ ni MCC. En AUC solo dos pares no fueron significativos, Ling-3.0-tiny frente a Granite-4.1-3B y Ministral-3-3B frente a Phi-3.5-mini, y en exactitud y especificidad todos lo fueron. Qwen3.5-9B, en cambio, superó a cada uno de los otros siete modelos en precisión, $F_1$, MCC, \textit{balanced accuracy} y AUC, con un valor $p$ ajustado de 0.003, y el intervalo de confianza del 95\,\% de su MCC fue de 0.31 a 0.43.
+La prueba global rechazó la igualdad de los ocho modelos en las ocho métricas, con un valor $p$ ajustado menor que 0.001. Las comparaciones por pares muestran, sin embargo, que no todos los modelos se distinguen entre sí. El \textit{recall} es la métrica con menos diferencias: 14 de los 28 pares no fueron significativos, y Qwen3.5-9B no se distinguió en ella de Granite-4.1-3B, Gemma-3-4B, Ling-3.0-tiny ni Ministral-3-3B, con un valor $p$ ajustado de 1.0, ni de Phi-3.5-mini, con 0.057. En precisión, $F_1$, MCC y \textit{balanced accuracy}, los pares no significativos se concentraron entre los modelos de menor desempeño, y Granite-4.1-3B y Phi-3.5-mini tampoco se distinguieron en precisión, $F_1$ ni MCC. En AUC solo dos pares no fueron significativos, Ling-3.0-tiny frente a Granite-4.1-3B y Ministral-3-3B frente a Phi-3.5-mini, y en exactitud y especificidad todos lo fueron. En las comparaciones de Qwen3.5-9B con cada uno de los otros siete modelos, la diferencia fue significativa en precisión, $F_1$, MCC, \textit{balanced accuracy} y AUC, con un valor $p$ ajustado de 0.003, y el intervalo de confianza del 95\,\% de su MCC fue de 0.31 a 0.43.
 
 \subsection{Respuestas inválidas y tiempo de ejecución}
 
 Cuatro modelos dejaron lotes sin respuesta válida: Phi-3.5-mini, 2; Gemma-3-4B, 8; Ling-3.0-tiny, 3; y SmolLM2-1.7B-Instruct, 128. Si esos lotes se excluyen en lugar de contarse como fallos, el orden de la tabla~\ref{tab:res_n50} no cambia, y solo SmolLM2-1.7B-Instruct varía de forma apreciable, de un MCC de 0.028 a 0.073 y de un AUC de 0.430 a 0.580, porque sus lotes fallidos contienen 30 de los 130 errores.
 
-El tiempo de cada ejecución completa con $N = 50$ se muestra en la tabla~\ref{tab:res_tiempos}. Los tiempos corresponden al reloj de cada ejecución y dependen del equipo y del motor de inferencia, por lo que no miden solo al modelo. \falta{confirmar en qué equipo corrió cada modelo con $N = 50$: se asumió el Equipo 1 para todos salvo SmolLM2, según la tabla de equipos}
+El tiempo de cada ejecución completa con $N = 50$ se muestra en la tabla~\ref{tab:res_tiempos}. Los tiempos corresponden al reloj de cada ejecución y dependen del equipo y del motor de inferencia, por lo que no miden solo al modelo.
 
 \begin{table}[H]
 \centering
@@ -64,11 +62,11 @@ Gemma-3-4B & Equipo 1 & Transformers & 6.29 & 5.07 \\
 \end{tabular}
 \normalsize
 \end{table}
-% Tiempos: totals.elapsed_seconds de cada run_*.json en analysis/batch_size_matrix/n50/. El equipo se tomó de la tabla de equipos (Equipo 2: SmolLM2 con N=50); confirmar que el resto corrió en el Equipo 1.
+% Tiempos: totals.elapsed_seconds de cada run_*.json en analysis/batch_size_matrix/n50/. Equipos confirmados con RESUMEN_TESIS.md (sección 6): solo SmolLM2 con N=50 corrió en el Equipo 2.
 
 \section{Detección de errores con lotes de 30 y de 20 eventos}\label{sec:res_n30_n20}
 
-Con lotes de 30 y de 20 eventos, cada lote recibió la etiqueta del lote de 50 del \textit{ground truth} con el texto más parecido. Como control, con $N = 50$ el vecino de cada lote fue siempre el mismo lote y la evaluación reprodujo exactamente las métricas de la tabla~\ref{tab:res_n50}, y con lotes pequeños la etiqueta prestada coincidió en el 97.7\,\% de los lotes con la del lote de 50 que contiene los mismos eventos. La similitud del coseno con el vecino tuvo una mediana de 0.959 con $N = 30$ y de 0.947 con $N = 20$, pero fue menor en los lotes cuya referencia es un error, por lo que la etiqueta prestada es menos segura justo en esos lotes. Por eso las cifras de cada tamaño sirven para comparar los modelos entre sí, pero no para compararlas con las de $N = 50$. En la tabla~\ref{tab:res_n30_n20} se presentan las métricas principales con ambos tamaños.
+Con lotes de 30 y de 20 eventos, cada lote recibió la etiqueta del lote de 50 del \textit{ground truth} con el texto más parecido. Como control, con $N = 50$ el vecino de cada lote fue siempre el mismo lote y la evaluación reprodujo exactamente las métricas de la tabla~\ref{tab:res_n50}, y con lotes pequeños la etiqueta prestada coincidió en el 97.7\,\% de los lotes con la del lote de 50 que contiene los mismos eventos. La similitud del coseno con el vecino tuvo una mediana de 0.959 con $N = 30$ y de 0.947 con $N = 20$, pero fue menor en los lotes cuya referencia es un error. Las cifras de cada tamaño se comparan entre modelos del mismo tamaño. En la tabla~\ref{tab:res_n30_n20} se presentan las métricas principales con ambos tamaños.
 
 \begin{table}[H]
 \centering
@@ -95,7 +93,7 @@ Llama-3.2-1B \textit{log-analyzer} & 0.051 & 0.125 & 0.045 & 0.534 & 0.067 & 0.0
 \normalsize
 \end{table}
 
-La tabla se lee igual que la de $N = 50$ y muestra los mismos dos grupos: los modelos más capaces detectan la mayoría de los errores con poca precisión, y los más pequeños marcan pocos lotes. Los modelos difirieron en las ocho métricas con ambos tamaños, con un valor $p$ ajustado menor que 0.001 en la prueba global. Qwen3.5-9B obtuvo el mayor MCC y la mayor AP con ambos tamaños; el intervalo del 95\,\% de su MCC fue de 0.26 a 0.37 con $N = 30$ y de 0.25 a 0.36 con $N = 20$, y superó en MCC a cada uno de los demás modelos con un valor $p$ ajustado de 0.003, salvo frente a Granite-4.1-3B con $N = 20$, donde fue de 0.010. Solo SmolLM2-1.7B-Instruct dejó lotes sin respuesta válida, 16 con $N = 30$ y 4 con $N = 20$, y contarlos como fallos cambió 7 de las 224 comparaciones por pares con $N = 30$ y 2 con $N = 20$, ninguna de Qwen3.5-9B en precisión, $F_1$ o MCC.
+Los modelos difirieron en las ocho métricas con ambos tamaños, con un valor $p$ ajustado menor que 0.001 en la prueba global. Qwen3.5-9B obtuvo el mayor MCC y la mayor AP con ambos tamaños; el intervalo del 95\,\% de su MCC fue de 0.26 a 0.37 con $N = 30$ y de 0.25 a 0.36 con $N = 20$, y la diferencia de su MCC frente a cada uno de los demás modelos fue significativa, con un valor $p$ ajustado de 0.003, salvo frente a Granite-4.1-3B con $N = 20$, donde fue de 0.010. Solo SmolLM2-1.7B-Instruct dejó lotes sin respuesta válida, 16 con $N = 30$ y 4 con $N = 20$, y contarlos como fallos cambió 7 de las 224 comparaciones por pares con $N = 30$ y 2 con $N = 20$, ninguna de Qwen3.5-9B en precisión, $F_1$ o MCC.
 
 \section{Consistencia al reducir el tamaño de lote}\label{sec:res_consistencia}
 
@@ -126,7 +124,7 @@ Llama-3.2-1B \textit{log-analyzer} & 129 & 429 & 0.03 & [0.00, 0.06] & 0.12 & 0.
 \normalsize
 \end{table}
 
-Con $N = 30$, el acuerdo superó al azar en todos los modelos, con un valor $p$ ajustado menor que 0.001, salvo el Llama-3.2-1B \textit{log-analyzer}, que lo superó con 0.007. En Ling-3.0-tiny, Ministral-3-3B y el Llama-3.2-1B \textit{log-analyzer}, sin embargo, esa significancia se debe más al gran número de lotes que a un acuerdo real, y su proporción alta de repetidas proviene de marcar casi todo como error. Los modelos difirieron entre sí en las cuatro métricas de consistencia, con un valor $p$ ajustado menor que 0.001, y 24 de las 28 comparaciones por pares del kappa fueron significativas; no se distinguieron SmolLM2-1.7B-Instruct de Gemma-3-4B, ni Ling-3.0-tiny, Ministral-3-3B y el Llama-3.2-1B \textit{log-analyzer} entre sí. Con 20 eventos por lote, el contexto se reduce aún más, y sus resultados se presentan en la tabla~\ref{tab:res_consistencia_n20}.
+Con $N = 30$, el acuerdo superó al azar en todos los modelos, con un valor $p$ ajustado menor que 0.001, salvo el Llama-3.2-1B \textit{log-analyzer}, que lo superó con 0.007. Los modelos difirieron entre sí en las cuatro métricas de consistencia, con un valor $p$ ajustado menor que 0.001, y 24 de las 28 comparaciones por pares del kappa fueron significativas; no se distinguieron SmolLM2-1.7B-Instruct de Gemma-3-4B, ni Ling-3.0-tiny, Ministral-3-3B y el Llama-3.2-1B \textit{log-analyzer} entre sí. En la tabla~\ref{tab:res_consistencia_n20} se presentan los resultados con $N = 20$.
 
 \begin{table}[H]
 \centering
@@ -153,15 +151,13 @@ Llama-3.2-1B \textit{log-analyzer} & 116 & 3\,073 & 0.00 & [0.00, 0.01] & 0.33 &
 \normalsize
 \end{table}
 
-Con $N = 20$, el acuerdo superó al azar en seis modelos, con un valor $p$ ajustado menor que 0.001, pero no en Ministral-3-3B ni en el Llama-3.2-1B \textit{log-analyzer} (valores $p$ de 1.0 y 0.24), cuyas respuestas con 20 eventos no guardan relación con las de 50. Los modelos también difirieron en las cuatro métricas, y como las 28 comparaciones por pares del kappa fueron significativas, el orden es estricto: Granite-4.1-3B, Phi-3.5-mini, Qwen3.5-9B, Gemma-3-4B, SmolLM2-1.7B-Instruct, Ling-3.0-tiny, Llama-3.2-1B \textit{log-analyzer} y Ministral-3-3B.
-
-Con ambos tamaños, ningún modelo conservó por completo su clasificación, y se distinguen tres comportamientos. Granite-4.1-3B fue el más consistente: repitió la mayoría de sus alertas, y casi todas sus alertas con lotes pequeños coincidieron con una de $N = 50$. Qwen3.5-9B, el mejor frente al \textit{ground truth}, solo concordó moderadamente consigo mismo: emitió un número parecido de alertas, pero sobre lotes distintos. Phi-3.5-mini y Gemma-3-4B, por su parte, emitieron muchas menos alertas con menos contexto, aunque las que mantuvieron coincidieron en su mayoría con una alerta de $N = 50$. Además, los lotes pequeños multiplican las llamadas al modelo por 1.7 con $N = 30$ y por 2.5 con $N = 20$.
+Con $N = 20$, el acuerdo superó al azar en seis modelos, con un valor $p$ ajustado menor que 0.001, pero no en Ministral-3-3B ni en el Llama-3.2-1B \textit{log-analyzer} (valores $p$ de 1.0 y 0.24). Los modelos también difirieron en las cuatro métricas, y como las 28 comparaciones por pares del kappa fueron significativas, el orden es estricto: Granite-4.1-3B, Phi-3.5-mini, Qwen3.5-9B, Gemma-3-4B, SmolLM2-1.7B-Instruct, Ling-3.0-tiny, Llama-3.2-1B \textit{log-analyzer} y Ministral-3-3B. Con ambos tamaños, los lotes pequeños multiplicaron las llamadas al modelo por 1.7 con $N = 30$ y por 2.5 con $N = 20$.
 
 \figpendiente{fig:res_kappa}{Kappa de Cohen de cada modelo con $N = 30$ y $N = 20$ frente a sus respuestas con $N = 50$.}{Gráfico de puntos con barras de error: un renglón por modelo, ordenado por kappa; dos marcadores por modelo ($N = 30$ y $N = 20$) con su intervalo del 95\,\%; línea vertical en kappa = 0 (azar). Datos en \texttt{analysis/significance/self\_consistency\_\_n30} y \texttt{\_\_n20}.}
 
 \section{Efecto del ajuste fino}\label{sec:res_ajuste}
 
-La comparación del modelo Qwen3.5-9B, el cual su evaluación presentó el mejor balance entre falsas alarmas y detección de errores, y su versión ajustada con LoRA, se hizo sobre los 892 lotes de la parte de prueba de la tabla~\ref{tab:met_particion}, de los cuales 29 contienen un error; como esa proporción es del 3.3\,\%, la AP de referencia de un clasificador al azar en esta parte es 0.033, en lugar del 0.029 del corpus completo. En la tabla~\ref{tab:res_ajuste} se presentan los resultados de ambos modelos, con su respuesta directa y con el umbral sobre la probabilidad de error elegido en la validación.
+Para evaluar el ajuste fino se comparó Qwen3.5-9B, el modelo con el mayor MCC en la evaluación con lotes de 50 eventos, con su versión ajustada con QLoRA. La comparación se hizo sobre los 892 lotes de la parte de prueba de la tabla~\ref{tab:met_particion}, de los cuales 29 contienen un error. Como esa proporción es del 3.3\,\%, la AP de un clasificador al azar en esta parte es 0.033, en lugar del 0.029 del corpus completo. En la tabla~\ref{tab:res_ajuste} se presentan los resultados de ambos modelos, con su respuesta directa y con el umbral sobre la probabilidad de error elegido en la validación.
 
 \begin{table}[H]
 \centering
@@ -182,17 +178,17 @@ Ajustado con umbral & 0.978 & 1 & 4 & 0.96 & 0.86 & 0.91 & 0.93 & 0.91 [0.84, 0.
 \normalsize
 \end{table}
 
-La diferencia principal entre ambos modelos está en las falsas alarmas: con el modelo base, cuatro de cada cinco alertas eran falsas, mientras que con el ajustado casi todas correspondieron a errores reales, a cambio de un error omitido más. La prueba global rechazó la igualdad en precisión, $F_1$, exactitud, especificidad y MCC, con un valor $p$ ajustado menor que 0.001, pero no en \textit{recall}, \textit{balanced accuracy} ni AUC. En las comparaciones por pares, el modelo ajustado superó al base en esas cinco métricas, todas con un valor $p$ ajustado menor que 0.001.
+La prueba global rechazó la igualdad en precisión, $F_1$, exactitud, especificidad y MCC, con un valor $p$ ajustado menor que 0.001, pero no en \textit{recall}, \textit{balanced accuracy} ni AUC. En la comparación por pares entre el modelo ajustado y el base, la diferencia fue significativa en esas cinco métricas, todas con un valor $p$ ajustado menor que 0.001.
 
-El umbral también mejoró de forma significativa al modelo base, con un valor $p$ ajustado menor que 0.001 en MCC. Frente a esa variante, en cambio, la ventaja del ajustado en MCC no fue significativa (valor $p$ ajustado de 0.20), y tampoco la del \textit{recall}; con solo 29 errores, la prueba tiene poca potencia para diferencias de ese tamaño. Aun así, el ajustado omitió menos errores sin necesitar un umbral calibrado, y los dos errores que siguió omitiendo también los omitió el modelo base con umbral. Al modelo ajustado, en cambio, el umbral no le favoreció: perdió dos errores sin ganar precisión.
+Entre el modelo base con umbral y el modelo base con su respuesta directa, la diferencia de MCC fue significativa, con un valor $p$ ajustado menor que 0.001. Entre el modelo ajustado y el modelo base con umbral, la diferencia de MCC no fue significativa (valor $p$ ajustado de 0.20), ni tampoco la de \textit{recall}. Los dos errores que el modelo ajustado siguió omitiendo también los omitió el modelo base con umbral.
 
-La AP de ambos modelos es casi igual, y sus curvas de precisión-\textit{recall} prácticamente se superponen, como se observa en la figura~\ref{fig:res_pr_ajuste}. El modelo base ya ordenaba bien los lotes por su probabilidad de error, y lo que cambió con el ajuste fino fue la decisión sí o no.
+La AP de ambos modelos es casi igual, y sus curvas de precisión-\textit{recall} prácticamente se superponen, como se observa en la figura~\ref{fig:res_pr_ajuste}.
 
 \figpendiente{fig:res_pr_ajuste}{Curvas de precisión-\textit{recall} de Qwen3.5-9B base y ajustado sobre los lotes de prueba.}{Dos curvas superpuestas (base, AP = 0.916; ajustado, AP = 0.936) con la línea del azar (0.033) y los puntos de operación de las cuatro variantes de la tabla anterior. Ya existe una versión en \texttt{analysis/finetune/test\_split/pr\_curves.png}.}
 
 \section{Simulación en flujo continuo con errores inyectados}\label{sec:res_simulacion}
 
-La simulación pasó del clasificador al sistema completo: el \textit{pipeline} leyó por HTTP un flujo de 4\,549 lotes con 216 incidentes inyectados y los analizó con Qwen3.5-9B base y ajustado, con cada uno de los 18 métodos de caché. Ninguna de las ejecuciones tuvo respuestas inválidas. Los resultados se presentan en cuatro partes: la detección en el flujo completo, la comparación entre ambos modelos en los lotes de prueba, la dependencia del SLM y la latencia.
+En la simulación, el \textit{pipeline} completo leyó por HTTP un flujo de 4\,549 lotes con 216 incidentes inyectados y los analizó con Qwen3.5-9B base y ajustado, con cada uno de los 18 métodos de caché. Ninguna de las ejecuciones tuvo respuestas inválidas. Los resultados se presentan en cuatro partes: la detección en el flujo completo, la comparación entre ambos modelos en los lotes de prueba, la dependencia del SLM y la latencia.
 
 \subsection{Detección en el flujo completo}
 
@@ -272,10 +268,6 @@ Vía rápida & exacta & 201 & 7 & 54 & 0.79 & 0.931 & 0.959 & 0.85 & 39.5 \\
 \normalsize
 \end{table}
 
-Con el modelo ajustado, la caché por evento dio prácticamente el mismo resultado que el SLM solo con todos sus umbrales, pero enviando al modelo muchos menos lotes; con el umbral de 0.90, uno de cada 17. Con el modelo base, la misma caché eliminó la mayor parte de sus falsas alarmas a costa de unos pocos incidentes, porque los lotes normales que repiten eventos ya conocidos no llegan al SLM, aunque su MCC quedó por debajo del ajustado. Los incidentes omitidos en la caché con similitud son lotes de error cuyos eventos se parecen, por encima del umbral, a eventos del tráfico normal; con el modelo ajustado, sin embargo, la detección total fue la misma que con el SLM solo, de modo que la caché no le restó incidentes.
-
-La caché por lote solo conservó la detección del SLM solo con los umbrales más altos, en los que envía al modelo más de la mitad de los lotes. Con umbrales más bajos, un lote de error completo se parece lo bastante a un lote normal guardado para heredar su respuesta normal, de ahí las pérdidas con 0.90 y 0.95. Con el modelo base, además, la caché por lote heredó sus falsas alarmas, porque reutiliza sus respuestas. La vía rápida, por último, agregó pocas detecciones y, con el ajustado, aumentó las falsas alarmas, porque cualquier lote con un evento sospechoso dispara la alerta sin consultar al SLM.
-
 \figpendiente{fig:res_sim_tradeoff}{Detección y falsas alarmas frente a la proporción de lotes enviados al SLM.}{Dos paneles (base y ajustado): eje horizontal, porcentaje de lotes enviados al SLM; eje vertical, incidentes detectados (o falsas alarmas); un punto por configuración, con color por método (caché por lote, por evento, vía rápida) y el SLM solo como referencia en 100\,\%. Ya existen versiones: \texttt{tradeoff\_slm\_share\_vs\_detection.png} y \texttt{tradeoff\_slm\_share\_vs\_false\_alarms.png} (carpeta \texttt{report} del experimento de simulación).}
 
 \subsection{Modelo base frente al ajustado en los lotes de prueba}
@@ -284,36 +276,34 @@ El flujo recorre todo el corpus, de modo que 129 de los 216 incidentes y 616 lot
 
 \begin{table}[H]
 \centering
-\caption{Modelo base y ajustado sobre los 912 lotes de prueba del flujo (49 incidentes). Det.: incidentes detectados; FA: falsas alarmas; Bal. acc.: \textit{balanced accuracy}; Uso SLM: lotes enviados al modelo; $p$: valor $p$ ajustado de la diferencia de MCC entre ambos modelos en cada configuración.}
+\caption{Modelo base y ajustado sobre los 912 lotes de prueba del flujo (49 incidentes). Det.: incidentes detectados; FA: falsas alarmas; Bal. acc.: \textit{balanced accuracy}; Uso SLM: lotes enviados al modelo.}
 \label{tab:res_sim_prueba}
 \footnotesize
 \setlength{\tabcolsep}{3pt}
-\begin{tabular}{@{}llrrrrrrrc@{}}
+\begin{tabular}{@{}llrrrrrrr@{}}
 \toprule
-\textbf{Configuración} & \textbf{Modelo} & \textbf{Det.} & \textbf{FA} & \textbf{Precisión} & \textbf{Recall} & \textbf{Bal. acc.} & \textbf{MCC} & \textbf{Uso SLM} & \textbf{$p$} \\
+\textbf{Configuración} & \textbf{Modelo} & \textbf{Det.} & \textbf{FA} & \textbf{Precisión} & \textbf{Recall} & \textbf{Bal. acc.} & \textbf{MCC} & \textbf{Uso SLM} \\
 \midrule
-\multirow{2}{*}{SLM solo} & Base & 47 & 94 & 0.33 & 0.96 & 0.93 & 0.53 & 100\,\% & \multirow{2}{*}{$<$0.001} \\
- & Ajustado & 46 & 1 & 0.98 & 0.94 & 0.97 & 0.96 & 100\,\% & \\
-\multirow{2}{*}{Caché por lote 0.99} & Base & 47 & 85 & 0.36 & 0.96 & 0.93 & 0.55 & 55\,\% & \multirow{2}{*}{$<$0.001} \\
- & Ajustado & 46 & 1 & 0.98 & 0.94 & 0.97 & 0.96 & 54\,\% & \\
-\multirow{2}{*}{Caché por evento exacta} & Base & 47 & 66 & 0.42 & 0.96 & 0.94 & 0.60 & 46\,\% & \multirow{2}{*}{$<$0.001} \\
- & Ajustado & 46 & 1 & 0.98 & 0.94 & 0.97 & 0.96 & 45\,\% & \\
-\multirow{2}{*}{Caché por evento 0.97} & Base & 46 & 12 & 0.79 & 0.94 & 0.96 & 0.86 & 11\,\% & \multirow{2}{*}{0.006} \\
- & Ajustado & 46 & 1 & 0.98 & 0.94 & 0.97 & 0.96 & 9\,\% & \\
-\multirow{2}{*}{Caché por evento 0.85} & Base & 46 & 4 & 0.92 & 0.94 & 0.97 & 0.93 & 6\,\% & \multirow{2}{*}{1.0} \\
- & Ajustado & 46 & 1 & 0.98 & 0.94 & 0.97 & 0.96 & 5\,\% & \\
-\multirow{2}{*}{Vía rápida exacta} & Base & 47 & 93 & 0.34 & 0.96 & 0.93 & 0.53 & 42\,\% & \multirow{2}{*}{$<$0.001} \\
- & Ajustado & 46 & 15 & 0.75 & 0.94 & 0.96 & 0.83 & 42\,\% & \\
+\multirow{2}{*}{SLM solo} & Base & 47 & 94 & 0.33 & 0.96 & 0.93 & 0.53 & 100\,\% \\
+ & Ajustado & 46 & 1 & 0.98 & 0.94 & 0.97 & 0.96 & 100\,\% \\
+\multirow{2}{*}{Caché por lote 0.99} & Base & 47 & 85 & 0.36 & 0.96 & 0.93 & 0.55 & 55\,\% \\
+ & Ajustado & 46 & 1 & 0.98 & 0.94 & 0.97 & 0.96 & 54\,\% \\
+\multirow{2}{*}{Caché por evento exacta} & Base & 47 & 66 & 0.42 & 0.96 & 0.94 & 0.60 & 46\,\% \\
+ & Ajustado & 46 & 1 & 0.98 & 0.94 & 0.97 & 0.96 & 45\,\% \\
+\multirow{2}{*}{Caché por evento 0.97} & Base & 46 & 12 & 0.79 & 0.94 & 0.96 & 0.86 & 11\,\% \\
+ & Ajustado & 46 & 1 & 0.98 & 0.94 & 0.97 & 0.96 & 9\,\% \\
+\multirow{2}{*}{Caché por evento 0.85} & Base & 46 & 4 & 0.92 & 0.94 & 0.97 & 0.93 & 6\,\% \\
+ & Ajustado & 46 & 1 & 0.98 & 0.94 & 0.97 & 0.96 & 5\,\% \\
+\multirow{2}{*}{Vía rápida exacta} & Base & 47 & 93 & 0.34 & 0.96 & 0.93 & 0.53 & 42\,\% \\
+ & Ajustado & 46 & 15 & 0.75 & 0.94 & 0.96 & 0.83 & 42\,\% \\
 \bottomrule
 \end{tabular}
 \normalsize
 \end{table}
 
-Con el SLM solo, el modelo ajustado superó al base en precisión, especificidad (de 0.89 a 0.999), $F_1$ (de 0.50 a 0.96), \textit{balanced accuracy} y MCC, todas con un valor $p$ ajustado menor que 0.001. No hubo diferencia significativa en \textit{recall} (valor $p$ de 1.0) ni en AUC, 0.989 frente a 0.985 (valor $p$ de 0.78). Es decir, en el flujo el ajuste fino tampoco detectó más errores ni los ordenó mejor, sino que eliminó casi todas las falsas alarmas, como en la evaluación de la sección~\ref{sec:res_ajuste}.
+Con el SLM solo, la prueba de permutación rechazó la igualdad entre ambos modelos en precisión, especificidad, $F_1$, \textit{balanced accuracy} y MCC, con un valor $p$ ajustado menor que 0.001, y no la rechazó en \textit{recall} ni en AUC. Con caché, la diferencia de MCC entre ambos modelos fue significativa en todas las configuraciones, salvo con la caché por evento de 0.85 y de 0.90 y con la caché por lote de 0.90. Con todos los umbrales de la caché por evento y con la caché por lote de 0.99 y 0.995, el modelo ajustado mantuvo en estos lotes el mismo MCC que sin caché, con entre el 5\,\% y el 54\,\% de las llamadas al SLM.
 
-La última columna de la tabla indica en qué configuraciones la diferencia de MCC entre ambos modelos es significativa. Entre las que no aparecen en ella, el ajustado también fue significativamente mejor con la caché por lote de 0.95 a 0.98, con la caché por evento de 0.95 a 0.995 y con las otras dos variantes de la vía rápida, pero no con la caché por evento de 0.90 ni con la caché por lote de 0.90. La diferencia desaparece con la caché por evento de umbral bajo porque con umbrales bajos la caché por evento responde normal a la mayoría de los lotes y absorbe casi todas las falsas alarmas del base, que alcanza un MCC de 0.91 a 0.93. Con todos los umbrales de la caché por evento y con la caché por lote de 0.99 y 0.995, el modelo ajustado obtuvo en los lotes de prueba el mismo MCC que sin caché, 0.956, con entre el 5\,\% y el 54\,\% de las llamadas al SLM.
-
-Sobre el flujo completo, las diferencias tuvieron la misma dirección en todas las configuraciones. Tampoco se observó que los lotes de entrenamiento inflaran el resultado del ajustado: su MCC fue de 0.93 en los lotes del flujo que provienen del entrenamiento y de 0.96 en los de prueba, y esta última cifra coincide con la de la evaluación de la sección~\ref{sec:res_ajuste}.
+Sobre el flujo completo, las diferencias tuvieron la misma dirección en todas las configuraciones. El MCC del modelo ajustado fue de 0.93 en los lotes del flujo que provienen de su entrenamiento y de 0.96 en los de prueba, y esta última cifra coincide con la de la evaluación de la sección~\ref{sec:res_ajuste}.
 
 \subsection{Dependencia del SLM a lo largo del flujo}
 
@@ -326,9 +316,9 @@ A medida que la caché guarda vectores o claves, más lotes pueden resolverse si
 \label{fig:res_sim_crecimiento}
 \end{figure}
 
-La dependencia del SLM bajó a lo largo del flujo en todos los métodos de caché, y sobre todo en la caché por evento con similitud: con el umbral de 0.97 y el modelo ajustado, pasó del 24\,\% de los lotes en la primera ventana al 8\,\% en los últimos 949 lotes. La caché por lote y la caché por evento exacta oscilan entre ventanas, mientras que la caché por evento con umbral bajo se mantiene estable desde las primeras ventanas. Con el modelo ajustado, la caché por evento arrancó más baja que con el base, porque marca menos lotes como error y deja, por tanto, menos eventos sospechosos. Al terminar el flujo, la caché con más vectores guardaba 5\,977, que ocupan unos 12~MB.
+La dependencia del SLM bajó a lo largo del flujo en todos los métodos de caché, y sobre todo en la caché por evento con similitud: con el umbral de 0.97 y el modelo ajustado, pasó del 24\,\% de los lotes en la primera ventana al 8\,\% en los últimos 949 lotes. La caché por lote y la caché por evento exacta oscilan entre ventanas, mientras que la caché por evento con umbral bajo se mantiene estable desde las primeras ventanas. Con el modelo ajustado, la caché por evento arrancó más baja que con el base. Al terminar el flujo, la caché con más vectores guardaba 5\,977, que ocupan unos 12~MB.
 
-La detección también se comparó entre la primera y la segunda aparición del mismo lote de error. Con el SLM solo y con la caché por evento fue la misma en ambas apariciones (95.4\,\% y 94.2\,\% con el base, 93.1\,\% y 93.0\,\% con el ajustado), porque la caché por evento nunca emite una alerta por sí sola y la segunda aparición vuelve a pasar por el SLM. Con la vía rápida, entre 80 y 81 de las 86 segundas apariciones se alertaron desde la caché, y con la caché por lote de 0.97 a 0.99, entre 69 y 79 se resolvieron reutilizando la respuesta de la primera.
+La detección también se comparó entre la primera y la segunda aparición del mismo lote de error. Con el SLM solo y con la caché por evento fue la misma en ambas apariciones (95.4\,\% y 94.2\,\% con el base, 93.1\,\% y 93.0\,\% con el ajustado). Con la vía rápida, entre 80 y 81 de las 86 segundas apariciones se alertaron desde la caché, y con la caché por lote de 0.97 a 0.99, entre 69 y 79 se resolvieron reutilizando la respuesta de la primera.
 
 \subsection{Latencia de detección}
 
@@ -355,7 +345,7 @@ Envío de la alerta & $<$0.001 / 0.001 & $<$0.001 / 0.001 \\
 
 El retardo del \textit{pipeline} fue de segundos. La mayoría de los lotes se resolvió en la caché en menos de una décima de segundo, y los que pasaron al SLM tardaron unos 3~segundos con el modelo ajustado y unos 7 con el base; como la caché por evento solo responde que un lote es normal, todas las alertas siguieron esta segunda ruta. El envío de la alerta tardó menos de 1~ms. Para estimar la espera en cola con el tráfico real, los 223\,104 eventos se ordenaron por su marca de tiempo, se agruparon de 50 en 50 y se pasaron por el modelo de colas con los tiempos de proceso medidos, limitados a 30~segundos: con la caché ningún lote esperó, y aun con el SLM solo el equipo estuvo ocupado menos del 2\,\% del tiempo y solo 5 lotes con el modelo base y 3 con el ajustado esperaron en cola, como máximo 12.5 y 3.7~segundos.
 
-El llenado del lote, en cambio, varió de alrededor de un minuto a varias horas según el momento del día, como se muestra en la figura~\ref{fig:res_latencia_hora}. Como el lote se cierra al llegar su evento 50, cuanto menos eventos llegan por hora, más tarda en completarse. El tráfico del servicio se concentró de lunes a viernes entre las 8 y las 17~horas, con 690 a 1\,880 eventos por hora en promedio, y en ese horario un lote se llenó en una mediana de 1 a 2~minutos; el valor más alto de ese rango corresponde a las 13 y 14~horas, cuando el tráfico bajó a entre 690 y 950 eventos por hora. Desde las 18~horas el tráfico cayó a entre 100 y 250 eventos por hora y la mediana del llenado subió a entre 6 y 16~minutos, y de madrugada, con 40 a 90 eventos por hora, a entre 20 y 56~minutos. Los fines de semana se registraron muy pocos eventos, de modo que sus 120 lotes tardaron una mediana de 30~minutos en llenarse, frente a 1.2~minutos los 4\,342 lotes de días laborables, y el lote más lento tardó unas 9~horas. El ritmo promedio de 0.179 eventos por segundo, con el que un lote se llenaría en unos 4.7~minutos, no representa ninguno de estos dos regímenes. En consecuencia, en horario laboral la alerta llega uno o dos minutos después del primer evento del incidente, mientras que de noche y en fines de semana puede tardar de decenas de minutos a horas, sin que cambie el retardo del \textit{pipeline}.
+El llenado del lote, en cambio, varió de alrededor de un minuto a varias horas según el momento del día, como se muestra en la figura~\ref{fig:res_latencia_hora}. Como el lote se cierra al llegar su evento 50, cuanto menos eventos llegan por hora, más tarda en completarse. El tráfico del servicio se concentró de lunes a viernes entre las 8 y las 17~horas, con 690 a 1\,880 eventos por hora en promedio, y en ese horario un lote se llenó en una mediana de 1 a 2~minutos; el valor más alto de ese rango corresponde a las 13 y 14~horas, cuando el tráfico bajó a entre 690 y 950 eventos por hora. Desde las 18~horas el tráfico cayó a entre 100 y 250 eventos por hora y la mediana del llenado subió a entre 6 y 16~minutos, y de madrugada, con 40 a 90 eventos por hora, a entre 20 y 56~minutos. Los fines de semana se registraron muy pocos eventos, de modo que sus 120 lotes tardaron una mediana de 30~minutos en llenarse, frente a 1.2~minutos los 4\,342 lotes de días laborables, y el lote más lento tardó unas 9~horas. Con el ritmo promedio de 0.179 eventos por segundo, un lote se llenaría en unos 4.7~minutos.
 
 \begin{figure}[H]
 \centering
@@ -364,7 +354,7 @@ El llenado del lote, en cambio, varió de alrededor de un minuto a varias horas 
 \label{fig:res_latencia_hora}
 \end{figure}
 
-La caché no acortó la latencia al ritmo real, pero sí amplió la capacidad del \textit{pipeline}, es decir, el ritmo de llegada que puede atender sin que la cola crezca. Con el SLM solo, el modelo base atiende hasta unos 9 eventos por segundo y el ajustado unos 19; con la caché por evento de 0.90, esa capacidad pasó de 77 a 104 eventos por segundo con el base y se mantuvo entre 221 y 228 con el ajustado entre el primer y el último tercio del flujo, a medida que la proporción de lotes enviados al SLM bajó. El tráfico real quedó por debajo de todas esas capacidades, con 1.26 eventos por segundo en su hora de más tráfico y 4.88 en su minuto de más tráfico. Por encima de la capacidad del SLM, la caché sí cambia la latencia: en el modo de ritmo fijo, a 20 eventos por segundo y con el modelo base, la cola creció durante toda la ejecución con el SLM solo y la latencia mediana llegó a 1\,777~segundos, mientras que con la caché por evento exacta bajó a 30.6~segundos, con la misma detección (55 de 59 incidentes) y menos falsas alarmas (66 frente a 117).
+La capacidad del \textit{pipeline} es el ritmo de llegada que puede atender sin que la cola crezca. Con el SLM solo, el modelo base atiende hasta unos 9 eventos por segundo y el ajustado unos 19; con la caché por evento de 0.90, esa capacidad pasó de 77 a 104 eventos por segundo con el base y se mantuvo entre 221 y 228 con el ajustado entre el primer y el último tercio del flujo, a medida que la proporción de lotes enviados al SLM bajó. El tráfico real quedó por debajo de todas esas capacidades, con 1.26 eventos por segundo en su hora de más tráfico y 4.88 en su minuto de más tráfico. En el modo de ritmo fijo, a 20 eventos por segundo y con el modelo base, la cola creció durante toda la ejecución con el SLM solo y la latencia mediana llegó a 1\,777~segundos, mientras que con la caché por evento exacta bajó a 30.6~segundos, con la misma detección (55 de 59 incidentes) y menos falsas alarmas (66 frente a 117).
 
 Estas mediciones a ritmo fijo sirvieron también para validar el modelo de colas. Con el SLM solo, el modelo predijo una latencia mediana de 1\,848~segundos frente a los 1\,777 medidos, un error del 3.8\,\%. Con la caché por evento exacta predijo 68.8~segundos frente a 30.6: a ese ritmo el equipo estuvo ocupado el 91\,\% del tiempo, y con tan poco tiempo libre la espera en cola cambia mucho ante diferencias pequeñas en el tiempo de proceso, como la que hubo entre los tiempos usados por el modelo, medidos en el modo de velocidad máxima, y los del modo de ritmo fijo (mediana de 5.10 frente a 4.86~segundos por lote del SLM). Con el modelo de colas a ritmos constantes, cuyos resultados se muestran en la figura~\ref{fig:res_sim_latencia}, el SLM solo se volvió inestable por encima de unos 9 eventos por segundo con el base y de unos 18 con el ajustado, mientras que con la caché por evento con similitud ambos modelos se mantuvieron estables hasta 30 eventos por segundo, el ajustado con los umbrales de 0.85 a 0.99 y el base con los de 0.85 a 0.97.
 
