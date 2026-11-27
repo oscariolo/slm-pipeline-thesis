@@ -332,59 +332,44 @@ La detección también se comparó entre la primera y la segunda aparición del 
 
 \subsection{Latencia de detección}
 
-La latencia se midió de extremo a extremo en el modo de ritmo fijo, a 20 eventos por segundo, con el modelo base en el equipo 2 y 59 incidentes, como se muestra en la tabla~\ref{tab:res_sim_latencia}. El envío de la alerta tardó menos de 1~ms en ambos casos.
+La latencia de detección es el tiempo que pasa desde que llega el primer evento de un lote con error hasta que se registra su alerta, y se compone de dos partes de naturaleza distinta. La primera es el llenado del lote, que depende del tráfico del servicio, porque el lote se cierra solo al llegar su evento 50. La segunda es el retardo del \textit{pipeline}, desde que el lote se cierra hasta que se envía la alerta, que incluye la espera en cola, el análisis por la caché o por el SLM y el envío. En la tabla~\ref{tab:res_sim_retardo} se presenta este retardo con la caché por evento de 0.90 y ambos modelos, medido por lote en la simulación.
 
 \begin{table}[H]
 \centering
-\caption{Latencia medida a 20 eventos por segundo, modelo base (1\,259 lotes, 59 incidentes). Latencia y partes en segundos.}
-\label{tab:res_sim_latencia}
+\caption{Retardo del pipeline desde el cierre del lote hasta el envío de la alerta, con la caché por evento de 0.90, en segundos (mediana / percentil 95). El modelo base corrió en el equipo 2 y el ajustado en el equipo 1.}
+\label{tab:res_sim_retardo}
 \footnotesize
-\setlength{\tabcolsep}{4pt}
-\resizebox{\textwidth}{!}{\begin{tabular}{@{}lrrrrcc@{}}
+\setlength{\tabcolsep}{5pt}
+\begin{tabular}{@{}lcc@{}}
 \toprule
-\textbf{Método} & \textbf{Detectados} & \textbf{FA} & \textbf{MCC} & \textbf{Al SLM} & \textbf{Latencia mediana / p95 / máx.} & \textbf{Llenado / cola / análisis} \\
+\textbf{Etapa} & \textbf{Modelo base} & \textbf{Modelo ajustado} \\
 \midrule
-SLM solo & 55 (93.2\,\%) & 117 & 0.51 & 100\,\% & 1\,777 / 3\,210 / 3\,355 & 2.5 / 1\,768 / 7.5 \\
-Caché por evento exacta & 55 (93.2\,\%) & 66 & 0.63 & 42.0\,\% & 30.6 / 108.8 / 137.8 & 2.5 / 20.5 / 7.5 \\
-\bottomrule
-\end{tabular}}
-\normalsize
-\end{table}
-
-La diferencia entre ambos métodos está en la cola. En el equipo 2, el modelo base tardó unos 5.5~segundos por lote, lo que equivale a una capacidad de unos 9 eventos por segundo, menor que el ritmo de llegada. Con el SLM solo, la cola creció durante toda la ejecución, y la mediana de la latencia llegó a unos 30 minutos. Con la caché por evento exacta, menos de la mitad de los lotes fue al SLM, de modo que la cola se mantuvo corta y la latencia mediana fue 58 veces menor, con la misma detección y menos falsas alarmas.
-
-Estas mediciones sirvieron para validar el modelo de colas. Con el SLM solo, el modelo predijo una latencia mediana de 1\,848~segundos frente a los 1\,777 medidos, un error del 3.8\,\%. Con la caché por evento exacta predijo 68.8~segundos frente a 30.6, porque a ese ritmo el equipo trabajaba al 91\,\% de su capacidad, y cerca de la saturación la cola es muy sensible a pequeñas diferencias en los tiempos de proceso. En la tabla~\ref{tab:res_sim_colas} se presenta la latencia calculada para los demás ritmos y métodos.
-
-\begin{table}[H]
-\centering
-\caption{Latencia mediana calculada con el modelo de colas, en segundos (base / ajustado). Inest.: la cola crece sin límite, porque el tiempo medio de proceso supera el intervalo entre lotes.}
-\label{tab:res_sim_colas}
-\footnotesize
-\setlength{\tabcolsep}{4pt}
-\begin{tabular}{@{}lccccc@{}}
-\toprule
-\textbf{Método} & \textbf{0.2 ev/s (real)} & \textbf{5 ev/s} & \textbf{10 ev/s} & \textbf{20 ev/s} & \textbf{30 ev/s} \\
-\midrule
-SLM solo & 253 / 248 & 17.5 / 12.8 & inest. / 7.9 & inest. / inest. & inest. / inest. \\
-Caché por lote 0.98 & 252 / 248 & 16.5 / 12.7 & 11.6 / 7.8 & 10.2 / 5.4 & 98 / 4.7 \\
-Caché por lote 0.99 & 252 / 248 & 17.1 / 12.8 & 12.5 / 7.9 & inest. / 5.7 & inest. / 32 \\
-Caché por lote 0.995 & 253 / 248 & 17.4 / 13.1 & 19.9 / 8.2 & inest. / inest. & inest. / inest. \\
-Caché por evento exacta & 253 / 248 & 17.5 / 12.8 & 12.8 / 7.9 & inest. / 5.6 & inest. / 5.6 \\
-Caché por evento 0.99 & 253 / 249 & 17.6 / 13.3 & 12.8 / 8.4 & 15.5 / 6.0 & inest. / 5.4 \\
-Caché por evento 0.97 & 253 / 248 & 17.6 / 13.0 & 12.7 / 8.1 & 10.3 / 5.6 & 9.7 / 4.8 \\
-Caché por evento 0.85 & 253 / 248 & 17.6 / 12.9 & 12.7 / 8.0 & 10.2 / 5.5 & 9.5 / 4.7 \\
-Vía rápida exacta & 245 / 245 & 9.8 / 9.8 & 7.0 / 4.9 & 37 / 3.2 & inest. / 4.6 \\
-Vía rápida 0.995 & 245 / 246 & 10.0 / 10.7 & 6.7 / 5.8 & 19 / 4.8 & inest. / 5.4 \\
-Vía rápida 0.99 & 245 / 246 & 9.9 / 10.5 & 5.0 / 5.6 & 8.1 / 3.2 & 86 / 4.0 \\
+Espera en cola & 0 / 0 & 0 / 0 \\
+Análisis por la caché (92.5\,\% y 94.2\,\% de los lotes) & 0.009 / 0.022 & 0.056 / 0.085 \\
+Análisis por el SLM (7.5\,\% y 5.8\,\% de los lotes) & 7.3 / 9.6 & 3.1 / 3.4 \\
+Envío de la alerta & $<$0.001 / 0.001 & $<$0.001 / 0.001 \\
 \bottomrule
 \end{tabular}
 \normalsize
 \end{table}
 
-La tabla muestra dos situaciones. Al ritmo real del servicio, la latencia es casi igual con cualquier método, porque está dominada por el llenado del lote: el incidente ocupa el lote completo, y la alerta solo puede llegar después de sus 50 eventos. La vía rápida gana unos segundos porque alerta en cuanto se cierra el lote, sin esperar al modelo. A ritmos mayores, la diferencia la marca la capacidad del SLM: el ajustado, con 2.7~segundos por lote en el equipo 1, soporta hasta unos 18 eventos por segundo, y el base en el equipo 2, con 5.5~segundos, hasta unos 9; por encima de esos ritmos, la cola crece sin límite. Con la caché por evento con similitud, ambos modelos se mantuvieron estables hasta 30 eventos por segundo, el ajustado con los umbrales de 0.85 a 0.99 y el base con los de 0.85 a 0.97, mientras que las cachés que más llaman al SLM se saturaron igual que el SLM solo.
+El retardo del \textit{pipeline} fue de segundos. La mayoría de los lotes se resolvió en la caché en menos de una décima de segundo, y los que pasaron al SLM tardaron unos 3~segundos con el modelo ajustado y unos 7 con el base; como la caché por evento solo responde que un lote es normal, todas las alertas siguieron esta segunda ruta. El envío de la alerta tardó menos de 1~ms. Para estimar la espera en cola con el tráfico real, los 223\,104 eventos se ordenaron por su marca de tiempo, se agruparon de 50 en 50 y se pasaron por el modelo de colas con los tiempos de proceso medidos, limitados a 30~segundos: con la caché ningún lote esperó, y aun con el SLM solo el equipo estuvo ocupado menos del 2\,\% del tiempo y solo 5 lotes con el modelo base y 3 con el ajustado esperaron en cola, como máximo 12.5 y 3.7~segundos.
+
+El llenado del lote, en cambio, varió de alrededor de un minuto a varias horas según el momento del día, como se muestra en la figura~\ref{fig:res_latencia_hora}. Como el lote se cierra al llegar su evento 50, cuanto menos eventos llegan por hora, más tarda en completarse. El tráfico del servicio se concentró de lunes a viernes entre las 8 y las 17~horas, con 690 a 1\,880 eventos por hora en promedio, y en ese horario un lote se llenó en una mediana de 1 a 2~minutos; el valor más alto de ese rango corresponde a las 13 y 14~horas, cuando el tráfico bajó a entre 690 y 950 eventos por hora. Desde las 18~horas el tráfico cayó a entre 100 y 250 eventos por hora y la mediana del llenado subió a entre 6 y 16~minutos, y de madrugada, con 40 a 90 eventos por hora, a entre 20 y 56~minutos. Los fines de semana se registraron muy pocos eventos, de modo que sus 120 lotes tardaron una mediana de 30~minutos en llenarse, frente a 1.2~minutos los 4\,342 lotes de días laborables, y el lote más lento tardó unas 9~horas. El ritmo promedio de 0.179 eventos por segundo, con el que un lote se llenaría en unos 4.7~minutos, no representa ninguno de estos dos regímenes. En consecuencia, en horario laboral la alerta llega uno o dos minutos después del primer evento del incidente, mientras que de noche y en fines de semana puede tardar de decenas de minutos a horas, sin que cambie el retardo del \textit{pipeline}.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.9\textwidth]{figs/resultados/latencia_por_hora.pdf}
+\caption{Tráfico de logs y tiempo de llenado del lote de 50 eventos según la hora del día (hora local del servicio). Arriba, eventos promedio por hora; abajo, tiempo de llenado de los lotes según la hora de llegada de su primer evento, en escala logarítmica, con su mediana y el rango entre el 25 y el 75\,\% de los lotes. La línea discontinua indica el llenado con el ritmo promedio del servicio.}
+\label{fig:res_latencia_hora}
+\end{figure}
+
+La caché no acortó la latencia al ritmo real, pero sí amplió la capacidad del \textit{pipeline}, es decir, el ritmo de llegada que puede atender sin que la cola crezca. Con el SLM solo, el modelo base atiende hasta unos 9 eventos por segundo y el ajustado unos 19; con la caché por evento de 0.90, esa capacidad pasó de 77 a 104 eventos por segundo con el base y se mantuvo entre 221 y 228 con el ajustado entre el primer y el último tercio del flujo, a medida que la proporción de lotes enviados al SLM bajó. El tráfico real quedó por debajo de todas esas capacidades, con 1.26 eventos por segundo en su hora de más tráfico y 4.88 en su minuto de más tráfico. Por encima de la capacidad del SLM, la caché sí cambia la latencia: en el modo de ritmo fijo, a 20 eventos por segundo y con el modelo base, la cola creció durante toda la ejecución con el SLM solo y la latencia mediana llegó a 1\,777~segundos, mientras que con la caché por evento exacta bajó a 30.6~segundos, con la misma detección (55 de 59 incidentes) y menos falsas alarmas (66 frente a 117).
+
+Estas mediciones a ritmo fijo sirvieron también para validar el modelo de colas. Con el SLM solo, el modelo predijo una latencia mediana de 1\,848~segundos frente a los 1\,777 medidos, un error del 3.8\,\%. Con la caché por evento exacta predijo 68.8~segundos frente a 30.6: a ese ritmo el equipo estuvo ocupado el 91\,\% del tiempo, y con tan poco tiempo libre la espera en cola cambia mucho ante diferencias pequeñas en el tiempo de proceso, como la que hubo entre los tiempos usados por el modelo, medidos en el modo de velocidad máxima, y los del modo de ritmo fijo (mediana de 5.10 frente a 4.86~segundos por lote del SLM). Con el modelo de colas a ritmos constantes, cuyos resultados se muestran en la figura~\ref{fig:res_sim_latencia}, el SLM solo se volvió inestable por encima de unos 9 eventos por segundo con el base y de unos 18 con el ajustado, mientras que con la caché por evento con similitud ambos modelos se mantuvieron estables hasta 30 eventos por segundo, el ajustado con los umbrales de 0.85 a 0.99 y el base con los de 0.85 a 0.97.
 
 
-\figpendiente{fig:res_sim_latencia}{Latencia mediana en función del ritmo de llegada de eventos.}{Eje horizontal, eventos por segundo (0.2, 5, 10, 20, 30, escala logarítmica); eje vertical, latencia mediana en segundos (escala logarítmica); una línea por método, marcando con un símbolo los ritmos inestables; un panel por modelo. Ya existen versiones en \texttt{report/latency\_vs\_rate\_\_qwen35.png} y \texttt{\_\_qwen35\_logft.png}.}
+\figpendiente{fig:res_sim_latencia}{Latencia mediana en función del ritmo de llegada de eventos.}{Eje horizontal, eventos por segundo (5, 10, 20, 30, escala logarítmica); eje vertical, latencia mediana en segundos (escala logarítmica); una línea por método, marcando con un símbolo los ritmos inestables; un panel por modelo. Ya existen versiones en \texttt{report/latency\_vs\_rate\_\_qwen35.png} y \texttt{\_\_qwen35\_logft.png}, que incluyen además el ritmo uniforme de 0.2 eventos por segundo.}
 
 \section{Notificación y recomendación}\label{sec:res_reaccion}
 
