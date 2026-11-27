@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="460pt" height="190pt" viewBox="0 0 460 190" font-family="Lato, 'Helvetica Neue', Arial, sans-serif">
+<title>Esquema de la simulación en flujo continuo</title>
+<defs><marker id="arr_222222" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5.5" markerHeight="5.5" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#222222"/></marker><marker id="arr_007A5E" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5.5" markerHeight="5.5" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#007A5E"/></marker></defs>
+<rect width="460" height="190" fill="#ffffff"/>
+<g id="servidor">
+  <rect x="6.0" y="14.0" width="128" height="64.0" rx="4" fill="#E3F4EF" stroke="#007A5E" stroke-width="0.9"/>
+  <text x="70.0" y="27.1" text-anchor="middle" font-size="8.2" font-weight="bold" fill="#222222">Servidor de logs local</text>
+  <text x="70.0" y="36.6" text-anchor="middle" font-size="7.0" fill="#555555">fondo: 4 333 lotes normales</text>
+  <text x="70.0" y="45.5" text-anchor="middle" font-size="7.0" fill="#555555">en texto crudo, orden original</text>
+  <text x="70.0" y="54.4" text-anchor="middle" font-size="7.0" fill="#555555">+ 1 lote con error completo</text>
+  <text x="70.0" y="63.3" text-anchor="middle" font-size="7.0" fill="#555555">cada 20 lotes, en un límite</text>
+  <text x="70.0" y="72.2" text-anchor="middle" font-size="7.0" fill="#555555">de lote: 216 incidentes en 4 549 lotes</text>
+</g>
+<g id="pipeline">
+  <rect x="188.0" y="18.4" width="120" height="55.1" rx="4" fill="#FDF3DF" stroke="#B07800" stroke-width="1.6"/>
+  <text x="248.0" y="31.5" text-anchor="middle" font-size="8.2" font-weight="bold" fill="#222222"><tspan font-style="italic">Pipeline</tspan> real</text>
+  <text x="248.0" y="41.0" text-anchor="middle" font-size="7.0" fill="#555555">prefiltro y enmascarado</text>
+  <text x="248.0" y="49.9" text-anchor="middle" font-size="7.0" fill="#555555">lotes de 50 eventos</text>
+  <text x="248.0" y="58.8" text-anchor="middle" font-size="7.0" fill="#555555">caché (18 configuraciones)</text>
+  <text x="248.0" y="67.8" text-anchor="middle" font-size="7.0" fill="#555555">SLM base o ajustado</text>
+</g>
+<g id="alertas">
+  <rect x="350.0" y="22.9" width="100" height="46.2" rx="4" fill="#FBE9DE" stroke="#C04A00" stroke-width="0.9"/>
+  <text x="400.0" y="36.0" text-anchor="middle" font-size="8.2" font-weight="bold" fill="#222222">Registro de alertas</text>
+  <text x="400.0" y="45.5" text-anchor="middle" font-size="7.0" fill="#555555">lote, respuesta, ruta</text>
+  <text x="400.0" y="54.4" text-anchor="middle" font-size="7.0" fill="#555555">(caché o SLM) e instante</text>
+  <text x="400.0" y="63.3" text-anchor="middle" font-size="7.0" fill="#555555">de cada alerta</text>
+</g>
+<path d="M 134.0 46.0 L 187.5 46.0" fill="none" stroke="#222222" stroke-width="0.9" marker-end="url(#arr_222222)"/>
+<text x="161.0" y="42.0" text-anchor="middle" font-size="6.6" fill="#555555">flujo HTTP</text>
+<text x="161.0" y="55.0" text-anchor="middle" font-size="6.2" fill="#555555">máx. o 20 ev/s</text>
+<path d="M 308.0 46.0 L 349.5 46.0" fill="none" stroke="#222222" stroke-width="0.9" marker-end="url(#arr_222222)"/>
+<g id="analisis">
+  <rect x="90.0" y="139.3" width="330" height="37.3" rx="4" fill="#F2F2F2" stroke="#666666" stroke-width="0.9"/>
+  <text x="255.0" y="152.4" text-anchor="middle" font-size="8.2" font-weight="bold" fill="#222222">Análisis por incidente y por lote</text>
+  <text x="255.0" y="161.9" text-anchor="middle" font-size="7.0" fill="#555555">detección con IC de Wilson, falsas alarmas, MCC, proporción de lotes enviados</text>
+  <text x="255.0" y="170.8" text-anchor="middle" font-size="7.0" fill="#555555">al SLM por ventanas de 200 lotes y latencia (medida o con el modelo de colas)</text>
+</g>
+<path d="M 70.0 78.0 L 70.0 158.0 L 89.5 158.0" fill="none" stroke="#007A5E" stroke-width="0.9" stroke-dasharray="3.5 2.2" marker-end="url(#arr_007A5E)"/>
+<text x="74.0" y="92.0" text-anchor="start" font-size="6.4" fill="#007A5E">plan de inyección</text>
+<text x="74.0" y="100.0" text-anchor="start" font-size="6.4" fill="#007A5E">e instante de emisión</text>
+<path d="M 400.0 69.1 L 400.0 138.8" fill="none" stroke="#222222" stroke-width="0.9" marker-end="url(#arr_222222)"/>
+</svg>

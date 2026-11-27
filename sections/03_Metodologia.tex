@@ -243,7 +243,12 @@ En esta variante, cada lote completo se convierte en un \textit{embedding}, y la
 
 En esta variante, la decisión ocurre evento a evento, con dos estados. Un evento pasa a ser \emph{normal conocido} cuando aparece en un lote que el SLM respondió como normal. Si el SLM marca un lote como error, sus eventos todavía desconocidos quedan como \emph{sospechosos}, porque el modelo no indica qué línea contiene el error y la caché asume que está entre los eventos nuevos. Un lote evita al SLM solo si todos sus eventos son normales conocidos; cualquier evento desconocido o sospechoso lo envía al modelo, y un evento sospechoso que luego aparece en un lote normal pasa a normal. En la variante exacta, la caché compara cada evento por su texto enmascarado sin la marca de tiempo y guarda las claves en memoria; en la variante por similitud, un evento nunca visto toma el estado del evento guardado más parecido si la similitud del coseno supera el umbral. La figura~\ref{fig:met_cache_evento} ilustra esta lógica.
 
-\figpendiente{fig:met_cache_evento}{Lógica de decisión de la caché por evento.}{Diagrama de decisión: lote nuevo $\rightarrow$ ¿todos los eventos son normales conocidos? (sí: respuesta ``normal'' sin SLM) $\rightarrow$ (no) ¿hay eventos desconocidos? (sí: consultar al SLM y actualizar estados) $\rightarrow$ (no, solo sospechosos) vía rápida: alerta sin SLM. Indicar cómo cambia el estado de un evento (desconocido, normal conocido, sospechoso).}
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{figs/metodologia/cache_evento.pdf}
+\caption{Lógica de decisión de la caché por evento.}
+\label{fig:met_cache_evento}
+\end{figure}
 
 \tema{Vía rápida}
 
@@ -337,7 +342,12 @@ El modelo ajustado y el modelo base fueron comparados solo sobre los 892 lotes d
 
 La evaluación por lotes mide la capacidad del modelo para clasificar, pero no cómo se comporta el sistema completo cuando los logs llegan en tiempo real. Para comprobarlo, la simulación inyectó errores reales del \textit{ground truth} en un flujo de logs que el \textit{pipeline} analizó en tiempo real, y midió la tasa de detección, la latencia desde que el error aparece hasta que sale la alerta y las falsas alarmas. La prueba permite verificar si, a medida que crece la base de \textit{embeddings}, el sistema depende menos del SLM para detectar los errores más rápido, y cuánto mejora el flujo con el SLM ajustado. La figura~\ref{fig:met_simulacion} muestra el esquema del experimento.
 
-\figpendiente{fig:met_simulacion}{Esquema de la simulación en flujo continuo.}{Servidor de logs local (fondo normal + un lote con error completo inyectado cada 20 lotes, en un límite de lote, con registro del instante de emisión) $\rightarrow$ flujo HTTP $\rightarrow$ \textit{pipeline} real (filtro, enmascarado, lotes de 50, caché, SLM base o ajustado) $\rightarrow$ registro de alertas con su instante.}
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{figs/metodologia/simulacion.pdf}
+\caption{Esquema de la simulación en flujo continuo.}
+\label{fig:met_simulacion}
+\end{figure}
 
 \subsection{Construcción del flujo}
 

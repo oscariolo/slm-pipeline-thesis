@@ -1,0 +1,77 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="508pt" height="318pt" viewBox="0 0 508 318" font-family="Lato, 'Helvetica Neue', Arial, sans-serif">
+<title>Lógica de decisión de la caché por evento</title>
+<defs><marker id="arr_222222" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5.5" markerHeight="5.5" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#222222"/></marker><marker id="arr_C04A00" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5.5" markerHeight="5.5" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#C04A00"/></marker><marker id="arr_007A5E" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5.5" markerHeight="5.5" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#007A5E"/></marker></defs>
+<rect width="508" height="318" fill="#ffffff"/>
+<g id="lote">
+  <rect x="55.0" y="5.4" width="190" height="37.3" rx="4" fill="#FDF3DF" stroke="#B07800" stroke-width="0.9"/>
+  <text x="150.0" y="18.4" text-anchor="middle" font-size="8.2" font-weight="bold" fill="#222222">Lote nuevo de 50 eventos</text>
+  <text x="150.0" y="27.9" text-anchor="middle" font-size="7.0" fill="#555555">cada evento toma su estado: por texto (exacta)</text>
+  <text x="150.0" y="36.9" text-anchor="middle" font-size="7.0" fill="#555555">o del vecino más parecido (similitud)</text>
+</g>
+<g id="q_normales">
+  <path d="M 150 60.25 L 224.0 84 L 150 107.75 L 76.0 84 Z" fill="#F2F2F2" stroke="#666666" stroke-width="0.9"/>
+  <text x="150.0" y="82.4" text-anchor="middle" font-size="8.2" font-weight="bold" fill="#222222">¿Todos los eventos</text>
+  <text x="150.0" y="92.4" text-anchor="middle" font-size="8.2" font-weight="bold" fill="#222222">son normales conocidos?</text>
+</g>
+<g id="q_desconocidos">
+  <path d="M 150 132.25 L 224.0 156 L 150 179.75 L 76.0 156 Z" fill="#F2F2F2" stroke="#666666" stroke-width="0.9"/>
+  <text x="150.0" y="154.3" text-anchor="middle" font-size="8.2" font-weight="bold" fill="#222222">¿Hay eventos</text>
+  <text x="150.0" y="164.3" text-anchor="middle" font-size="8.2" font-weight="bold" fill="#222222">desconocidos?</text>
+</g>
+<g id="q_via_rapida">
+  <path d="M 150 204.8 L 224.0 228 L 150 251.2 L 76.0 228 Z" fill="#F2F2F2" stroke="#666666" stroke-width="0.9" stroke-dasharray="4 2.5"/>
+  <text x="150.0" y="226.9" text-anchor="middle" font-size="8.2" font-weight="bold" fill="#222222">¿Vía rápida activa?</text>
+  <text x="150.0" y="236.4" text-anchor="middle" font-size="7.0" fill="#555555">(solo quedan sospechosos)</text>
+</g>
+<g id="resp_normal">
+  <rect x="285.0" y="69.8" width="120" height="28.4" rx="4" fill="#E3F4EF" stroke="#007A5E" stroke-width="0.9"/>
+  <text x="345.0" y="82.9" text-anchor="middle" font-size="8.2" font-weight="bold" fill="#222222">Respuesta «normal»</text>
+  <text x="345.0" y="92.4" text-anchor="middle" font-size="7.0" fill="#555555">sin consultar al SLM</text>
+</g>
+<g id="slm">
+  <rect x="285.0" y="137.3" width="120" height="37.3" rx="4" fill="#FDF3DF" stroke="#B07800" stroke-width="1.6"/>
+  <text x="345.0" y="150.4" text-anchor="middle" font-size="8.2" font-weight="bold" fill="#222222">Consultar al SLM</text>
+  <text x="345.0" y="159.9" text-anchor="middle" font-size="7.0" fill="#555555">y actualizar los estados</text>
+  <text x="345.0" y="168.8" text-anchor="middle" font-size="7.0" fill="#555555">de los eventos del lote</text>
+</g>
+<g id="alerta">
+  <rect x="90.0" y="275.8" width="120" height="28.4" rx="4" fill="#FBE9DE" stroke="#C04A00" stroke-width="0.9" stroke-dasharray="4 2.5"/>
+  <text x="150.0" y="288.9" text-anchor="middle" font-size="8.2" font-weight="bold" fill="#222222">Alerta sin SLM</text>
+  <text x="150.0" y="298.4" text-anchor="middle" font-size="7.0" fill="#555555">(vía rápida)</text>
+</g>
+<path d="M 150.0 42.6 L 150.0 59.8" fill="none" stroke="#222222" stroke-width="0.9" marker-end="url(#arr_222222)"/>
+<path d="M 224.0 84.0 L 284.5 84.0" fill="none" stroke="#222222" stroke-width="0.9" marker-end="url(#arr_222222)"/>
+<text x="254.5" y="80.5" text-anchor="middle" font-size="6.8" fill="#555555">sí</text>
+<path d="M 150.0 107.8 L 150.0 131.8" fill="none" stroke="#222222" stroke-width="0.9" marker-end="url(#arr_222222)"/>
+<text x="155.0" y="116.8" text-anchor="start" font-size="6.8" fill="#555555">no</text>
+<path d="M 224.0 156.0 L 284.5 156.0" fill="none" stroke="#222222" stroke-width="0.9" marker-end="url(#arr_222222)"/>
+<text x="254.5" y="152.5" text-anchor="middle" font-size="6.8" fill="#555555">sí</text>
+<path d="M 150.0 179.8 L 150.0 204.3" fill="none" stroke="#222222" stroke-width="0.9" marker-end="url(#arr_222222)"/>
+<text x="155.0" y="188.8" text-anchor="start" font-size="6.8" fill="#555555">no</text>
+<path d="M 224.0 228.0 L 299.0 228.0 L 299.0 175.2" fill="none" stroke="#222222" stroke-width="0.9" marker-end="url(#arr_222222)"/>
+<text x="261.5" y="224.5" text-anchor="middle" font-size="6.8" fill="#555555">no</text>
+<path d="M 150.0 251.2 L 150.0 275.3" fill="none" stroke="#C04A00" stroke-width="0.9" marker-end="url(#arr_C04A00)"/>
+<text x="155.0" y="260.2" text-anchor="start" font-size="6.8" fill="#555555">sí</text>
+<text x="410.0" y="214.0" text-anchor="middle" font-size="7.6" fill="#222222" font-weight="bold">Estados de un evento</text>
+<g id="st_desconocido">
+  <rect x="337.0" y="226.2" width="66" height="19.5" rx="4" fill="#F2F2F2" stroke="#666666" stroke-width="0.9"/>
+  <text x="370.0" y="239.3" text-anchor="middle" font-size="8.2" font-weight="bold" fill="#222222">Desconocido</text>
+</g>
+<g id="st_sospechoso">
+  <rect x="417.0" y="270.2" width="66" height="19.5" rx="4" fill="#FBE9DE" stroke="#C04A00" stroke-width="0.9"/>
+  <text x="450.0" y="283.3" text-anchor="middle" font-size="8.2" font-weight="bold" fill="#222222">Sospechoso</text>
+</g>
+<g id="st_normal">
+  <rect x="337.0" y="270.2" width="66" height="19.5" rx="4" fill="#E3F4EF" stroke="#007A5E" stroke-width="0.9"/>
+  <text x="370.0" y="283.3" text-anchor="middle" font-size="8.2" font-weight="bold" fill="#222222">Normal conocido</text>
+</g>
+<path d="M 370.0 245.8 L 370.0 269.8" fill="none" stroke="#007A5E" stroke-width="0.9" marker-end="url(#arr_007A5E)"/>
+<text x="366.0" y="260.0" text-anchor="end" font-size="6.4" fill="#555555">el SLM</text>
+<text x="366.0" y="268.0" text-anchor="end" font-size="6.4" fill="#555555">responde normal</text>
+<path d="M 403.0 236.0 L 450.0 236.0 L 450.0 269.8" fill="none" stroke="#C04A00" stroke-width="0.9" marker-end="url(#arr_C04A00)"/>
+<text x="454.0" y="250.0" text-anchor="start" font-size="6.4" fill="#555555">el SLM</text>
+<text x="454.0" y="258.0" text-anchor="start" font-size="6.4" fill="#555555">responde error</text>
+<path d="M 417.0 280.0 L 403.5 280.0" fill="none" stroke="#007A5E" stroke-width="0.9" marker-end="url(#arr_007A5E)"/>
+<text x="410.0" y="300.0" text-anchor="middle" font-size="6.4" fill="#555555">aparece en un</text>
+<text x="410.0" y="308.0" text-anchor="middle" font-size="6.4" fill="#555555">lote normal</text>
+</svg>

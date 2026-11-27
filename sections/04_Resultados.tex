@@ -31,7 +31,12 @@ SmolLM2-1.7B-Instruct & 0.049 & 0.092 & 0.064 & 0.028 & 0.519 & 0.430 & 0.031 & 
 
 En la figura~\ref{fig:res_pr_n50} se comparan el valor de AP y su MCC correspondiente.
 
-\figpendiente{fig:res_pr_n50}{Curvas de precisión-\textit{recall} de los ocho SLM con $N = 50$ frente al \textit{ground truth}.}{Curvas de precisión-\textit{recall} superpuestas de los ocho modelos, con la AP de cada uno en la leyenda y la línea del clasificador al azar (0.029). Ya existe una versión: \texttt{pr\_comparison\_knn\_\_n50.png} (carpeta \texttt{summary\_plots} de \texttt{analysis/batch\_size\_matrix}).}
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{figs/resultados/pr_n50.pdf}
+\caption{Curvas de precisión-\textit{recall} de los ocho SLM con $N = 50$ frente al \textit{ground truth}.}
+\label{fig:res_pr_n50}
+\end{figure}
 
 La prueba global rechazó la igualdad de los ocho modelos en las ocho métricas, con un valor $p$ ajustado menor que 0.001. Las comparaciones por pares muestran, sin embargo, que no todos los modelos se distinguen entre sí. El \textit{recall} es la métrica con menos diferencias: 14 de los 28 pares no fueron significativos, y Qwen3.5-9B no se distinguió en ella de Granite-4.1-3B, Gemma-3-4B, Ling-3.0-tiny ni Ministral-3-3B, con un valor $p$ ajustado de 1.0, ni de Phi-3.5-mini, con 0.057. En precisión, $F_1$, MCC y \textit{balanced accuracy}, los pares no significativos se concentraron entre los modelos de menor desempeño, y Granite-4.1-3B y Phi-3.5-mini tampoco se distinguieron en precisión, $F_1$ ni MCC. En AUC solo dos pares no fueron significativos, Ling-3.0-tiny frente a Granite-4.1-3B y Ministral-3-3B frente a Phi-3.5-mini, y en exactitud y especificidad todos lo fueron. En las comparaciones de Qwen3.5-9B con cada uno de los otros siete modelos, la diferencia fue significativa en precisión, $F_1$, MCC, \textit{balanced accuracy} y AUC, con un valor $p$ ajustado de 0.003, y el intervalo de confianza del 95\,\% de su MCC fue de 0.31 a 0.43.
 
@@ -151,9 +156,14 @@ Llama-3.2-1B \textit{log-analyzer} & 116 & 3\,073 & 0.00 & [0.00, 0.01] & 0.33 &
 \normalsize
 \end{table}
 
-Con $N = 20$, el acuerdo superó al azar en seis modelos, con un valor $p$ ajustado menor que 0.001, pero no en Ministral-3-3B ni en el Llama-3.2-1B \textit{log-analyzer} (valores $p$ de 1.0 y 0.24). Los modelos también difirieron en las cuatro métricas, y como las 28 comparaciones por pares del kappa fueron significativas, el orden es estricto: Granite-4.1-3B, Phi-3.5-mini, Qwen3.5-9B, Gemma-3-4B, SmolLM2-1.7B-Instruct, Ling-3.0-tiny, Llama-3.2-1B \textit{log-analyzer} y Ministral-3-3B. Con ambos tamaños, los lotes pequeños multiplicaron las llamadas al modelo por 1.7 con $N = 30$ y por 2.5 con $N = 20$.
+Con $N = 20$, el acuerdo superó al azar en seis modelos, con un valor $p$ ajustado menor que 0.001, pero no en Ministral-3-3B ni en el Llama-3.2-1B \textit{log-analyzer} (valores $p$ de 1.0 y 0.24). Los modelos también difirieron en las cuatro métricas, y como las 28 comparaciones por pares del kappa fueron significativas, el orden es estricto: Granite-4.1-3B, Phi-3.5-mini, Qwen3.5-9B, Gemma-3-4B, SmolLM2-1.7B-Instruct, Ling-3.0-tiny, Llama-3.2-1B \textit{log-analyzer} y Ministral-3-3B. Con ambos tamaños, los lotes pequeños multiplicaron las llamadas al modelo por 1.7 con $N = 30$ y por 2.5 con $N = 20$. En la figura~\ref{fig:res_kappa} se compara el kappa de cada modelo con ambos tamaños.
 
-\figpendiente{fig:res_kappa}{Kappa de Cohen de cada modelo con $N = 30$ y $N = 20$ frente a sus respuestas con $N = 50$.}{Gráfico de puntos con barras de error: un renglón por modelo, ordenado por kappa; dos marcadores por modelo ($N = 30$ y $N = 20$) con su intervalo del 95\,\%; línea vertical en kappa = 0 (azar). Datos en \texttt{analysis/significance/self\_consistency\_\_n30} y \texttt{\_\_n20}.}
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{figs/resultados/kappa_consistencia.pdf}
+\caption{Kappa de Cohen de cada modelo con $N = 30$ y $N = 20$ frente a sus respuestas con $N = 50$. Las barras son los intervalos de confianza del 95\,\%, y los marcadores huecos indican un acuerdo que no superó al azar.}
+\label{fig:res_kappa}
+\end{figure}
 
 \section{Efecto del ajuste fino}\label{sec:res_ajuste}
 
@@ -184,7 +194,12 @@ Entre el modelo base con umbral y el modelo base con su respuesta directa, la di
 
 La AP de ambos modelos es casi igual, y sus curvas de precisión-\textit{recall} prácticamente se superponen, como se observa en la figura~\ref{fig:res_pr_ajuste}.
 
-\figpendiente{fig:res_pr_ajuste}{Curvas de precisión-\textit{recall} de Qwen3.5-9B base y ajustado sobre los lotes de prueba.}{Dos curvas superpuestas (base, AP = 0.916; ajustado, AP = 0.936) con la línea del azar (0.033) y los puntos de operación de las cuatro variantes de la tabla anterior. Ya existe una versión en \texttt{analysis/finetune/test\_split/pr\_curves.png}.}
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.8\textwidth]{figs/resultados/pr_ajuste.pdf}
+\caption{Curvas de precisión-\textit{recall} de Qwen3.5-9B base y ajustado sobre los lotes de prueba. Los círculos marcan la respuesta directa de cada modelo y los rombos, su variante con umbral.}
+\label{fig:res_pr_ajuste}
+\end{figure}
 
 \section{Simulación en flujo continuo con errores inyectados}\label{sec:res_simulacion}
 
@@ -268,7 +283,14 @@ Vía rápida & exacta & 201 & 7 & 54 & 0.79 & 0.931 & 0.959 & 0.85 & 39.5 \\
 \normalsize
 \end{table}
 
-\figpendiente{fig:res_sim_tradeoff}{Detección y falsas alarmas frente a la proporción de lotes enviados al SLM.}{Dos paneles (base y ajustado): eje horizontal, porcentaje de lotes enviados al SLM; eje vertical, incidentes detectados (o falsas alarmas); un punto por configuración, con color por método (caché por lote, por evento, vía rápida) y el SLM solo como referencia en 100\,\%. Ya existen versiones: \texttt{tradeoff\_slm\_share\_vs\_detection.png} y \texttt{tradeoff\_slm\_share\_vs\_false\_alarms.png} (carpeta \texttt{report} del experimento de simulación).}
+En la figura~\ref{fig:res_sim_tradeoff} se resumen ambas tablas: para cada configuración se muestran los incidentes detectados y las falsas alarmas frente a la proporción de lotes enviados al SLM.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{figs/resultados/sim_tradeoff.pdf}
+\caption{Detección y falsas alarmas frente a la proporción de lotes enviados al SLM.}
+\label{fig:res_sim_tradeoff}
+\end{figure}
 
 \subsection{Modelo base frente al ajustado en los lotes de prueba}
 
@@ -363,7 +385,12 @@ La capacidad del \textit{pipeline} es el ritmo de llegada que puede atender sin 
 Estas mediciones a ritmo fijo sirvieron también para validar el modelo de colas. Con el SLM solo, el modelo predijo una latencia mediana de 1\,848~segundos frente a los 1\,777 medidos, un error del 3.8\,\%. Con la caché por evento exacta predijo 68.8~segundos frente a 30.6: a ese ritmo el equipo estuvo ocupado el 91\,\% del tiempo, y con tan poco tiempo libre la espera en cola cambia mucho ante diferencias pequeñas en el tiempo de proceso, como la que hubo entre los tiempos usados por el modelo, medidos en el modo de velocidad máxima, y los del modo de ritmo fijo (mediana de 5.10 frente a 4.86~segundos por lote del SLM). Con el modelo de colas a ritmos constantes, cuyos resultados se muestran en la figura~\ref{fig:res_sim_latencia}, el SLM solo se volvió inestable por encima de unos 9 eventos por segundo con el base y de unos 18 con el ajustado, mientras que con la caché por evento con similitud ambos modelos se mantuvieron estables hasta 30 eventos por segundo, el ajustado con los umbrales de 0.85 a 0.99 y el base con los de 0.85 a 0.97.
 
 
-\figpendiente{fig:res_sim_latencia}{Latencia mediana en función del ritmo de llegada de eventos.}{Eje horizontal, eventos por segundo (5, 10, 20, 30, escala logarítmica); eje vertical, latencia mediana en segundos (escala logarítmica); una línea por método, marcando con un símbolo los ritmos inestables; un panel por modelo. Ya existen versiones en \texttt{report/latency\_vs\_rate\_\_qwen35.png} y \texttt{\_\_qwen35\_logft.png}, que incluyen además el ritmo uniforme de 0.2 eventos por segundo.}
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{figs/resultados/sim_latencia.pdf}
+\caption{Latencia mediana en función del ritmo de llegada de eventos. Modelo de colas con los tiempos de proceso limitados a 30~segundos; las cruces marcan los ritmos en que la cola crece sin límite.}
+\label{fig:res_sim_latencia}
+\end{figure}
 
 \section{Notificación y recomendación}\label{sec:res_reaccion}
 
