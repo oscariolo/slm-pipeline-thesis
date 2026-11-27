@@ -1,0 +1,36 @@
+% Figura de la sección 2.1.6: LoRA y QLoRA (idea general, adaptada de la figura 1 de Hu et al.).
+% Gris: pesos congelados del modelo base; naranja: adaptador que se entrena.
+\begin{tikzpicture}[font=\small\linespread{1}\selectfont,
+  frozen/.style={draw=black!60, fill=black!12, rounded corners=2pt},
+  train/.style={draw=orange!80!black, fill=orange!30, rounded corners=2pt},
+  arr/.style={-{Stealth[length=2mm]}, thick, black!65},
+  lbl/.style={font=\footnotesize\linespread{1}\selectfont, text=black!70, align=center}]
+
+  \foreach \id/\ox/\titulo/\bits/\adbits in {1/0/{(a) LoRA}/{16 bits}/{}, 2/7.2/{(b) QLoRA}/{cuantizado a 4 bits}/{\\(16 bits)}} {
+    \node[font=\small\bfseries, anchor=west] at (\ox-0.1,4.35) {\titulo};
+    % entrada
+    \node (x\id) at (\ox+1.6,3.75) {entrada $x$};
+    % modelo base congelado
+    \node[frozen, minimum width=2.1cm, minimum height=2.4cm, align=center] (W\id) at (\ox+0.95,1.55)
+      {$W_0$\\[2pt]{\footnotesize modelo base}\\{\footnotesize congelado}\\[2pt]{\footnotesize\bfseries \bits}};
+    % adaptador
+    \node[train, minimum width=0.75cm, minimum height=0.55cm] (A\id) at (\ox+3.05,2.35) {$A$};
+    \node[train, minimum width=0.75cm, minimum height=0.55cm] (B\id) at (\ox+3.05,0.85) {$B$};
+    \node[lbl, anchor=west] at (\ox+3.55,1.6) {adaptador\\se entrena\adbits};
+    % suma y salida
+    \node[draw=black!65, circle, inner sep=1pt, thick] (S\id) at (\ox+1.6,-0.35) {$+$};
+    \node (h\id) at (\ox+1.6,-1.05) {salida $h$};
+    % flechas
+    \draw[arr] (x\id.south) -- ++(0,-0.15) -| (W\id.north);
+    \draw[arr] (x\id.south) -- ++(0,-0.15) -| (A\id.north);
+    \draw[arr] (A\id.south) -- (B\id.north);
+    \draw[arr] (W\id.south) |- (S\id.west);
+    \draw[arr] (B\id.south) |- (S\id.east);
+    \draw[arr] (S\id.south) -- (h\id.north);
+  }
+  % leyenda
+  \node[frozen, minimum width=0.45cm, minimum height=0.3cm] at (2.2,-1.85) {};
+  \node[anchor=west, font=\footnotesize] at (2.5,-1.85) {pesos congelados};
+  \node[train, minimum width=0.45cm, minimum height=0.3cm] at (6.0,-1.85) {};
+  \node[anchor=west, font=\footnotesize] at (6.3,-1.85) {parámetros que se entrenan};
+\end{tikzpicture}

@@ -1,0 +1,71 @@
+% Figura de la sección 2.1.1: de los logs crudos a las ventanas de eventos (ejemplo genérico).
+% (a) logs crudos con sus campos; (b) enmascarado de las partes variables; (c) agrupación en ventanas.
+\begin{tikzpicture}[font=\scriptsize\ttfamily\linespread{1}\selectfont,
+  lbl/.style={font=\scriptsize\normalfont\linespread{1}\selectfont, text=black!65},
+  var/.style={text=red!75!black},
+  panel/.style={font=\small\normalfont\bfseries, anchor=west}]
+  \def\dy{0.42}
+  % columnas: índice, marca de tiempo, nivel, origen, mensaje
+  \def\xi{0}\def\xt{0.5}\def\xl{2.0}\def\xo{3.2}\def\xm{5.35}
+
+  % ---------------- (a) Logs crudos ----------------
+  \node[panel] at (-0.1,1.1) {(a) Logs crudos};
+  \draw[decorate, decoration={brace, amplitude=3pt}, black!55] (\xt-0.05,0.36) -- (\xl-0.15,0.36)
+    node[lbl, midway, above=3pt] {hora};
+  \draw[decorate, decoration={brace, amplitude=3pt}, black!55] (\xl-0.05,0.36) -- (\xo-0.15,0.36)
+    node[lbl, midway, above=3pt] {nivel};
+  \draw[decorate, decoration={brace, amplitude=3pt}, black!55] (\xo-0.05,0.36) -- (\xm-0.15,0.36)
+    node[lbl, midway, above=3pt] {origen};
+  \draw[decorate, decoration={brace, amplitude=3pt}, black!55] (\xm-0.05,0.36) -- (9.2,0.36)
+    node[lbl, midway, above=3pt] {mensaje};
+  \foreach \i/\t/\l/\o/\m in {
+    1/10:22:05/INFO/AuthService/{Login ok user=8412},
+    2/10:22:06/WARN/DbPool/{Conn 10.0.3.7 slow 950ms},
+    3/10:22:06/INFO/AuthService/{Login ok user=1093},
+    4/10:22:07/ERROR/DbPool/{Conn 10.0.3.7 refused},
+    5/10:22:08/INFO/OrderService/{Order 5521 created},
+    6/10:22:09/WARN/DbPool/{Conn 10.0.3.9 slow 1200ms},
+    7/10:22:09/INFO/AuthService/{Login ok user=2210},
+    8/10:22:10/ERROR/OrderService/{Order 5530 failed}} {
+    \node[anchor=base west, text=black!50] at (\xi,-\i*\dy+\dy) {$e_{\i}$};
+    \node[anchor=base west] at (\xt,-\i*\dy+\dy) {\t};
+    \node[anchor=base west] at (\xl,-\i*\dy+\dy) {\l};
+    \node[anchor=base west] at (\xo,-\i*\dy+\dy) {\o};
+    \node[anchor=base west] at (\xm,-\i*\dy+\dy) {\m};
+  }
+
+  % flecha entre paneles
+  \draw[-{Stealth[length=2.2mm]}, thick, black!60] (4.8,-3.25) -- (4.8,-3.85)
+    node[lbl, midway, right=4pt] {enmascarado de las partes variables};
+
+  % ---------------- (b) Enmascarado y (c) ventanas ----------------
+  \begin{scope}[yshift=-4.75cm]
+  \node[panel] at (-0.1,0.55) {(b) Eventos enmascarados \quad (c) Ventanas de $N = 4$ eventos};
+  \def\M{\textcolor{red!75!black}{\textless*\textgreater}}
+  \foreach \i/\t/\l/\o/\m in {
+    1/10:22:05/INFO/AuthService/{Login ok user=\M},
+    2/10:22:06/WARN/DbPool/{Conn \M{} slow \M{}ms},
+    3/10:22:06/INFO/AuthService/{Login ok user=\M},
+    4/10:22:07/ERROR/DbPool/{Conn \M{} refused},
+    5/10:22:08/INFO/OrderService/{Order \M{} created},
+    6/10:22:09/WARN/DbPool/{Conn \M{} slow \M{}ms},
+    7/10:22:09/INFO/AuthService/{Login ok user=\M},
+    8/10:22:10/ERROR/OrderService/{Order \M{} failed}} {
+    \node[anchor=base west, text=black!50] at (\xi,-\i*\dy+\dy) {$e_{\i}$};
+    \node[anchor=base west] at (\xt,-\i*\dy+\dy) {\t};
+    \node[anchor=base west] at (\xl,-\i*\dy+\dy) {\l};
+    \node[anchor=base west] at (\xo,-\i*\dy+\dy) {\o};
+    \node[anchor=base west] at (\xm,-\i*\dy+\dy) {\m};
+  }
+  % ventanas
+  \draw[decorate, decoration={brace, amplitude=5pt}, thick, blue!60!black] (9.35,0.15) -- (9.35,-1.40)
+    node[midway, right=7pt, align=left, font=\scriptsize\normalfont\linespread{1}\selectfont]
+    {ventana $x_1 = (e_1, \ldots, e_4)$};
+  \draw[decorate, decoration={brace, amplitude=5pt}, thick, blue!60!black] (9.35,-1.53) -- (9.35,-3.08)
+    node[midway, right=7pt, align=left, font=\scriptsize\normalfont\linespread{1}\selectfont]
+    {ventana $x_2 = (e_5, \ldots, e_8)$};
+  % nota de plantillas iguales
+  \node[lbl, anchor=north west, align=left] at (\xi,-3.25)
+    {$e_1$, $e_3$ y $e_7$ quedan con la misma plantilla, \texttt{Login ok user=\textless*\textgreater}, igual que $e_2$ y $e_6$.};
+  \end{scope}
+\end{tikzpicture}

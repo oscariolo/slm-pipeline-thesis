@@ -12,6 +12,7 @@
 \setmonofont{Arial}
 \fi
 \usepackage[spanish]{babel}
+\AtBeginDocument{\decimalpoint} % punto decimal también dentro de fórmulas (babel en español usa coma)
 
 % Formato y diseño
 \usepackage{geometry}
@@ -55,7 +56,7 @@
 \usepackage{soul}
 \usepackage[normalem]{ulem} % \uline{} para subrayar; normalem mantiene \emph en cursiva
 \usepackage{tikz} % figuras dibujadas en LaTeX (p. ej., figs/antecedentes/inyeccion_errores.tex)
-\usetikzlibrary{babel,decorations.pathreplacing,arrows.meta} % babel evita el conflicto del español con < y > en TikZ
+\usetikzlibrary{babel,decorations.pathreplacing,arrows.meta,shapes.geometric} % babel evita el conflicto del español con < y > en TikZ
 \sethlcolor{cyan}
 
 % Símbolos especiales
@@ -75,3 +76,8 @@
 \newcommand{\tema}[1]{\par\medskip\noindent\textbf{#1}\par\nopagebreak\smallskip}
 % Espacio reservado para una figura aún no elaborada: \figpendiente{etiqueta}{leyenda}{qué debe mostrar}
 \newcommand{\figpendiente}[3]{\begin{figure}[H]\centering\fbox{\parbox{0.85\textwidth}{\centering\vspace{1.2cm}\textcolor{red}{\textbf{FIGURA PENDIENTE}}\\[0.3cm]\small #3\vspace{1.2cm}}}\caption{#2}\label{#1}\end{figure}}
+
+% Título de la tesis (un solo lugar). Opciones en revisión con el tutor (2026-11-27):
+% Opción 1: Desarrollo de un pipeline de observabilidad basado en modelos de lenguaje pequeños de ejecución local para el análisis de logs en servidores
+% Opción 2: Desarrollo de un pipeline basado en modelos de lenguaje pequeños de ejecución local para la detección de errores en logs de servidores
+\newcommand{\titulotesis}{Desarrollo de un pipeline de observabilidad basado en modelos de lenguaje pequeños de ejecución local para el análisis de logs en servidores}

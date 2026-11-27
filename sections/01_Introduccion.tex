@@ -1,56 +1,22 @@
 \chapter{Introducción}\label{cap:introduccion}
 
+En este capítulo se presenta el contexto del estudio, el problema que aborda el trabajo y la pregunta de investigación, junto con los objetivos que lo guían y la estructura del documento.
+
 \section{Contexto del estudio}\label{sec:contexto}
 
-Los servicios informáticos de una universidad moderna (gestión de identidades, correo, plataformas académicas, sistemas administrativos) se ejecutan sobre arquitecturas de microservicios y contenedores que generan, de forma continua, grandes volúmenes de telemetría: registros de eventos (\textit{logs}), métricas y trazas distribuidas~\cite{uddin2026_microservice_logs, he2021_survey}. Cuando algo falla, el equipo de operaciones debe localizar el evento relevante entre miles de líneas de texto semiestructurado, un trabajo manual, lento y propenso a pasar por alto fallas sutiles.
+Los servicios informáticos de una universidad, como la gestión de cuentas de usuario, el correo o las plataformas académicas, se ejecutan cada vez más sobre arquitecturas de microservicios que generan de forma continua grandes volúmenes de registros de eventos, o \textit{logs}, además de métricas y trazas~\cite{uddin2026_microservice_logs}. Cuando un servicio falla, el equipo de operación debe encontrar el evento que lo explica entre miles de líneas de texto semiestructurado, una revisión manual que es lenta y que puede pasar por alto fallas que no se anuncian con un nivel de severidad alto. Por ello, el análisis automático de logs se ha desarrollado desde las reglas escritas por expertos hasta los modelos de aprendizaje profundo, con el objetivo de detectar los eventos anómalos sin depender de la revisión manual~\cite{he2021_survey}.
 
-En la Universidad de Cuenca, la Dirección de Tecnologías de la Información y Comunicación (DTIC) opera servicios de este tipo. Uno de ellos es \texttt{ms-users}, un microservicio Spring Boot (Logback) que administra cuentas de usuario frente a Active Directory (AD), LDAP, Google Workspace, Oracle y AS400. El corpus de \texttt{ms-users} disponible para este trabajo contiene 309 archivos de registro, aproximadamente 15.8~GB y 27{,}752{,}836 eventos. La mayor parte de ese volumen es ruido operativo: trazas de Spring Security en nivel \texttt{TRACE}, sondeos periódicos de Kubernetes a los \textit{endpoints} de salud y redirecciones a la página de ingreso. Tras un prefiltrado, solo el 0.804\,\% de los eventos (223{,}104) resulta relevante para el análisis.
+Los modelos de lenguaje de gran tamaño (\textit{Large Language Models}, LLM) han mostrado que pueden interpretar los logs como texto e identificar en ellos anomalías sin un entrenamiento específico~\cite{liu2024_logprompt}. Sin embargo, su uso a través de servicios en la nube implica enviar la información de los servicios institucionales a un tercero y depender de un proveedor externo. Los modelos de lenguaje pequeños (\textit{Small Language Models}, SLM), con entre cientos de millones y pocos miles de millones de parámetros, ofrecen una alternativa que puede ejecutarse localmente, en equipos con recursos acotados y sin que los datos salgan de la organización~\cite{wang2025_slm_survey}.
 
-Los modelos de lenguaje de gran tamaño (\textit{Large Language Models}, LLM) han mostrado capacidad para interpretar logs como lenguaje natural~\cite{liu2024_logprompt, karlsen2024_benchmark}, pero su uso mediante servicios en la nube implica costos recurrentes, latencia y, sobre todo, el envío de telemetría institucional a terceros. Los modelos de lenguaje pequeños (\textit{Small Language Models}, SLM), con entre cientos de millones y pocos miles de millones de parámetros, ofrecen una alternativa que puede ejecutarse localmente (\textit{on-premise}) sobre hardware acotado~\cite{wang2025_slm_survey, saha2025_slm_minimal, pardeshi2026_smartllm}. Este trabajo estudia si esa alternativa es viable en el contexto concreto de la DTIC.
+En la Universidad de Cuenca, la Dirección de Tecnologías de la Información y Comunicación (DTIC) opera servicios de este tipo. Uno de ellos es \texttt{ms-users}, un microservicio que administra las cuentas de usuario frente a varios directorios y sistemas de la institución, cuyos logs fueron proporcionados por el director de la DTIC para este trabajo: 309 archivos con 27\,752\,836 eventos, de los cuales la mayor parte corresponde a trazas internas del \textit{framework} y a verificaciones periódicas del estado del servicio. Analizar estos logs con modelos de lenguaje plantea dos dificultades. La primera es que no existían etiquetas que indicaran qué eventos constituyen un error, y etiquetar manualmente millones de eventos no es viable. La segunda es que qué cuenta como error depende de la institución: condiciones como un usuario que no existe en el directorio o una contraseña rechazada por la política de seguridad aparecen en los logs como errores, pero el servicio las maneja de forma correcta y no son fallas del sistema.
 
+Para abordar este problema, la presente investigación desarrolló un \textit{pipeline} basado en SLM ejecutados localmente que analiza los logs en lotes de eventos, identifica los que contienen errores, envía una alerta al equipo responsable y propone una causa probable y una acción mediante un recomendador. Como referencia para evaluar los modelos se construyó un \textit{ground truth} por lote, a partir de la votación de tres LLM y de la revisión de dos desarrolladores de la DTIC, que aportaron el criterio de error de la institución. Con esa referencia se compararon ocho SLM de distintas familias y tamaños, se ajustó el de mejor desempeño con ese criterio y, por último, se comprobó el funcionamiento del \textit{pipeline} completo en un flujo continuo de logs con errores inyectados, en el que se midieron la detección, las falsas alarmas, la dependencia del modelo frente a una caché semántica y el tiempo de respuesta. Todo el desarrollo y la experimentación se realizaron en equipos personales con una sola tarjeta gráfica.
 
-% MOVIDO desde el Cap. 2 (2026-11-17), pendiente de integrar al revisar el Cap. 1:
-La propuesta de titulación que origina este trabajo~\cite{orellana2026_propuesta} plantea desarrollar un \textit{pipeline} de observabilidad \textit{on-premise} basado en SLM para el análisis de logs de servidores. % TODO: describir cómo se monitorean hoy los servicios de la DTIC (Grafana en el puerto 3000 aparece como servicio externo en la documentación técnica; confirmar herramientas, alertas existentes y responsables de operación).
-El proyecto técnico cuenta con dos entornos de ejecución, uno con GPU NVIDIA/CUDA y otro con GPU AMD/ROCm, y con servicios locales de inferencia (Ollama y Hugging Face Transformers) y de base vectorial (Milvus Lite).
-
-\subsection{Planteamiento del problema}\label{sec:problema}
-
-La DTIC carece de un mecanismo automático que analice sus logs, identifique los eventos que constituyen fallas del sistema, notifique al responsable y le sugiera una causa y una acción correctiva. Las dificultades específicas son:
-
-\begin{itemize}
-  \item \textbf{Volumen y ruido.} Menos del 1\,\% de los eventos del corpus es relevante, y solo unos 7.4 mil de los 223 mil eventos filtrados son únicos.
-  \item \textbf{Ausencia de etiquetas.} No existe un conjunto de datos etiquetado con el criterio operativo de la DTIC; etiquetar manualmente millones de eventos no es viable.
-  \item \textbf{Criterio de dominio.} Condiciones como un usuario no encontrado en el directorio, una política de contraseñas incumplida o una respuesta HTTP 4xx son comportamiento funcional correcto y no fallas, lo que los modelos de lenguaje genéricos tienden a confundir (véase el Capítulo~\ref{cap:resultados}).
-  \item \textbf{Privacidad y recursos.} Los datos no deben salir de la infraestructura institucional, y el hardware disponible limita el tamaño de los modelos.
-\end{itemize}
-
-Pregunta de investigación: ¿es posible implementar, con SLM ejecutados localmente, un pipeline que identifique errores en los logs de la DTIC con una calidad medible, los notifique y recomiende acciones al desarrollador?
-
-
-\subsection{Justificación}\label{sec:justificacion}
-
-% TODO: reforzar con datos de incidentes reales de la DTIC (tiempos de detección actuales, número de incidentes) si el equipo puede proveerlos.
-Una solución local reduce la dependencia de proveedores externos, protege la información institucional y permite adaptar los modelos al vocabulario y a los componentes propios de la universidad (AS400, Oracle, AD). Además, los resultados comparativos entre SLM sobre un corpus real y con un criterio de error validado por expertos aportan evidencia para decisiones de adopción tecnológicas en entornos con recursos limitados.
-
-
-\subsection{Alcance y limitaciones}\label{sec:alcance}
-
-El trabajo se centra en el microservicio \texttt{ms-users}, de modo que los resultados no se generalizan a otros servicios sin nueva evidencia. La unidad de análisis es el \textit{batch} de eventos consecutivos y la tarea es clasificatoria (error / no error); el pipeline también produce una descripción y una acción recomendada. Del conjunto de señales de observabilidad se explotan los logs; las métricas y trazas se discuten como extensión (véase la Sección~\ref{sec:trabajo_futuro}).
-% TODO: confirmar con el tutor si se declara explícitamente que métricas y trazas quedan fuera del alcance experimental.
-Las limitaciones metodológicas del ground truth (revisión por una sola persona por mitad de muestra, criterio fijado tras observar los datos) se discuten en los Capítulos~\ref{cap:metodologia} y~\ref{cap:resultados}.
-
-
-\subsection{Contribuciones}\label{sec:contribuciones}
-
-\begin{itemize}
-  \item Un procedimiento reproducible para construir un \textit{ground truth} de logs por \textit{batch}: preetiquetado con tres LLM, validación experta, propagación determinista del criterio y trazabilidad del origen de cada etiqueta.
-  \item La evidencia de que el consenso entre LLM, aun con alto acuerdo (Fleiss' $\kappa=0.886$), sobreestima el error respecto al criterio de los expertos.
-  \item Una comparación de ocho SLM en tres tamaños de \textit{batch}, evaluada de forma semántica con \textit{embeddings}.
-  \item Un pipeline integrado con prefiltrado, clasificación, caché semántico, notificación, recomendador, inyección de errores y \textit{dashboard}.
-\end{itemize}
-
+En este contexto, la presente investigación busca responder a la siguiente interrogante: ¿es posible implementar, con SLM ejecutados localmente, un \textit{pipeline} que identifique errores en los logs de la DTIC con una calidad medible, los notifique y recomiende acciones al desarrollador?
 
 \section{Objetivos}\label{sec:objetivos}
+
+A continuación, se presentan los objetivos que guían la presente investigación. Estos definen la meta planteada para el desarrollo de un \textit{pipeline} basado en SLM para el análisis de logs, así como las actividades necesarias para construir el conjunto de datos, implementar y validar los modelos e integrar el \textit{pipeline}.
 
 \subsection{Objetivo general}
 
@@ -66,7 +32,6 @@ Implementar un pipeline basado en modelos SLM capaz de identificar errores, noti
   \item Comprobar los resultados del modelo aplicado en el entorno del DTIC mediante simulaciones de errores dentro del pipeline.
 \end{enumerate}
 
-
 \section{Estructura del documento}\label{sec:organizacion}
 
-El presente documento se organiza de la siguiente manera. En el Capítulo~\ref{cap:antecedentes} se presentan los antecedentes y los conceptos fundamentales, junto con los trabajos relacionados más relevantes. En el Capítulo~\ref{cap:metodologia} se describe el proceso de construcción y evaluación del \textit{pipeline}: el conjunto de datos, el \textit{ground truth}, los modelos, el ajuste fino y los métodos de evaluación. En el Capítulo~\ref{cap:resultados} se exponen los resultados obtenidos. Finalmente, en el Capítulo~\ref{cap:conclusiones} se presentan las discusiones y las conclusiones de la investigación, además de los trabajos futuros propuestos, seguidos de los anexos y las referencias bibliográficas.
+El presente documento se organiza de la siguiente manera. En el capítulo~\ref{cap:antecedentes} se presentan los antecedentes y los conceptos fundamentales, junto con los trabajos relacionados más relevantes. En el capítulo~\ref{cap:metodologia} se describe el proceso de construcción y evaluación del \textit{pipeline}: el conjunto de datos, el \textit{ground truth}, los modelos, el ajuste fino, la caché semántica, el diseño de la evaluación y la simulación en flujo continuo. En el capítulo~\ref{cap:resultados} se exponen los resultados obtenidos. Finalmente, en el capítulo~\ref{cap:conclusiones} se presentan las discusiones, las limitaciones y las conclusiones de la investigación, además de los trabajos futuros, seguidos de los anexos y las referencias bibliográficas.

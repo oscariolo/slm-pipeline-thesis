@@ -40,8 +40,5 @@ Por último, el \textit{pipeline} incorpora la notificación de errores a Slack,
 
 \section{Trabajos futuros}\label{sec:trabajo_futuro}
 
-\begin{itemize}
-  \item Evaluación del \textit{pipeline} en operación sobre los servidores de la DTIC, para medir en condiciones reales la latencia de detección, la tasa de falsas alarmas y su impacto en el trabajo del equipo de operación.
-  \item Evaluación cuantitativa de las recomendaciones, comparando la causa y la acción propuestas con las identificadas en los incidentes reales, para determinar su aporte al análisis de causa raíz.
+Como trabajo futuro, se plantea evaluar el \textit{pipeline} en operación sobre los servidores de la DTIC, para medir en condiciones reales la latencia de detección, la tasa de falsas alarmas y su impacto en el trabajo del equipo de operación. Asimismo, se propone evaluar de forma cuantitativa las recomendaciones, comparando la causa y la acción propuestas con las identificadas en los incidentes reales, para determinar su aporte al análisis de causa raíz. De igual forma, se propone comprobar las etiquetas propagadas del \textit{ground truth} mediante la revisión de una muestra de los 4\,134 lotes que recibieron su etiqueta de forma automática, para estimar cuántas de ellas podrían ser incorrectas. También se plantea incorporar métricas y trazas, además de los logs, para cubrir las tres señales de la observabilidad, y extender el estudio a otros microservicios de la institución, ya que los datos de este trabajo provienen de uno solo. Por último, se propone evaluar la detección de tipos de error que no aparecen en el corpus, porque la simulación solo inyectó errores que ya habían ocurrido en el servicio.
 
-\end{itemize}

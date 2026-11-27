@@ -1,0 +1,28 @@
+% Figura de la sección 2.1.11: efecto del umbral de una caché semántica en el espacio vectorial.
+% Valores ilustrativos: el ángulo entre la entrada nueva y la guardada es de 20 grados (similitud del coseno 0.94).
+% Conos: umbral 0.98 = 11.5 grados a cada lado de la entrada nueva; umbral 0.90 = 25.8 grados.
+\begin{tikzpicture}[font=\small\linespread{1}\selectfont,
+  lbl/.style={font=\footnotesize\linespread{1}\selectfont}]
+  \coordinate (O) at (0,0);
+  \def\R{4.6}
+  % conos
+  \fill[blue!8] (O) -- ++(4.2:\R) arc[start angle=4.2, end angle=55.8, radius=\R] -- cycle;
+  \fill[blue!22] (O) -- ++(18.5:\R) arc[start angle=18.5, end angle=41.5, radius=\R] -- cycle;
+  % ejes
+  \draw[black!30, -{Stealth[length=1.5mm]}] (O) -- ++(5.2,0);
+  \draw[black!30, -{Stealth[length=1.5mm]}] (O) -- ++(0,4.9);
+  % vectores
+  \draw[-{Stealth[length=2.4mm]}, very thick, blue!65!black] (O) -- ++(30:4.0) coordinate (q);
+  \draw[-{Stealth[length=2.4mm]}, very thick, red!70!black] (O) -- ++(50:3.8) coordinate (s1);
+  \draw[-{Stealth[length=2.4mm]}, very thick, black!45] (O) -- ++(85:3.9) coordinate (s2);
+  % ángulo
+  \draw[black!60] ([shift={(30:1.4)}]O) arc[start angle=30, end angle=50, radius=1.4];
+  \node[lbl] at ([shift={(40:1.8)}]O) {$20^\circ$};
+  % etiquetas de los vectores
+  \node[lbl, anchor=south west, align=left, text=blue!65!black] at ([shift={(0.05,0.03)}]q) {entrada nueva:\\``Timeout al conectar con la BD''};
+  \node[lbl, anchor=south west, align=left, text=red!70!black] at ([shift={(0.05,0.02)}]s1) {guardada: ``Tiempo de espera agotado\\al conectar con la base de datos'' $\rightarrow$ error};
+  \node[lbl, anchor=west, align=left, text=black!55] at ([shift={(0.1,0)}]s2) {guardada: ``Usuario no encontrado'' $\rightarrow$ normal};
+  % etiquetas de los conos
+  \node[lbl, anchor=north west, align=left, text=blue!80!black] at ([shift={(18.5:4.65)}]O) {umbral 0.98: la guardada queda fuera};
+  \node[lbl, anchor=west, align=left, text=blue!60!black] at ([shift={(4.2:4.65)}]O) {umbral 0.90: la guardada queda dentro};
+\end{tikzpicture}
