@@ -1,0 +1,164 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="460pt" height="456pt" viewBox="0 0 460 456" font-family="Lato, 'Helvetica Neue', Arial, sans-serif">
+<title>Diseño general del pipeline</title>
+<defs>
+<marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5.5" markerHeight="5.5" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#222222"/></marker>
+<marker id="arr_C04A00" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5.5" markerHeight="5.5" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#C04A00"/></marker>
+<marker id="arr_007A5E" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5.5" markerHeight="5.5" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#007A5E"/></marker>
+<marker id="arr_0072B2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5.5" markerHeight="5.5" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#0072B2"/></marker>
+</defs>
+<rect width="460" height="456" fill="#ffffff"/>
+<g id="lanes">
+<text x="68.0" y="19.0" text-anchor="middle" font-size="7.0" font-weight="bold" letter-spacing="0.15" fill="#0072B2">CONSTRUCCIÓN DEL <tspan font-style="italic">GROUND TRUTH</tspan></text>
+<line x1="6.0" y1="24.0" x2="130.0" y2="24.0" stroke="#0072B2" stroke-width="1.2"/>
+<text x="228.0" y="19.0" text-anchor="middle" font-size="7.0" font-weight="bold" letter-spacing="0.15" fill="#B07800"><tspan font-style="italic">PIPELINE</tspan> DE DETECCIÓN</text>
+<line x1="166.0" y1="24.0" x2="290.0" y2="24.0" stroke="#B07800" stroke-width="1.2"/>
+<text x="388.0" y="19.0" text-anchor="middle" font-size="7.0" font-weight="bold" letter-spacing="0.15" fill="#007A5E">AJUSTE FINO Y EVALUACIÓN</text>
+<line x1="326.0" y1="24.0" x2="450.0" y2="24.0" stroke="#007A5E" stroke-width="1.2"/>
+</g>
+<g id="connectors">
+<path d="M 68.0 81.2 L 68.0 109.6" fill="none" stroke="#222222" stroke-width="0.9" marker-end="url(#arr)"/>
+<path d="M 68.0 147.4 L 68.0 166.3" fill="none" stroke="#222222" stroke-width="0.9" marker-end="url(#arr)"/>
+<path d="M 68.0 195.2 L 68.0 214.2" fill="none" stroke="#222222" stroke-width="0.9" marker-end="url(#arr)"/>
+<path d="M 68.0 260.9 L 68.0 279.8" fill="none" stroke="#222222" stroke-width="0.9" marker-end="url(#arr)"/>
+<path d="M 68.0 317.6 L 68.0 336.6" fill="none" stroke="#222222" stroke-width="0.9" marker-end="url(#arr)"/>
+<path d="M 68.0 374.4 L 68.0 397.8" fill="none" stroke="#222222" stroke-width="0.9" marker-end="url(#arr)"/>
+<path d="M 228.0 81.2 L 228.0 109.6" fill="none" stroke="#222222" stroke-width="0.9" marker-end="url(#arr)"/>
+<path d="M 228.0 147.4 L 228.0 161.9" fill="none" stroke="#222222" stroke-width="0.9" marker-end="url(#arr)"/>
+<path d="M 228.0 199.7 L 228.0 214.2" fill="none" stroke="#222222" stroke-width="0.9" marker-end="url(#arr)"/>
+<text x="232.0" y="209.2" text-anchor="start" font-size="6.6" fill="#555555">sin acierto</text>
+<path d="M 228.0 260.9 L 228.0 284.3" fill="none" stroke="#222222" stroke-width="0.9" marker-end="url(#arr)"/>
+<path d="M 228.0 313.2 L 228.0 336.6" fill="none" stroke="#C04A00" stroke-width="0.9" marker-end="url(#arr_C04A00)"/>
+<text x="232.0" y="322.7" text-anchor="start" font-size="6.6" fill="#C04A00">lote con error</text>
+<path d="M 228.0 374.4 L 228.0 388.9" fill="none" stroke="#C04A00" stroke-width="0.9" marker-end="url(#arr_C04A00)"/>
+<path d="M 166.0 181.0 L 157.0 181.0 L 157.0 299.0 L 165.5 299.0" fill="none" stroke="#222222" stroke-width="0.9" marker-end="url(#arr)"/>
+<text x="154.0" y="240.0" text-anchor="middle" font-size="6.4" fill="#555555" transform="rotate(-90 154.0 240.0)">acierto: respuesta reutilizada</text>
+<path d="M 130.0 128.8 L 165.5 128.8" fill="none" stroke="#222222" stroke-width="0.9" stroke-dasharray="3.5 2.2" marker-end="url(#arr)"/>
+<text x="148.0" y="124.8" text-anchor="middle" font-size="6.4" fill="#555555">mismo</text>
+<text x="148.0" y="137.2" text-anchor="middle" font-size="6.4" fill="#555555">proceso</text>
+<path d="M 326.0 62.5 L 290.5 62.5" fill="none" stroke="#007A5E" stroke-width="0.9" marker-end="url(#arr_007A5E)"/>
+<text x="308.0" y="58.5" text-anchor="middle" font-size="6.4" fill="#007A5E">flujo con</text>
+<text x="308.0" y="71.0" text-anchor="middle" font-size="6.4" fill="#007A5E">errores</text>
+<path d="M 326.0 237.8 L 290.5 237.8" fill="none" stroke="#007A5E" stroke-width="0.9" marker-end="url(#arr_007A5E)"/>
+<text x="308.0" y="233.8" text-anchor="middle" font-size="6.4" fill="#007A5E">adaptador</text>
+<text x="308.0" y="246.3" text-anchor="middle" font-size="6.4" fill="#007A5E">LoRA</text>
+<path d="M 290.0 299.0 L 325.5 299.0" fill="none" stroke="#222222" stroke-width="0.9" marker-end="url(#arr)"/>
+<text x="308.0" y="295.0" text-anchor="middle" font-size="6.4" fill="#555555">respuestas</text>
+<text x="308.0" y="307.5" text-anchor="middle" font-size="6.4" fill="#555555">por lote</text>
+<path d="M 68.0 426.7 L 68.0 447.6 L 459.0 447.6 L 459.0 62.5" fill="none" stroke="#0072B2" stroke-width="1.1"/>
+<path d="M 459.0 62.5 L 450.5 62.5" fill="none" stroke="#0072B2" stroke-width="1.1" marker-end="url(#arr_0072B2)"/>
+<path d="M 459.0 237.8 L 450.5 237.8" fill="none" stroke="#0072B2" stroke-width="1.1" marker-end="url(#arr_0072B2)"/>
+<circle cx="459.0" cy="237.8" r="1.4" fill="#0072B2"/>
+<path d="M 459.0 299.0 L 450.5 299.0" fill="none" stroke="#0072B2" stroke-width="1.1" marker-end="url(#arr_0072B2)"/>
+<circle cx="459.0" cy="299.0" r="1.4" fill="#0072B2"/>
+<text x="263.5" y="444.6" text-anchor="middle" font-size="6.6" fill="#0072B2">etiquetas del <tspan font-style="italic">ground truth</tspan> por lote</text>
+</g>
+<g id="boxes">
+<g id="corpus">
+  <rect x="6.0" y="43.9" width="124" height="37.3" rx="4" fill="#E6F0F8" stroke="#0072B2" stroke-width="0.9"/>
+  <text x="68.0" y="57.0" text-anchor="middle" font-size="8.2" font-weight="bold" fill="#222222">Corpus histórico</text>
+  <text x="68.0" y="66.5" text-anchor="middle" font-size="7.0" fill="#555555">ms-users · 309 archivos Logback</text>
+  <text x="68.0" y="75.4" text-anchor="middle" font-size="7.0" fill="#555555">27 752 836 eventos</text>
+</g>
+<g id="prefiltro_gt">
+  <rect x="6.0" y="110.1" width="124" height="37.3" rx="4" fill="#E6F0F8" stroke="#0072B2" stroke-width="0.9"/>
+  <text x="68.0" y="123.2" text-anchor="middle" font-size="8.2" font-weight="bold" fill="#222222">Prefiltro y enmascarado</text>
+  <text x="68.0" y="132.7" text-anchor="middle" font-size="7.0" fill="#555555">223 104 eventos (0.80 %)</text>
+  <text x="68.0" y="141.6" text-anchor="middle" font-size="7.0" fill="#555555">IP, UUID y números → marcadores</text>
+</g>
+<g id="lotes_gt">
+  <rect x="6.0" y="166.8" width="124" height="28.4" rx="4" fill="#E6F0F8" stroke="#0072B2" stroke-width="0.9"/>
+  <text x="68.0" y="179.9" text-anchor="middle" font-size="8.2" font-weight="bold" fill="#222222">Agrupación en lotes</text>
+  <text x="68.0" y="189.4" text-anchor="middle" font-size="7.0" fill="#555555">N = 50 · 4 463 lotes</text>
+</g>
+<g id="votacion">
+  <rect x="6.0" y="214.7" width="124" height="46.2" rx="4" fill="#E6F0F8" stroke="#0072B2" stroke-width="0.9"/>
+  <text x="68.0" y="227.8" text-anchor="middle" font-size="8.2" font-weight="bold" fill="#222222">Votación de tres LLM</text>
+  <text x="68.0" y="237.3" text-anchor="middle" font-size="7.0" fill="#555555">Qwen2.5-7B, Llama3.1-8B</text>
+  <text x="68.0" y="246.2" text-anchor="middle" font-size="7.0" fill="#555555">y Mistral-7B · mayoría 2 de 3:</text>
+  <text x="68.0" y="255.1" text-anchor="middle" font-size="7.0" fill="#555555">1 370 lotes con error</text>
+</g>
+<g id="revision">
+  <rect x="6.0" y="280.3" width="124" height="37.3" rx="4" fill="#E6F0F8" stroke="#0072B2" stroke-width="0.9"/>
+  <text x="68.0" y="293.4" text-anchor="middle" font-size="8.2" font-weight="bold" fill="#222222">Revisión experta</text>
+  <text x="68.0" y="302.9" text-anchor="middle" font-size="7.0" fill="#555555">muestra estratificada de 220 lotes</text>
+  <text x="68.0" y="311.8" text-anchor="middle" font-size="7.0" fill="#555555">criterio operativo de error</text>
+</g>
+<g id="propagacion">
+  <rect x="6.0" y="337.1" width="124" height="37.3" rx="4" fill="#E6F0F8" stroke="#0072B2" stroke-width="0.9"/>
+  <text x="68.0" y="350.2" text-anchor="middle" font-size="8.2" font-weight="bold" fill="#222222">Propagación del criterio</text>
+  <text x="68.0" y="359.7" text-anchor="middle" font-size="7.0" fill="#555555">reglas y similitud de Jaccard</text>
+  <text x="68.0" y="368.6" text-anchor="middle" font-size="7.0" fill="#555555">rondas dirigidas: 329 revisados</text>
+</g>
+<g id="gt_final">
+  <rect x="6.0" y="398.3" width="124" height="28.4" rx="4" fill="#E6F0F8" stroke="#0072B2" stroke-width="1.6"/>
+  <text x="68.0" y="411.4" text-anchor="middle" font-size="8.2" font-weight="bold" fill="#222222"><tspan font-style="italic">Ground truth</tspan> final</text>
+  <text x="68.0" y="420.9" text-anchor="middle" font-size="7.0" fill="#555555">130 lotes con error (2.9 %)</text>
+</g>
+<g id="fuente">
+  <rect x="166.0" y="43.9" width="124" height="37.3" rx="4" fill="#FDF3DF" stroke="#B07800" stroke-width="0.9"/>
+  <text x="228.0" y="57.0" text-anchor="middle" font-size="8.2" font-weight="bold" fill="#222222">Fuente de logs</text>
+  <text x="228.0" y="66.5" text-anchor="middle" font-size="7.0" fill="#555555">archivos en orden cronológico</text>
+  <text x="228.0" y="75.4" text-anchor="middle" font-size="7.0" fill="#555555">o flujo HTTP en vivo</text>
+</g>
+<g id="ingesta">
+  <rect x="166.0" y="110.1" width="124" height="37.3" rx="4" fill="#FDF3DF" stroke="#B07800" stroke-width="0.9"/>
+  <text x="228.0" y="123.2" text-anchor="middle" font-size="8.2" font-weight="bold" fill="#222222">Ingesta</text>
+  <text x="228.0" y="132.7" text-anchor="middle" font-size="7.0" fill="#555555">prefiltro, enmascarado</text>
+  <text x="228.0" y="141.6" text-anchor="middle" font-size="7.0" fill="#555555">y lotes de N eventos</text>
+</g>
+<g id="cache">
+  <rect x="166.0" y="162.4" width="124" height="37.3" rx="4" fill="#FDF3DF" stroke="#B07800" stroke-width="0.9" stroke-dasharray="4 2.5"/>
+  <text x="228.0" y="175.5" text-anchor="middle" font-size="8.2" font-weight="bold" fill="#222222">Caché semántica (opcional)</text>
+  <text x="228.0" y="185.0" text-anchor="middle" font-size="7.0" fill="#555555">Qwen3-Embedding-0.6B y Milvus Lite</text>
+  <text x="228.0" y="193.9" text-anchor="middle" font-size="7.0" fill="#555555">por lote · por evento · vía rápida</text>
+</g>
+<g id="slm">
+  <rect x="166.0" y="214.7" width="124" height="46.2" rx="4" fill="#FDF3DF" stroke="#B07800" stroke-width="1.6"/>
+  <text x="228.0" y="227.8" text-anchor="middle" font-size="8.2" font-weight="bold" fill="#222222">Clasificación con SLM</text>
+  <text x="228.0" y="237.3" text-anchor="middle" font-size="7.0" fill="#555555">8 SLM · Ollama o Transformers</text>
+  <text x="228.0" y="246.2" text-anchor="middle" font-size="7.0" fill="#555555">JSON: error, descripción, acción</text>
+  <text x="228.0" y="255.1" text-anchor="middle" font-size="7.0" fill="#555555">+ probabilidad de error</text>
+</g>
+<g id="resultado">
+  <rect x="166.0" y="284.8" width="124" height="28.4" rx="4" fill="#FDF3DF" stroke="#B07800" stroke-width="0.9"/>
+  <text x="228.0" y="297.9" text-anchor="middle" font-size="8.2" font-weight="bold" fill="#222222">Resultado por lote</text>
+  <text x="228.0" y="307.4" text-anchor="middle" font-size="7.0" fill="#555555">registro de respuestas y fallos</text>
+</g>
+<g id="notificacion">
+  <rect x="166.0" y="337.1" width="124" height="37.3" rx="4" fill="#FBE9DE" stroke="#C04A00" stroke-width="0.9"/>
+  <text x="228.0" y="350.2" text-anchor="middle" font-size="8.2" font-weight="bold" fill="#222222">Notificación y recomendación</text>
+  <text x="228.0" y="359.7" text-anchor="middle" font-size="7.0" fill="#555555">solo lotes con error:</text>
+  <text x="228.0" y="368.6" text-anchor="middle" font-size="7.0" fill="#555555">alerta en Slack · recomendador LLM</text>
+</g>
+<g id="dashboard">
+  <rect x="166.0" y="389.4" width="124" height="46.2" rx="4" fill="#FBE9DE" stroke="#C04A00" stroke-width="0.9"/>
+  <text x="228.0" y="402.5" text-anchor="middle" font-size="8.2" font-weight="bold" fill="#222222"><tspan font-style="italic">Dashboard</tspan></text>
+  <text x="228.0" y="412.0" text-anchor="middle" font-size="7.0" fill="#555555">ejecución en vivo, alertas,</text>
+  <text x="228.0" y="420.9" text-anchor="middle" font-size="7.0" fill="#555555">recomendaciones e</text>
+  <text x="228.0" y="429.8" text-anchor="middle" font-size="7.0" fill="#555555">inyección de errores</text>
+</g>
+<g id="simulacion">
+  <rect x="326.0" y="30.0" width="124" height="65.1" rx="4" fill="#E3F4EF" stroke="#007A5E" stroke-width="0.9"/>
+  <text x="388.0" y="43.1" text-anchor="middle" font-size="8.2" font-weight="bold" fill="#222222">Simulación en flujo</text>
+  <text x="388.0" y="53.1" text-anchor="middle" font-size="8.2" font-weight="bold" fill="#222222">continuo</text>
+  <text x="388.0" y="62.6" text-anchor="middle" font-size="7.0" fill="#555555">130 lotes con error inyectados:</text>
+  <text x="388.0" y="71.5" text-anchor="middle" font-size="7.0" fill="#555555">216 incidentes en 4 549 lotes</text>
+  <text x="388.0" y="80.4" text-anchor="middle" font-size="7.0" fill="#555555">detección, dependencia del</text>
+  <text x="388.0" y="89.3" text-anchor="middle" font-size="7.0" fill="#555555">SLM y latencia</text>
+</g>
+<g id="ajuste_fino">
+  <rect x="326.0" y="214.7" width="124" height="46.2" rx="4" fill="#E3F4EF" stroke="#007A5E" stroke-width="0.9"/>
+  <text x="388.0" y="227.8" text-anchor="middle" font-size="8.2" font-weight="bold" fill="#222222">Ajuste fino con QLoRA</text>
+  <text x="388.0" y="237.3" text-anchor="middle" font-size="7.0" fill="#555555">Qwen3.5-9B · partición temporal</text>
+  <text x="388.0" y="246.2" text-anchor="middle" font-size="7.0" fill="#555555">70 / 10 / 20 · adaptador LoRA</text>
+  <text x="388.0" y="255.1" text-anchor="middle" font-size="7.0" fill="#555555">convertido a GGUF</text>
+</g>
+<g id="eval_lotes">
+  <rect x="326.0" y="275.9" width="124" height="46.2" rx="4" fill="#E3F4EF" stroke="#007A5E" stroke-width="0.9"/>
+  <text x="388.0" y="289.0" text-anchor="middle" font-size="8.2" font-weight="bold" fill="#222222">Evaluación por lotes</text>
+  <text x="388.0" y="298.5" text-anchor="middle" font-size="7.0" fill="#555555">8 SLM · N = 50, 30 y 20</text>
+  <text x="388.0" y="307.4" text-anchor="middle" font-size="7.0" fill="#555555">métricas, consistencia y</text>
+  <text x="388.0" y="316.3" text-anchor="middle" font-size="7.0" fill="#555555">pruebas de permutación</text>
+</g>
+</g>
+</svg>

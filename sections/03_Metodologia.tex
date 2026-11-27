@@ -2,40 +2,66 @@
 
 La finalidad principal de este trabajo es detectar de forma automática los errores que registran los logs de un servicio universitario, mediante SLM ejecutados de forma local, y avisar a los responsables con una sugerencia de causa y solución. Para ello, el trabajo construyó un \textit{pipeline} que lee los registros del servicio \texttt{ms-users} de la DTIC, los reduce y agrupa en lotes, los clasifica con un SLM y reacciona ante los lotes con error. Como no existían etiquetas que dijeran qué registros eran errores, una parte central del trabajo fue construir esa referencia antes de poder evaluar cualquier modelo.
 
-Este capítulo comienza con el diseño general del sistema. Luego detalla el conjunto de datos y la construcción del \textit{ground truth}, la referencia de todas las evaluaciones. Posteriormente explica la arquitectura del \textit{pipeline}, los modelos evaluados, la caché semántica y el ajuste fino con LoRA, y cierra con el diseño de la evaluación, la simulación en flujo continuo con errores inyectados y los mecanismos de notificación y recomendación.
+Este capítulo comienza con el diseño general del sistema y el entorno de desarrollo. Luego detalla la construcción del \textit{ground truth}, la referencia de todas las evaluaciones, desde el conjunto de datos hasta la etiqueta final de cada lote. Posteriormente recorre las etapas del \textit{pipeline} y los componentes que lo complementan: la ingesta y la clasificación con SLM, la caché semántica, el ajuste fino con QLoRA y los mecanismos de notificación y recomendación, y cierra con la evaluación por lotes y la simulación en flujo continuo con errores inyectados.
 
 \section{Diseño conceptual del sistema}\label{sec:met_vision}
 
-El sistema funciona como una cadena de etapas por la que pasa cada evento de log desde que el servicio lo escribe hasta que, si corresponde, llega una alerta a los responsables. La figura~\ref{fig:arquitectura} muestra el diseño general, organizado en cuatro bloques.
+El sistema funciona como una cadena de etapas por la que pasa cada evento de log desde que el servicio lo escribe hasta que, si corresponde, llega una alerta a los responsables. La figura~\ref{fig:arquitectura} muestra el diseño general, organizado en tres partes cuyos bloques corresponden a las secciones de este capítulo.
 
-El primer bloque corresponde a los datos: el \textit{pipeline} lee los archivos o el flujo de logs del servicio, filtra los eventos para conservar solo los que tienen valor diagnóstico, enmascara sus partes variables y los agrupa en lotes de $N$ eventos consecutivos. El segundo bloque es el \textit{ground truth}, la referencia de qué lotes contienen un error, construida una sola vez con tres LLM, revisión experta y reglas de propagación. El tercer bloque es la clasificación: un SLM recibe cada lote y responde si contiene un error, y opcionalmente una caché semántica evita consultar al modelo cuando el lote o sus eventos ya pasaron antes por él. El cuarto bloque es la reacción: los lotes con error disparan una alerta, un modelo separado redacta una recomendación y un \textit{dashboard} muestra el estado de la ejecución y permite inyectar errores simulados.
+La primera parte es la construcción del \textit{ground truth}, la referencia de qué lotes contienen un error, realizada una sola vez sobre el corpus histórico: el prefiltro y el enmascarado reducen los eventos, que quedan agrupados en lotes de 50; tres LLM votan sobre cada lote, y dos desarrolladores de la DTIC revisan una muestra y fijan un criterio que después se propaga al resto. La segunda parte es el \textit{pipeline} de detección: lee los eventos de los archivos o de un flujo en vivo, les aplica el mismo prefiltro y enmascarado, los agrupa en lotes y envía cada lote a un SLM, que responde si contiene un error; opcionalmente, una caché semántica reutiliza la respuesta cuando el lote o sus eventos ya pasaron antes por el modelo. Los lotes con error disparan una alerta, un modelo separado redacta una recomendación y un \textit{dashboard} muestra el estado de la ejecución. La tercera parte reúne los procesos que dependen del \textit{ground truth}: el ajuste fino, que produce un adaptador para el SLM; la evaluación por lotes, que compara las respuestas del \textit{pipeline} con la referencia, y la simulación en flujo continuo, que entrega al \textit{pipeline} un flujo con lotes con error inyectados.
 
-\begin{figure}[H]
+\begin{figure}[!htbp]
 \centering
-\includegraphics[width=\textwidth]{figs/metodologia/arquitectura_pipeline_completo_v2.pdf}
-\caption{Diseño general del \textit{pipeline}: datos, \textit{ground truth}, clasificación y reacción.}
+\includegraphics[width=\textwidth]{figs/metodologia/arquitectura_pipeline.pdf}
+\caption{Diseño general del sistema: construcción del \textit{ground truth} (izquierda), \textit{pipeline} de detección (centro), y ajuste fino y evaluación (derecha). El borde discontinuo indica un componente opcional.}
 \label{fig:arquitectura}
 \end{figure}
 
 El sistema tuvo dos usos. En la evaluación por lotes, el \textit{pipeline} recorrió el corpus histórico completo y cada respuesta fue comparada con el \textit{ground truth}, lo que permitió evaluar los modelos, los tamaños de lote y el ajuste fino. En la simulación en flujo continuo, un servidor local emitió los logs como si fueran el tráfico real del servicio, con errores inyectados en momentos conocidos, y el \textit{pipeline} los analizó en tiempo real, lo que permitió medir la detección, la latencia y la dependencia del modelo.
 
-\section{Conjunto de datos}\label{sec:met_dataset}
+\subsection{Entorno de desarrollo}\label{subsec:met_entorno}
+
+El desarrollo y la experimentación se repartieron entre dos equipos con tarjetas gráficas de fabricantes distintos, y por eso el \textit{pipeline} admite tanto la plataforma ROCm de AMD como CUDA de NVIDIA. Únicamente el ajuste fino corrió en un servidor facilitado por la DTIC, debido al alto costo computacional de reentrenar un modelo en equipos personales. La tabla~\ref{tab:met_equipos} describe los tres equipos.
+
+\begin{table}[H]
+\centering
+\caption{Equipos utilizados en el desarrollo y la experimentación.}
+\label{tab:met_equipos}
+\footnotesize\linespread{1}\selectfont
+\setlength{\tabcolsep}{4pt}
+\begin{tabularx}{\textwidth}{@{}>{\raggedright\arraybackslash}p{2.1cm}>{\raggedright\arraybackslash}X>{\raggedright\arraybackslash}p{1.6cm}>{\raggedright\arraybackslash}X>{\raggedright\arraybackslash}p{1.4cm}>{\raggedright\arraybackslash}X>{\raggedright\arraybackslash}p{1.9cm}@{}}
+\toprule
+\textbf{Equipo} & \textbf{Rol en el estudio} & \textbf{Sistema operativo} & \textbf{CPU} & \textbf{RAM} & \textbf{GPU (VRAM)} & \textbf{Aceleración} \\
+\midrule
+Equipo 1 (personal) & Mayoría de las clasificaciones y la simulación & Debian & AMD Ryzen 7 3700X, 16 hilos, hasta 4.43~GHz & 24~GB & AMD Radeon RX 7900 XT (20~GB) & ROCm 7.2, PyTorch 2.13 \\
+\addlinespace
+Equipo 2 (personal) & Qwen3.5-9B y Ministral-3-3B con $N=30$; SmolLM2-1.7B con $N=50$ & Ubuntu & Intel Core i7-13620H, 16 hilos, hasta 4.90~GHz & 16~GB & NVIDIA GeForce RTX 4060 (8~GB) & CUDA \\
+\addlinespace
+Servidor de la DTIC (Google Compute Engine) & Ajuste fino del modelo & Ubuntu 22.04.5 LTS & Intel Xeon, 32 núcleos virtuales a 2.20~GHz & 125.8~GiB & NVIDIA L4 (22.5~GiB) & CUDA 13.0, \textit{driver} 580.178.04 \\
+\bottomrule
+\end{tabularx}
+\normalsize
+\end{table}
+
+El \textit{pipeline} está escrito en Python 3.13, con Pydantic para las estructuras de logs, lotes y resultados. Ollama, ejecutado en un contenedor Docker, y Hugging Face Transformers sobre PyTorch sirvieron los modelos. Sentence-Transformers generó los \textit{embeddings}, y Milvus Lite los almacenó. Las métricas provienen de scikit-learn, las pruebas estadísticas de NumPy y SciPy, y las gráficas de Matplotlib. El ajuste fino usó las bibliotecas PEFT y bitsandbytes, y llama.cpp para convertir el adaptador al formato de Ollama. Git sirvió para el control de versiones del código.
+
+\section{Construcción del \textit{ground truth}}\label{sec:met_gt}
+
+No existían etiquetas que indicaran qué lotes del corpus contenían errores, así que la referencia fue construida por etapas que combinaron el pseudoetiquetado con modelos de lenguaje y la revisión de expertos. El \textit{ground truth} asigna una etiqueta a cada lote, porque un SLM evalúa un lote completo y su respuesta necesita una etiqueta del mismo nivel para compararla. La parte izquierda de la figura~\ref{fig:arquitectura} resume sus etapas, que parten del corpus de logs del servicio y de su reducción a lotes de eventos con valor diagnóstico.
+
+\subsection{Conjunto de datos}\label{sec:met_dataset}
 
 Los datos del trabajo provienen de \texttt{ms-users}, un microservicio Spring Boot de la DTIC que gestiona las cuentas de usuario de la universidad frente a Active Directory, LDAP, Oracle, AS400 y Google Workspace. El corpus consta de 309 archivos en formato Logback, con unos 16~GB y 27\,752\,836 eventos, que cubren del 23 de septiembre al 7 de octubre de 2026. Cada día tiene entre 21 y 22 archivos numerados desde \texttt{logFile.AAAA-MM-DD.0.log}, salvo el 7 de octubre, que llega hasta el archivo \texttt{.7}, y el conjunto incluye además el archivo activo \texttt{logFile.log}, que termina a las 09:37 de ese día. El director de la DTIC proporcionó estos registros el 13 de octubre de 2026, y a partir de esa fecha la construcción del conjunto de datos y de su \textit{ground truth} se extendió hasta el 4 de noviembre.
 
-\subsection{Características del corpus}
-
 Casi todo el volumen del corpus es ruido de infraestructura: entre el 99.8\,\% y el 99.9\,\% corresponde a salida repetitiva que no describe operaciones del negocio. Las fuentes principales de ese ruido son los sondeos de salud de Kubernetes a \texttt{/actuator}, que Spring Security rechaza e imprime con trazas de pila de unas 115 líneas, las trazas internas de los filtros de Spring Security en nivel \texttt{TRACE} y las líneas de peticiones del \textit{framework}. Los eventos con valor de negocio son una fracción mínima y registran situaciones como rechazos por política de contraseñas, usuarios no encontrados en alguno de los sistemas externos, avisos de LDAP o cambios de contraseña exitosos.
 
-\subsection{Prefiltrado y enmascarado}\label{subsec:met_prefiltro}
+\subsection{Prefiltrado, enmascarado y agrupación en lotes}\label{subsec:met_prefiltro}\label{subsec:met_batches}
 
 Para reducir el volumen, el \textit{pipeline} aplica un prefiltro basado en reglas que analiza cada evento Logback y decide si conservarlo según su \textit{logger}, su nivel de severidad y su mensaje, y nunca según la dirección IP. El prefiltro mantiene los eventos de los \textit{loggers} de negocio, los de nivel \texttt{WARN}, \texttt{ERROR} o \texttt{FATAL} y las peticiones del \textit{framework}. Cada evento conservado forma una entrada cuyo texto es la línea original más su traza de pila, limitada a 15 líneas. En la práctica, el prefiltro conservó entre el 0.18\,\% y el 3.75\,\% de cada archivo, 223\,104 eventos en total, de los cuales solo unos 7\,400 son distintos.
 
 Antes de que cualquier modelo vea el texto, el enmascarado sustituye las direcciones IP, los identificadores UUID y los números por marcadores. Esto cumple dos funciones: evita que los identificadores salgan del texto que procesan los modelos y hace que los eventos repetidos, que solo difieren en esos valores, queden idénticos.
 
-\subsection{Agrupación en lotes}\label{subsec:met_batches}
-
-La unidad de análisis es el lote de $N$ eventos consecutivos ya filtrados. El tamaño de lote quedó fijado en $N = 50$ con un propósito principal: establecer una línea base uniforme que permitiera comparar todos los modelos candidatos en las mismas condiciones y construir sobre ella el conjunto de referencia. Una comparación equitativa exige que todos los modelos reciban exactamente los mismos lotes, y el \textit{ground truth}, cuya construcción describe la sección~\ref{sec:met_gt}, fue elaborado y revisado por lotes de 50 eventos; cualquier otro tamaño no coincidiría con los límites de los lotes etiquetados y exigiría rehacer la votación y la revisión experta. Con $N = 50$, el corpus queda dividido en 4\,463 lotes, 4\,462 de 50 eventos y uno final de 4.
+La unidad de análisis es el lote de $N$ eventos consecutivos ya filtrados. El tamaño de lote quedó fijado en $N = 50$ con un propósito principal: establecer una línea base uniforme que permitiera comparar todos los modelos candidatos en las mismas condiciones y construir sobre ella el conjunto de referencia. Una comparación equitativa exige que todos los modelos reciban exactamente los mismos lotes, y el \textit{ground truth} fue elaborado y revisado por lotes de 50 eventos, como describen las subsecciones siguientes; cualquier otro tamaño no coincidiría con los límites de los lotes etiquetados y exigiría rehacer la votación y la revisión experta. Con $N = 50$, el corpus queda dividido en 4\,463 lotes, 4\,462 de 50 eventos y uno final de 4.
 
 Como todos los modelos deben recibir el mismo $N$, el tamaño máximo lo fija el modelo con la ventana de contexto más pequeña: SmolLM2-1.7B-Instruct, con 8\,192 \textit{tokens}. El resto de los modelos dispone de ventanas mucho mayores, así que esta restricción solo afecta a SmolLM2-1.7B-Instruct. Para comprobar ese límite, una prueba con $N = 70$ sobre los mismos 7\,000 primeros eventos del corpus, que forman 140 lotes con $N = 50$ y 100 con $N = 70$, evaluó tres modelos de la matriz en el equipo con 8~GB de memoria de GPU. La prueba midió únicamente si los modelos podían responder en el formato esperado, y no la calidad de su detección. La tabla~\ref{tab:met_n70} muestra los resultados; los \textit{tokens} incluyen la entrada y la salida de cada llamada.
 
@@ -61,13 +87,7 @@ Qwen3.5-9B (Q6\_K) & 50 & 140 / 140 & 4\,327 / 4\,609 & 86.7 & 5.2 \\
 
 Con $N = 70$, el lote mediano de SmolLM2-1.7B-Instruct ocupó 7\,625 \textit{tokens}, el 93\,\% de su ventana de contexto, y solo una de sus 100 respuestas tuvo el formato JSON esperado, mientras que con $N = 50$ respondió de forma válida en 130 de los 140 lotes. Ministral-3-3B y Qwen3.5-9B respondieron sin fallos con ambos tamaños. La prueba confirma, por tanto, que $N = 70$ supera la capacidad de SmolLM2-1.7B-Instruct y no es viable para toda la matriz de modelos, sin indicar que $N = 50$ sea el mejor tamaño para cada modelo; su alcance es limitado, porque usa 7\,000 eventos y un solo equipo. Como observación secundaria, un lote más grande también tarda más en completarse: al ritmo real del servicio, de unos 0.2 eventos por segundo, un lote de 50 eventos tarda unos 250 segundos en llenarse. Los tamaños $N = 30$ y $N = 20$ sirvieron después para medir el efecto del tamaño de lote sobre los modelos, como explica la sección~\ref{sec:met_evaluacion}.
 
-\section{Construcción del \textit{ground truth}}\label{sec:met_gt}
-
-No existían etiquetas que indicaran qué lotes del corpus contenían errores, así que la referencia fue construida por etapas que combinaron el pseudoetiquetado con modelos de lenguaje y la revisión de expertos. El \textit{ground truth} asigna una etiqueta a cada lote, porque un SLM evalúa un lote completo y su respuesta necesita una etiqueta del mismo nivel para compararla. La figura~\ref{fig:met_gt} resume el proceso.
-
-\figpendiente{fig:met_gt}{Etapas de la construcción del \textit{ground truth}.}{Diagrama de flujo: votación de tres LLM sobre cada lote $\rightarrow$ consenso entre modelos $\rightarrow$ muestra estratificada de 220 lotes $\rightarrow$ revisión experta y criterio operativo $\rightarrow$ propagación por reglas y similitud $\rightarrow$ rondas dirigidas $\rightarrow$ \textit{ground truth} final (130 lotes con error).}
-
-\subsection{Votación por lote}\label{subsec:met_votacion}
+\subsection{Votación y consenso de los LLM}\label{subsec:met_votacion}\label{subsec:met_kappa}
 
 En la primera etapa, tres LLM locales de 7\,000 a 8\,000 millones de parámetros y de familias distintas, Qwen2.5-7B, Llama3.1-8B y Mistral-7B, servidos con Ollama, votaron por separado sobre cada uno de los 4\,463 lotes de 50 eventos. Cada modelo recibió el lote como una lista numerada y devolvió un veredicto único en JSON con tres campos: si el lote contiene un error, los índices de las líneas que lo justifican y una frase de razonamiento. Un lote contaba como error si contenía al menos un evento erróneo, y un lote sin respuesta válida quedaba sin etiqueta, en lugar de asumirlo normal, para no sesgar el voto. Los modelos usaron cuantización Q4\_K\_M, temperatura 0, una ventana de contexto de 12\,288 \textit{tokens}, un máximo de 300 \textit{tokens} de respuesta y tres reintentos; ningún lote quedó truncado. El Anexo~\ref{ap:prompt_votacion} incluye el \textit{prompt} completo, y la tabla~\ref{tab:met_votos} resume la votación.
 
@@ -89,8 +109,6 @@ mistral:7b & 1\,400 & 4.5 & 5\,544 / 6\,942 \\
 \end{table}
 
 Durante la votación, Mistral dejó 23 lotes sin voto porque cortaba el JSON sin cerrar la comilla ni la llave final. Como la temperatura de generación era 0 para que las respuestas fueran consistentes, los reintentos repetían el mismo corte. Para resolverlo, el analizador de respuestas incorporó un rescate mediante expresiones regulares, con el que el sistema reprocesó los 23 lotes.
-
-\subsection{Consenso entre modelos}\label{subsec:met_kappa}
 
 El consenso corresponde a la mayoría estricta sobre los votos válidos: al menos dos de los tres modelos. Con esa regla, 1\,370 lotes (30.7\,\%) resultaron error y 3\,093 normales. El acuerdo entre los modelos fue alto: el $\kappa$ de Fleiss \cite{fleiss1971_kappa} fue 0.886, casi perfecto según la escala de Landis y Koch \cite{landis1977_kappa}, con 1\,203 lotes de error unánime, 2\,936 de normal unánime y 324 con desacuerdo. Este consenso fue solo una etiqueta preliminar, que sirvió para guiar la revisión experta.
 
@@ -130,15 +148,13 @@ Errores de base de datos o del \textit{pool} de conexiones, fallo al iniciar el 
 
 Con este criterio, solo el 12.5\,\% de los lotes de error unánime (11 de 88) resultaron error según los desarrolladores: los revisores contradijeron ahora al consenso en 77 de esos 88 lotes, frente al 6.8\,\% de error en los de desacuerdo y al 0\,\% en los de normal unánime. Como esta es la única muestra aleatoria del proceso, es la que permite estimar la tasa de error de cada estrato en el corpus completo.
 
-\subsection{Propagación del criterio experto}\label{subsec:met_propagacion}
+\subsection{Propagación del criterio y \textit{ground truth} final}\label{subsec:met_propagacion}
 
 Revisar los 4\,463 lotes no era viable, así que el criterio experto fue extendido al resto de forma reproducible, con registro del origen de cada etiqueta. Cada lote pasó, en orden, por las siguientes reglas, y decidió la primera que se cumplía. Si un experto lo había revisado, valía su etiqueta. Si ningún LLM había votado error, el lote quedaba como normal, una regla que la muestra respalda, porque ninguno de los 44 lotes de normal unánime fue contradicho. Si algún evento cumplía una regla de error derivada del criterio de la tabla~\ref{tab:met_criterio} (respuestas 5xx, el mensaje ``Failed to complete request'', errores al crear o actualizar cuentas o errores de la API de AD, con exclusiones para ``ya existe'' y la política de contraseñas), el lote quedaba como error. Si todo lo señalado por los modelos era ``usuario no encontrado'' de AS400, el lote era normal. Por último, si el lote se parecía a lotes ya revisados, heredaba su etiqueta cuando había una mayoría clara.
 
 Para esta última regla, cada lote quedó descrito con una firma: el conjunto de tipos de evento (nivel, \textit{logger} y mensaje normalizado) de las líneas que habían señalado los LLM. La similitud entre dos lotes es el coeficiente de Jaccard entre sus firmas, cuya definición formal se presentó en el capítulo~\ref{cap:antecedentes} \cite{manning2008_ir}, y solo contaron los lotes revisados con una similitud de al menos 0.5. Cada uno de ellos aportó un voto por su etiqueta, ponderado por su similitud, y la pureza es la fracción de ese voto ponderado que obtiene la etiqueta mayoritaria. El lote heredaba la etiqueta solo si la pureza era de al menos 0.8; si los lotes parecidos estaban divididos, no había mayoría clara y el lote no recibía etiqueta por esta vía. El umbral de 0.5 resultó de comparar los valores 1.0, 0.7, 0.5 y 0.35 mediante una validación \textit{leave-one-out} sobre los primeros 176 lotes revisados, como compromiso entre la cantidad de lotes cubiertos y el acierto; como esa elección usó los mismos datos con que se mide, la validación es optimista.
 
 Si ninguna regla aplicaba, el lote no recibía el voto de los LLM, sino que pasaba a revisión. Así hubo tres rondas dirigidas, con 91, 17 y 1 representantes de grupos de lotes idénticos que cubrieron 110, 22 y 1 lotes. En total, los expertos revisaron 329 lotes (7.4\,\%), de los cuales 39 resultaron error y 290 normales.
-
-\subsection{\textit{Ground truth} final}
 
 El resultado es una etiqueta para cada uno de los 4\,463 lotes; la tabla~\ref{tab:met_origen} muestra el origen de las etiquetas. Los 130 lotes con error (2.9\,\%) provienen solo de la revisión directa (39) y de las reglas de error (91); la similitud con lotes revisados únicamente asignó etiquetas normales. Frente al consenso de los LLM, los expertos eliminaron 1\,241 de sus 1\,370 positivos y añadieron un error nuevo, y ambas referencias coinciden solo en el 72.2\,\% de los lotes. Esta etiqueta, denominada \texttt{final\_is\_error}, es la referencia de todas las evaluaciones del trabajo.
 
@@ -165,15 +181,13 @@ Regla de AS400 (normal) & 58 \\
 
 La diferencia entre el voto de los LLM y el criterio experto muestra la dificultad central del problema: un modelo genérico interpreta cualquier excepción o línea de nivel \texttt{ERROR} como una falla, mientras que la institución considera muchas de ellas resultados normales del negocio.
 
-\section{Arquitectura del \textit{pipeline}}\label{sec:met_arquitectura}
+\section{Ingesta y clasificación con SLM}\label{sec:met_arquitectura}
 
 El \textit{pipeline} consta de cuatro módulos: un lector que entrega los eventos, un modelo que analiza cada lote, un escritor que registra cada resultado y un servicio de notificaciones. Esta organización permitió usar el mismo flujo tanto sobre los archivos históricos como sobre un flujo HTTP en vivo, y cambiar el modelo o el tipo de caché sin modificar el resto.
 
-\tema{Ingesta}
+El lector obtiene los eventos de los archivos de log, en orden cronológico para su reproducibilidad, o de un flujo HTTP que simula la operación en vivo. A cada evento le aplica el mismo prefiltro y enmascarado con que fue construido el \textit{ground truth}, descritos en la sección~\ref{subsec:met_prefiltro}, y los agrupa en lotes de $N$ eventos filtrados.
 
-El lector obtiene los eventos de los archivos de log, en orden cronológico para su reproducibilidad, o de un flujo HTTP que simula la operación en vivo. A cada evento le aplica el prefiltro y el enmascarado descritos en la sección~\ref{subsec:met_prefiltro} y los agrupa en lotes de $N$ eventos filtrados.
-
-\tema{Clasificación}
+\subsection{Clasificación}\label{subsec:met_clasificacion}
 
 El \textit{pipeline} envía cada lote al SLM como una lista numerada de eventos, acompañada de un mensaje de sistema fijo que define la tarea, el formato de respuesta y las condiciones que no cuentan como error, como las solicitudes erróneas, las excepciones de validación de contraseñas o los usuarios no encontrados. El modelo responde un objeto JSON corto con tres campos: si hay error, una descripción breve y una acción recomendada. El Anexo~\ref{ap:prompt_slm} incluye el mensaje de sistema completo. El \textit{pipeline} admite dos motores de inferencia intercambiables: Ollama, para los modelos cuantizados en formato GGUF, y Hugging Face Transformers, para los modelos en su formato original. Ambos usan temperatura 0 y decodificación voraz para obtener clasificaciones consistentes, con el razonamiento extendido de los modelos desactivado y un máximo de 512 \textit{tokens} de respuesta.
 
@@ -185,7 +199,7 @@ Además de la respuesta binaria, el \textit{pipeline} registra la probabilidad d
 
 Los modelos pequeños no siempre respetan el formato pedido, así que el \textit{pipeline} incorpora tres protecciones. La primera es un analizador que repara las respuestas mal formadas, como saltos de línea sin escapar, comillas sin cerrar, claves sin comillas o un JSON cortado, y que en algunos modelos recuperó el 100\,\% de las respuestas que de otro modo se habrían perdido. La segunda es un registro de fallos que guarda la entrada y la respuesta cruda de cada lote que no puede procesarse, sin detener la ejecución. La tercera es un límite de \textit{tokens} de salida y un tiempo máximo por petición, que detienen las generaciones descontroladas; en una ocasión, un modelo llegó a generar 141\,000 \textit{tokens} para un solo lote.
 
-\section{Modelos de lenguaje pequeños evaluados}\label{sec:met_slm}
+\subsection{Modelos evaluados}\label{sec:met_slm}
 
 Para el clasificador, el trabajo seleccionó ocho SLM, de 1\,000 a 9\,000 millones de parámetros y de familias y desarrolladores distintos. El criterio de selección fue que fueran SLM capaces de ejecutarse de forma local con requerimientos acotados de memoria de video (VRAM), para que pudieran funcionar en equipos con una sola tarjeta gráfica. La tabla~\ref{tab:met_modelos} lista los modelos, el motor con que corrió cada uno, su formato y la memoria de video que requirieron.
 
@@ -212,33 +226,6 @@ Llama-3.2-1B \textit{log-analyzer} & Ollama & Q4\_K\_M & 1.7 \\
 \end{table}
 
 Todos los modelos recibieron el mismo \textit{prompt}, el mismo enmascarado, el mismo límite de \textit{tokens} de salida y decodificación voraz, en la que el modelo toma siempre el siguiente \textit{token} con mayor probabilidad; así, las diferencias entre ellos se deben solo al modelo. Un modelo requirió un tratamiento especial: el Llama-3.2-1B \textit{log-analyzer}, un ajuste público orientado a logs, solo funcionó a través de Ollama con su propia plantilla de conversación, porque con Transformers repetía los logs en lugar de responder.
-
-\section{Entorno de desarrollo}\label{subsec:met_entorno}
-
-El desarrollo y la experimentación se repartieron entre dos equipos con tarjetas gráficas de fabricantes distintos, y por eso el \textit{pipeline} admite tanto la plataforma ROCm de AMD como CUDA de NVIDIA. Únicamente el ajuste fino corrió en un servidor facilitado por la DTIC, debido al alto costo computacional de reentrenar un modelo en equipos personales. La tabla~\ref{tab:met_equipos} describe los tres equipos.
-
-\begin{table}[H]
-\centering
-\caption{Equipos utilizados en el desarrollo y la experimentación.}
-\label{tab:met_equipos}
-\footnotesize\linespread{1}\selectfont
-\setlength{\tabcolsep}{4pt}
-\begin{tabularx}{\textwidth}{@{}>{\raggedright\arraybackslash}p{2.1cm}>{\raggedright\arraybackslash}X>{\raggedright\arraybackslash}p{1.6cm}>{\raggedright\arraybackslash}X>{\raggedright\arraybackslash}p{1.4cm}>{\raggedright\arraybackslash}X>{\raggedright\arraybackslash}p{1.9cm}@{}}
-\toprule
-\textbf{Equipo} & \textbf{Rol en el estudio} & \textbf{Sistema operativo} & \textbf{CPU} & \textbf{RAM} & \textbf{GPU (VRAM)} & \textbf{Aceleración} \\
-\midrule
-Equipo 1 (personal) & Mayoría de las clasificaciones y la simulación & Debian & AMD Ryzen 7 3700X, 16 hilos, hasta 4.43~GHz & 24~GB & AMD Radeon RX 7900 XT (20~GB) & ROCm 7.2, PyTorch 2.13 \\
-\addlinespace
-Equipo 2 (personal) & Qwen3.5-9B y Ministral-3-3B con $N=30$; SmolLM2-1.7B con $N=50$ & Ubuntu & Intel Core i7-13620H, 16 hilos, hasta 4.90~GHz & 16~GB & NVIDIA GeForce RTX 4060 (8~GB) & CUDA \\
-\addlinespace
-Servidor de la DTIC (Google Compute Engine) & Ajuste fino del modelo & Ubuntu 22.04.5 LTS & Intel Xeon, 32 núcleos virtuales a 2.20~GHz & 125.8~GiB & NVIDIA L4 (22.5~GiB) & CUDA 13.0, \textit{driver} 580.178.04 \\
-\bottomrule
-\end{tabularx}
-\normalsize
-\end{table}
-
-El \textit{pipeline} está escrito en Python 3.13, con Pydantic para las estructuras de logs, lotes y resultados. Ollama, ejecutado en un contenedor Docker, y Hugging Face Transformers sobre PyTorch sirvieron los modelos. Sentence-Transformers generó los \textit{embeddings}, y Milvus Lite los almacenó. Las métricas provienen de scikit-learn, las pruebas estadísticas de NumPy y SciPy, y las gráficas de Matplotlib. El ajuste fino usó las bibliotecas PEFT y bitsandbytes, y llama.cpp para convertir el adaptador al formato de Ollama. Git sirvió para el control de versiones del código.
-
 
 \section{Caché semántica}\label{sec:met_cache}
 
@@ -293,23 +280,28 @@ Prueba & 3\,571--4\,462 (20\,\%) & 892 (todos) & 29 \\
 
 Los negativos difíciles son lotes normales que el modelo sin ajustar marcaba como error, es decir, sus propias falsas alarmas, y los negativos fáciles, lotes que el modelo identificaba correctamente como normales. El conjunto de entrenamiento incluyó los 77 lotes con error, 423 negativos difíciles y 193 negativos fáciles, en una proporción de ocho negativos por cada error. La validación incluye los 24 errores de su tramo y 200 lotes normales, y la prueba conserva todos los lotes de su tramo para medir el desempeño con la prevalencia real.
 
-\subsection{Configuración del entrenamiento}
+\subsection{Entrenamiento y despliegue}
 
 El ajuste aplicó QLoRA \cite{dettmers2023_qlora}: el modelo base Qwen3.5-9B quedó cargado en 4 bits con NormalFloat (NF4), a partir de una copia ya cuantizada para no agotar la RAM, y sobre él se entrenó un adaptador LoRA de rango 16, $\alpha = 32$ y \textit{dropout} de 0.05 en todas las capas lineales, con unos 43 millones de parámetros entrenables, el 0.48\,\% del modelo. Esta configuración está en línea con lo observado en una búsqueda de hiperparámetros sobre modelos de 7\,000 a 65\,000 millones de parámetros, donde un \textit{dropout} de 0.05 resultó útil en los modelos más pequeños y el rango no influyó en el desempeño final cuando el adaptador se aplicaba a todas las capas \cite{dettmers2023_qlora}. La pérdida estaba ponderada para compensar el desbalance de clases: los ejemplos con error pesan 4 veces, los negativos difíciles 2 veces y el \textit{token} de decisión (\texttt{true} o \texttt{false}), 10 veces, porque es el que determina la clasificación. El entrenamiento usó una tasa de aprendizaje de $10^{-4}$, dos épocas, acumulación de gradientes de 8 ejemplos (174 pasos) y hasta 6\,144 \textit{tokens} por ejemplo. Cada 20 pasos, el proceso validó el modelo y guardó un punto de control, y al final conservó el de menor pérdida de validación.
 
 El entrenamiento corrió en el servidor facilitado por la DTIC, duró 10.6~horas y alcanzó un máximo de 19.1~GiB de memoria de GPU, dentro de los 22.5~GiB de su tarjeta NVIDIA L4. La pérdida de validación bajó de 0.239, tras el primer cuarto de época, a un mínimo de 0.166 en la época 1.6, y se mantuvo estable hasta el final (0.167).
 
-\subsection{Despliegue del modelo ajustado}
 
 Llama.cpp convirtió el adaptador al formato GGUF, con un tamaño de 86~MB, y un archivo de configuración de Ollama lo aplica sobre el mismo Qwen3.5-9B Q6\_K usado en todas las evaluaciones. Así, la comparación entre el modelo base y el ajustado cambia solo el adaptador. El modelo ajustado clasificó el corpus completo con la misma configuración que el modelo base: 4\,463 lotes en 3.5 horas, unos 2.8 segundos por lote, sin respuestas inválidas.
 
-\section{Diseño de la evaluación}\label{sec:met_evaluacion}
+\section{Notificación, recomendación y \textit{dashboard}}\label{sec:met_notificacion}\label{sec:met_dashboard}
 
-La evaluación buscó responder tres preguntas: qué modelo detecta mejor los errores, cuánto influye el tamaño del lote y si el ajuste fino mejora al modelo base. Para que las diferencias dependieran solo del modelo y del tamaño de lote, todas las ejecuciones usaron el mismo filtro, el mismo enmascarado y el mismo \textit{prompt}.
+La detección se complementa con los mecanismos que llevan el resultado a las personas responsables. Un proceso en segundo plano actúa solo sobre los lotes con error válidos, para que el ciclo de clasificación nunca tenga que esperarlo. Por cada lote con error, envía una alerta corta a un canal de Slack, la plataforma de mensajería elegida por su popularidad en equipos de desarrollo y su uso recurrente en la DTIC, con el modelo, la ejecución, el lote, la probabilidad de error y los archivos de origen, y solicita a un LLM separado, el recomendador, una causa probable y una acción sugerida. El recomendador es un modelo configurable servido por Ollama; en este trabajo fue Qwen2.5-7B, con temperatura 0.2, una ventana de contexto de 8\,192 \textit{tokens}, un máximo de 600 \textit{tokens} de respuesta y un límite de 12\,000 caracteres de entrada para que el lote quepa en la ventana. Las recomendaciones solo aparecen en el \textit{dashboard} y no en la alerta, y el recomendador sugiere sin ejecutar ninguna acción. La recomendación es un apoyo al análisis de causa raíz que realiza el equipo de operación, y no un análisis de causa raíz automático: propone una causa probable a partir de los eventos del lote, sin correlacionar métricas ni trazas, para que el responsable no parta de cero. La calidad de las recomendaciones no fue evaluada formalmente.
 
-\subsection{Matriz de tamaños de lote}
+El \textit{dashboard} es una interfaz web propia que sigue una ejecución en vivo y muestra su estado, las métricas, los lotes fallidos, las alertas y las recomendaciones. También permite inyectar errores simulados en un \textit{pipeline} en ejecución: antes de cada lote, el \textit{pipeline} agrega los errores pendientes en posiciones aleatorias, con la marca de tiempo y el hilo de un evento vecino, y registra si el lote que los contiene fue detectado. La figura~\ref{fig:met_dashboard} muestra su interfaz.
 
-Cada modelo procesó el corpus completo con tres tamaños de lote: $N = 50$ (4\,463 lotes), $N = 30$ (7\,437 lotes) y $N = 20$ (11\,156 lotes). Esto permitió medir si dar al modelo más o menos contexto por decisión mejora o empeora su desempeño.
+\figpendiente{fig:met_dashboard}{Interfaz del \textit{dashboard} durante una ejecución.}{Captura de pantalla del \textit{dashboard} con una ejecución en curso: estado de la ejecución, métricas, alertas, tarjeta de recomendaciones y tarjeta de inyección de errores.}
+
+\figpendiente{fig:met_slack}{Ejemplo de alerta enviada a Slack.}{Captura de una alerta ``Error detectado'' en el canal de Slack, con modelo, ejecución, lote, probabilidad de error y archivos de origen.}
+
+\section{Evaluación por lotes}\label{sec:met_evaluacion}
+
+La evaluación buscó responder tres preguntas: qué modelo detecta mejor los errores, cuánto influye el tamaño del lote y si el ajuste fino mejora al modelo base. Para que las diferencias dependieran solo del modelo y del tamaño de lote, todas las ejecuciones usaron el mismo filtro, el mismo enmascarado y el mismo \textit{prompt}. Para ello, cada modelo procesó el corpus completo con tres tamaños de lote: $N = 50$ (4\,463 lotes), $N = 30$ (7\,437 lotes) y $N = 20$ (11\,156 lotes). Esto permitió medir si dar al modelo más o menos contexto por decisión mejora o empeora su desempeño.
 
 \subsection{Métricas}\label{subsec:met_metricas}
 
@@ -380,13 +372,3 @@ con lo que la espera en cola de cada lote depende de cuándo terminó el anterio
 \subsection{Métricas de la simulación}
 
 La tasa de detección es la proporción de los 216 incidentes cuyo lote recibió una alerta, con un intervalo de confianza de Wilson del 95\,\%. Este intervalo parte de la desviación estándar de la proporción verdadera y no de la observada, lo que evita que resulte engañoso cuando la proporción observada es extrema \cite{wilson1927_probable}. La simulación registró aparte los incidentes omitidos en la caché: los no detectados cuyo lote recibió la respuesta normal de la caché sin consultar al SLM, ya sea por la caché por evento o por reutilizar la respuesta normal de un lote parecido; como el SLM solo tampoco detecta algunos de esos lotes, la pérdida real que causa la caché es la diferencia de incidentes detectados frente a la ejecución sin caché. Por lote, la simulación midió las falsas alarmas (lotes del fondo con alerta), la precisión, la \textit{balanced accuracy} y el MCC sobre los 4\,549 lotes del flujo, de los cuales 216 contienen un error; como cada incidente ocupa exactamente un lote, el \textit{recall} por lote coincide con la tasa de detección. La dependencia del SLM corresponde a la proporción de lotes enviados al modelo, en total y por ventanas de 200 lotes, y la carga de la base vectorial, al número de vectores guardados al final del flujo.
-
-\section{Notificación, recomendación y \textit{dashboard}}\label{sec:met_notificacion}\label{sec:met_dashboard}
-
-La detección se complementa con los mecanismos que llevan el resultado a las personas responsables. Un proceso en segundo plano actúa solo sobre los lotes con error válidos, para que el ciclo de clasificación nunca tenga que esperarlo. Por cada lote con error, envía una alerta corta a un canal de Slack, la plataforma de mensajería elegida por su popularidad en equipos de desarrollo y su uso recurrente en la DTIC, con el modelo, la ejecución, el lote, la probabilidad de error y los archivos de origen, y solicita a un LLM separado, el recomendador, una causa probable y una acción sugerida. El recomendador es un modelo configurable servido por Ollama; en este trabajo fue Qwen2.5-7B, con temperatura 0.2, una ventana de contexto de 8\,192 \textit{tokens}, un máximo de 600 \textit{tokens} de respuesta y un límite de 12\,000 caracteres de entrada para que el lote quepa en la ventana. Las recomendaciones solo aparecen en el \textit{dashboard} y no en la alerta, y el recomendador sugiere sin ejecutar ninguna acción. La recomendación es un apoyo al análisis de causa raíz que realiza el equipo de operación, y no un análisis de causa raíz automático: propone una causa probable a partir de los eventos del lote, sin correlacionar métricas ni trazas, para que el responsable no parta de cero. La calidad de las recomendaciones no fue evaluada formalmente.
-
-El \textit{dashboard} es una interfaz web propia que sigue una ejecución en vivo y muestra su estado, las métricas, los lotes fallidos, las alertas y las recomendaciones. También permite inyectar errores simulados en un \textit{pipeline} en ejecución: antes de cada lote, el \textit{pipeline} agrega los errores pendientes en posiciones aleatorias, con la marca de tiempo y el hilo de un evento vecino, y registra si el lote que los contiene fue detectado. La figura~\ref{fig:met_dashboard} muestra su interfaz.
-
-\figpendiente{fig:met_dashboard}{Interfaz del \textit{dashboard} durante una ejecución.}{Captura de pantalla del \textit{dashboard} con una ejecución en curso: estado de la ejecución, métricas, alertas, tarjeta de recomendaciones y tarjeta de inyección de errores.}
-
-\figpendiente{fig:met_slack}{Ejemplo de alerta enviada a Slack.}{Captura de una alerta ``Error detectado'' en el canal de Slack, con modelo, ejecución, lote, probabilidad de error y archivos de origen.}
