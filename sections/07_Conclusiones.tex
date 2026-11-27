@@ -41,11 +41,7 @@ Por último, el \textit{pipeline} incorpora la notificación de errores a Slack,
 \section{Trabajos futuros}\label{sec:trabajo_futuro}
 
 \begin{itemize}
-  \item Re-evaluar la matriz completa contra el \textit{ground truth} final con el procedimiento oficial de colecciones y completar las corridas pendientes ($N=20$ de gemma, Qwen3.5 y Ministral; SmolLM2).
-  \item Calibrar el umbral sobre $P(\text{error})$ y mejorar el \textit{prompt} para reducir los falsos positivos.
-  \item Ajustar con LoRA un SLM con el \textit{ground truth} de \texttt{ms-users} y compararlo con los modelos base.
-  \item Medir el acuerdo entre expertos con doble etiquetado de una submuestra y revisar una muestra independiente de lo propagado, siguiendo el esquema de dos equipos y arbitraje de~\cite{sun2026_parsing}.
-  \item Definir y ejecutar el protocolo de inyección de errores y medir la tasa de detección, la latencia de alerta y la calidad de las recomendaciones.
-  \item Incorporar métricas y trazas, además de logs, para cubrir la observabilidad completa, y evaluar el esquema colaborativo SLM--LLM para los casos inciertos~\cite{ma2026_adaptivelog}.
-  \item Probar el \textit{pipeline} en un flujo en vivo de la DTIC y en otros servicios.
+  \item Evaluación del \textit{pipeline} en operación sobre los servidores de la DTIC, para medir en condiciones reales la latencia de detección, la tasa de falsas alarmas y su impacto en el trabajo del equipo de operación.
+  \item Evaluación cuantitativa de las recomendaciones, comparando la causa y la acción propuestas con las identificadas en los incidentes reales, para determinar su aporte al análisis de causa raíz.
+
 \end{itemize}
